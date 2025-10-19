@@ -1,15 +1,30 @@
+# Arquivos de ambiente
 .env
+.env.*
+!.env.example
+
 # Node
 node_modules/
 npm-debug.log
-.env
-.env.local
+yarn-error.log
 
 # Java
 target/
 *.class
 *.log
+*.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
 
-# React Build
+# React
 build/
 .DS_Store
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Render
+render.yaml.bak
