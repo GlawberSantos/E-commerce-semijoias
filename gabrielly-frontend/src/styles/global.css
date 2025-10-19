@@ -1,0 +1,54 @@
+/* global.css */
+:root {
+  --briliant-color: #fbb606;
+  --menu-color: #93cced;
+  --text-color: #d1cece;
+  --background-color: #000000;
+  --font-family: 'Open Sans', sans-serif;
+  --font-family-menu: 'Open Sans', sans-serif;
+  --font-family-briliant: "Lato", sans-serif;
+  --highlight-color: var(--briliant-color);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--background-color);
+  font-family: var(--font-family-briliant);
+  color: var(--text-color);
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-family-briliant);
+  color: var(--highlight-color);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+h1 {
+  font-size: 2.2rem;
+  margin-bottom: 20px;
+}
+
+h2 {
+  font-size: 1.5rem;
+  margin: 30px 0 15px;
+}

@@ -1,0 +1,36 @@
+/* ChatbotWidget.css */
+.chatbot-widget-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.chatbot-toggle-button {
+  background-color: #61dafb;
+  color: #282c34;
+  border: none;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s;
+}
+
+.chatbot-toggle-button:hover {
+  transform: scale(1.1);
+}
+
+.chatbot-box {
+  width: 400px;
+  height: 500px; /* Mantida, mas ajustada internamente pelo Chat.css */
+  background-color: #36393f;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+}

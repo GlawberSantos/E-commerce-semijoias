@@ -1,0 +1,201 @@
+/* src/styles/pages.css */
+
+/* ===================================================
+   ESTILOS GERAIS DE PÁGINAS (CartPage, AboutUsPage)
+   =================================================== */
+
+/* Container geral */
+.about-us-page,
+.cart-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  font-family: var(--font-family-briliant);
+  min-height: 70vh;
+  color: var(--text-color);
+  /* Usando a cor de texto padrão */
+}
+
+.page-title {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 30px;
+  color: var(--briliant-color);
+  /* Cor de destaque da sua marca */
+  text-transform: uppercase;
+}
+
+/* ===================================================
+   PÁGINA DO CARRINHO (CartPage)
+   =================================================== */
+
+/* Tabela do carrinho */
+.cart-table {
+  width: 100%;
+  max-width: 900px;
+  margin: 30px auto;
+  border-collapse: collapse;
+  color: var(--text-color);
+  /* Cor do texto da tabela */
+}
+
+.cart-table thead th {
+  background-color: #1a1a1a;
+  /* Fundo escuro sutil */
+  color: var(--briliant-color);
+  /* Títulos da coluna em dourado */
+  padding: 12px 15px;
+  text-align: left;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.cart-table tbody td,
+.cart-table tfoot td {
+  padding: 15px;
+  /* Linha divisória sutil para o fundo escuro */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  vertical-align: middle;
+  /* Alinha o conteúdo verticalmente no centro */
+}
+
+.cart-table tfoot td {
+  font-size: 1.2rem;
+}
+
+/* Estilo para a célula de Quantidade (CORRIGIDO) */
+.cart-table td.quantity-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 8px 5px;
+  text-align: center;
+}
+
+/* Estilo dos botões + e - */
+.btn-quantity {
+  background-color: transparent;
+  color: var(--briliant-color);
+  /* Cor dos botões em dourado */
+  border: 1px solid var(--briliant-color);
+  width: 30px;
+  height: 30px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-quantity:hover {
+  background-color: var(--briliant-color);
+  color: #000;
+  /* Texto preto no hover */
+}
+
+/* Espaçamento do número de quantidade */
+.current-quantity {
+  margin: 0 10px;
+  font-weight: bold;
+  color: var(--text-color);
+  /* Cor do texto padrão */
+}
+
+/* Estilo do botão de Remover (Lixeira) */
+.btn-remove {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 5px;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+  color: var(--text-color);
+  /* Lixeira em branco/cinza */
+}
+
+.btn-remove:hover {
+  opacity: 1;
+  color: red;
+  /* Destaca a lixeira ao passar o mouse */
+  transform: scale(1.1);
+}
+
+
+/* Área de Ações (Botões no Rodapé do Carrinho) */
+.cart-actions {
+  display: flex;
+  justify-content: space-between;
+  /* Alinha os botões nas pontas */
+  max-width: 900px;
+  margin: 30px auto 0;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Estilo do Botão Continuar Comprando */
+.btn-continue-shopping {
+  background: transparent;
+  color: var(--briliant-color);
+  border: none;
+  /* Remove a borda para ficar mais limpo */
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: color 0.3s;
+  text-decoration: none;
+}
+
+.btn-continue-shopping:hover {
+  color: white;
+  text-decoration: underline;
+}
+
+/* Estilo do Botão Finalizar Compra (Ação principal) */
+.btn-checkout {
+  background-color: var(--briliant-color);
+  color: #000;
+  border: none;
+  padding: 12px 25px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: opacity 0.3s;
+}
+
+.btn-checkout:hover {
+  opacity: 0.9;
+  background-color: #d4af37;
+}
+
+
+/* ===================================================
+   PÁGINA QUEM SOMOS (AboutUsPage)
+   =================================================== */
+
+/* Subtítulos (Nossa História, Missão, Visão) */
+.about-us-section h3 {
+  font-size: 1.6rem;
+  color: white;
+  background-color: var(--briliant-color);
+  padding: 8px 15px;
+  display: inline-block;
+  border-radius: 4px;
+  margin: 40px 0 20px;
+}
+
+/* Parágrafos de texto */
+.about-us-page p {
+  font-size: 1rem;
+  color: var(--text-color);
+  line-height: 1.8;
+  margin-bottom: 25px;
+  text-align: justify;
+}
+
+.about-us-section img {
+  display: block;
+  max-width: 100%;
+  border-radius: 8px;
+  margin: 40px auto;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+}

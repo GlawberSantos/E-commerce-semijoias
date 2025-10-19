@@ -1,0 +1,685 @@
+/* src/styles/HomePage.css */
+
+.homepage-container {
+  background-color: #000;
+  color: var(--text-color);
+}
+
+/* Hero Section - Banner Principal */
+.hero-section {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: white;
+  width: 100%;
+  min-height: 750px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+  transition: background-image 1s ease-in-out;
+  filter: sharpen(0.5px) contrast(1.02);
+  filter: saturate(1.1) brightness(0.9) contrast(1.1);
+    /* --- Ajustes de constrastes na seção de imagem --- */
+    /*filter: sharpen(0.5px) contrast(1.02); /* Exemplo: tenta Sharpen e leve contraste. Ajuste os valores */
+    /* Outras opções (teste uma de cada vez): */
+    /* filter: blur(0.5px) brightness(0.8) contrast(1.2); */ 
+}
+
+.hero-overlay {
+  background-color: rgba(0, 0, 0, 0.3);
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 5%;
+}
+
+.hero-content {
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+  max-width: 800px;
+}
+
+.hero-title {
+  font-family: var(--font-family-briliant);
+  font-size: 3.8rem;
+  margin-bottom: 10px;
+  color: var(--briliant-color);
+  text-transform: uppercase;
+}
+
+.hero-subtitle {
+  font-size: 1.3rem;
+  margin-bottom: 20px;
+  max-width: 600px;
+  line-height: 1.5;
+}
+
+.coupon-code {
+  background-color: var(--briliant-color);
+  color: #000;
+  padding: 8px 20px;
+  border-radius: 5px;
+  font-weight: bold;
+  font-family: var(--font-family-briliant);
+  margin-bottom: 30px;
+  font-size: 1.1rem;
+}
+
+.coupon-value {
+  color: #333;
+}
+
+.explore-button {
+  background-color: rgb(164, 164, 164);
+  color: #000;
+  padding: 15px 30px;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  font-family: var(--font-family-briliant);
+  text-transform: uppercase;
+}
+
+.explore-button:hover {
+  background-color: #d4af37;
+}
+
+/* Navegação do Carrossel (Setas) */
+.nav-arrow {
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  color: white;
+  font-size: 2.5rem;
+  padding: 10px 15px;
+  cursor: pointer;
+  z-index: 2;
+  transition: background-color 0.3s ease;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.nav-arrow:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* Indicadores do Carrossel */
+.carousel-indicators {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  z-index: 2;
+}
+
+.carousel-indicators span {
+  width: 12px;
+  height: 12px;
+  background-color: rgba(255, 255, 255, 0.502);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.carousel-indicators span.active {
+  background-color: var(--briliant-color);
+}
+
+/* Nova Seção: Encontre a sua Joia */
+.find-your-jewelry-section {
+  padding: 60px 20px;
+  background-color: #0a0a0a;
+  text-align: center;
+}
+
+.find-your-jewelry-section h2 {
+  font-family: var(--font-family-briliant);
+  font-size: 2.8rem;
+  color: var(--briliant-color);
+  margin-bottom: 10px;
+}
+
+.find-your-jewelry-section p {
+  font-size: 1.1rem;
+  color: #bbb;
+  max-width: 700px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Wrapper para o conteúdo interno que precisa de largura limitada */
+.homepage-content-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Seção de Categorias em Destaque */
+.featured-categories {
+  padding: 50px 0;
+}
+
+.featured-categories h2 {
+  font-family: var(--font-family-briliant);
+  font-size: 2.5rem;
+  margin-bottom: 40px;
+  color: var(--briliant-color);
+  text-align: center;
+}
+
+.categories-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  /* Ajuste para caber 5 itens */
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.category-card {
+  /* Dimensões finais para o visual uniforme de 5 colunas */
+  width: 170px;
+  height: 230px;
+
+  /* === REGRAS DE ESPAÇAMENTO UNIFORME === */
+  background-color: #1a1a1a;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  padding: 10px;
+  /* CRIA O ESPAÇAMENTO INTERNO */
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+}
+
+.category-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.6);
+}
+
+.category-card img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 6px;
+  display: block;
+}
+
+.category-card h3 {
+  font-family: var(--font-family-briliant);
+  font-size: 1.2rem;
+  margin: 10px 0 0;
+  color: var(--briliant-color);
+  flex-grow: 1;
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 5px;
+}
+
+.category-card a {
+  text-decoration: none;
+  color: var(--text-color);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+  height: 100%;
+  width: 100%;
+}
+
+.category-card a:hover h3 {
+  color: #fff;
+}
+
+/* Media Queries para Responsividade */
+@media (max-width: 768px) {
+  .hero-section {
+    min-height: 450px;
+    padding: 40px 10px;
+  }
+
+  .hero-overlay {
+    padding: 0 2%;
+  }
+
+  .hero-title {
+    font-size: 2.5rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+
+  .coupon-code {
+    font-size: 0.9rem;
+    padding: 6px 15px;
+  }
+
+  .explore-button {
+    padding: 12px 25px;
+    font-size: 0.9rem;
+  }
+
+  .nav-arrow {
+    font-size: 2rem;
+    padding: 8px 12px;
+    width: 40px;
+    height: 40px;
+  }
+
+  .find-your-jewelry-section {
+    padding: 40px 15px;
+  }
+
+  .find-your-jewelry-section h2 {
+    font-size: 2rem;
+  }
+
+  .find-your-jewelry-section p {
+    font-size: 0.9rem;
+  }
+
+  .featured-categories h2 {
+    font-size: 2rem;
+  }
+
+  .categories-grid {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .category-card {
+    width: 90%;
+    max-width: 300px;
+  }
+}
+
+/* ===================================================
+   --- SEÇÃO VÍDEOS DE DESTAQUE DO YOUTUBE ---
+   =================================================== */
+
+.youtube-highlight-section {
+  padding: 80px 20px;
+  /* Aumentar o padding vertical */
+  background-color: rgb(210, 205, 199);
+  /* Fundo mais claro e suave */
+  text-align: center;
+  overflow: hidden;
+  /* Garante que nada transborde */
+}
+
+.youtube-highlight-section h2 {
+  font-size: 2.8rem;
+  /* Tamanho maior para o título */
+  color: #333;
+  /* Cor mais escura para o texto */
+  margin-bottom: 50px;
+  /* Mais espaço abaixo do título */
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.video-gallery {
+  max-width: 960px;
+  /* Largura máxima do player, centralizada */
+  margin: 0 auto;
+  /* Centraliza a galeria */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  /* Sombra mais suave */
+  border-radius: 12px;
+  /* Bordas arredondadas */
+  overflow: hidden;
+  /* Importante para as bordas arredondadas do iframe */
+  background-color: #000;
+  /* Fundo do container do vídeo, caso o iframe não ocupe 100% */
+}
+
+.video-gallery iframe {
+  display: block;
+  /* Remove espaçamento extra abaixo do iframe */
+  width: 100%;
+  /* Ocupa a largura total do container */
+  height: 450px;
+  /* Altura fixa, ajuste se necessário */
+  border: none;
+  /* Remove a borda padrão do iframe */
+}
+
+/* Botão "Ver mais vídeos" */
+.youtube-highlight-section .explore-button {
+  margin-top: 50px;
+  /* Mais espaço acima do botão */
+  padding: 15px 40px;
+  /* Aumentar o padding do botão */
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 50px;
+  /* Botão mais arredondado */
+  background-color: var(--briliant-color);
+  /* Cor principal do seu tema */
+  color: #fff;
+  border: 2px solid var(--briliant-color);
+  transition: all 0.3s ease;
+  text-decoration: none;
+  /* Garante que não tenha sublinhado */
+  display: inline-block;
+  /* Permite centralizar com text-align no pai */
+}
+
+.youtube-highlight-section .explore-button:hover {
+  background-color: transparent;
+  color: var(--briliant-color);
+  transform: translateY(-3px);
+  /* Efeito sutil ao passar o mouse */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+
+/* --- RESPONSIVIDADE --- */
+@media (max-width: 768px) {
+  .youtube-highlight-section {
+    padding: 60px 15px;
+  }
+
+  .youtube-highlight-section h2 {
+    font-size: 2rem;
+    margin-bottom: 30px;
+  }
+
+  .video-gallery {
+    max-width: 100%;
+    /* Permite que o vídeo ocupe mais espaço em telas menores */
+    border-radius: 0;
+    /* Remove as bordas arredondadas em mobile se preferir */
+    box-shadow: none;
+    /* Remove a sombra em mobile para um visual mais limpo */
+  }
+
+  .video-gallery iframe {
+    height: 250px;
+    /* Ajusta a altura para telas menores */
+  }
+
+  .youtube-highlight-section .explore-button {
+    padding: 12px 30px;
+    font-size: 1rem;
+    margin-top: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .youtube-highlight-section h2 {
+    font-size: 1.8rem;
+  }
+
+  .video-gallery iframe {
+    height: 200px;
+    /* Ajusta ainda mais para celulares muito pequenos */
+  }
+}
+
+/* ===================================================
+   SEÇÃO 3: WHATSAPP BANNER (Ajustado para apenas texto)
+   =================================================== */
+
+.whatsapp-banner-section {
+  background-color: #d2cdc7;
+  color: #333;
+  padding: 50px 20px;
+  text-align: center;
+  /* Centraliza tudo */
+}
+
+.whatsapp-banner-content {
+  max-width: 800px;
+  /* Reduz a largura máxima para parecer um bloco de texto */
+  margin: 0 auto;
+  display: block;
+  /* Volta para o comportamento de bloco */
+  text-align: center;
+}
+
+.whatsapp-text {
+  max-width: 100%;
+  /* Permite que o texto preencha o whatsapp-banner-content */
+}
+
+.whatsapp-text h2 {
+  color: #000;
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  text-transform: none;
+  letter-spacing: normal;
+  text-align: center;
+  /* Centraliza o título */
+}
+
+.whatsapp-text p {
+  color: #555;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  text-align: center;
+  /* Centraliza o parágrafo */
+}
+
+.whatsapp-hours {
+  font-size: 0.9rem;
+  margin-top: 15px;
+  color: #777;
+  text-align: center;
+  /* Centraliza o horário */
+}
+
+
+/* Media Queries para Responsividade (ajuste se necessário, mas o 'text-align: center' resolve a maioria dos casos) */
+@media (max-width: 768px) {
+  .whatsapp-text h2 {
+    font-size: 2rem;
+  }
+}
+
+/* VANTAGENS */
+/* VANTAGENS */
+.advantages-section {
+  padding: 60px 0;
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.advantages-section h3 {
+  font-size: 2rem;
+  color: white;
+  /* CORRIGIDO: Cor branca para aparecer no fundo preto */
+  margin-bottom: 40px;
+  text-transform: uppercase;
+}
+
+.advantages-grid {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 20px;
+  text-align: center;
+}
+
+.advantage-item {
+  max-width: 200px;
+}
+
+.advantage-item i {
+  font-size: 2.5rem;
+  color: var(--briliant-color);
+  margin-bottom: 15px;
+}
+
+.advantage-item h4 {
+  font-size: 1rem;
+  color: #ffffff;
+  font-weight: bold;
+  margin-bottom: 10px;
+  line-height: 1.3;
+  min-height: 2.6em;
+}
+
+.advantage-item p {
+  font-size: 0.9rem;
+  color: var(--text-color);
+  line-height: 1.4;
+  min-height: 4.2em;
+}
+
+.consult-button {
+  margin-top: 50px;
+  background: none;
+  border: 2px solid var(--briliant-color);
+  color: var(--briliant-color);
+  padding: 15px 30px;
+  text-transform: uppercase;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  display: inline-block;
+  margin-left: auto;
+  margin-right: auto;
+  display: table;
+}
+
+.consult-button:hover {
+  background-color: var(--briliant-color);
+  color: #000000;
+}
+
+/* Media Queries para Responsividade */
+@media (max-width: 768px) {
+  .whatsapp-banner-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .whatsapp-text,
+  .whatsapp-image {
+    max-width: 100%;
+  }
+
+  .whatsapp-image {
+    order: -1;
+    /* Coloca a imagem acima do texto no mobile */
+    margin-bottom: 30px;
+  }
+
+  .whatsapp-text h2 {
+    font-size: 2rem;
+    text-align: center;
+  }
+
+  .advantages-grid {
+    justify-content: center;
+    gap: 30px 15px;
+  }
+
+  .advantage-item {
+    max-width: 45%;
+    /* Dois itens por linha */
+  }
+}
+
+/* ===================================================
+   NOVA SEÇÃO: BARRA DE SELOS DE CONFIANÇA
+   =================================================== */
+
+.trust-bar-section {
+  background-color: #d2cdc7;
+  padding: 25px 10px;
+}
+
+.trust-bar-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-wrap: wrap;
+  border-bottom: 1.5px solid rgba(255, 255, 255, 0.4);
+  padding-bottom: 20px;
+}
+
+.trust-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 300px;
+  padding: 10px;
+}
+
+.trust-item i {
+  font-size: 2.5rem;
+  color: var(--briliant-color);
+  margin-bottom: 10px;
+}
+
+.trust-item p {
+  color: #000000;
+  font-size: 0.9rem;
+  line-height: 1.3;
+  margin: 0;
+}
+
+.trust-item strong {
+  font-size: 1rem;
+  margin-bottom: 3px;
+}
+
+/* Ajustes para a seção de Vantagens (se o fundo não for preto) */
+.advantages-section h3 {
+  color: var(--briliant-color);
+  /* Garante que o título seja preto no fundo claro */
+}
+
+.advantage-item h4,
+.advantage-item p {
+  color: #5b5959;
+  font-size: 18px;
+  /* Garante que o texto das vantagens seja escuro */
+}
+
+/* Responsividade da Barra de Selos */
+@media (max-width: 768px) {
+  .trust-bar-content {
+    flex-direction: column;
+    gap: 20px;
+    border-bottom: none;
+  }
+
+  .trust-item {
+    max-width: 90%;
+  }
+}
