@@ -2,7 +2,7 @@
 
 # 1. Fase de Build (Compilação): CORREÇÃO DA IMAGEM BASE PARA 3.9.9
 # Usamos a imagem oficial do Maven com OpenJDK 17.
-FROM maven:3.9.9-openjdk-17 AS build
+FROM maven:3.9.9-eclipse-temurin-17 AS build
 
 # Define o diretório de trabalho
 WORKDIR /app
