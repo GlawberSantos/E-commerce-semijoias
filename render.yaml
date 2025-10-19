@@ -1,24 +1,28 @@
 # =================================================================
-# RENDER.YAML - Configuração DEFINITIVA
+# RENDER.YAML - CONFIGURAÇÃO FINAL E VÁLIDA
 # =================================================================
 
+# O Render exige que o Banco de Dados use a seção 'databases' e que seja
+# um plano pago para ser estável, mas tentaremos o 'free'.
 databases:
-  # =================================================================
-  # 1. BANCO DE DADOS POSTGRESQL
-  # =================================================================
   - name: gabrielly-db
-    plan: free
+    plan: free # Permitido para o PostgreSQL
 
 services:
   # =================================================================
-  # 2. BACKEND NODE.JS (API Principal + Chatbot + Email)
+  # 1. BACKEND NODE.JS (API Principal)
+  # CRÍTICO: DEVE SER STARTER, NÃO FREE, para ser um Web Service 24/7.
   # =================================================================
   - type: web
     name: gabrielly-backend-node
     runtime: node
-    plan: free
-    buildCommand: cd gabrielly-backend && npm install
-    startCommand: cd gabrielly-backend && npm start
+    region: oregon
+    plan: starter # CORREÇÃO: Mude para 'starter' ou 'standard' para Web Services
+    rootDir: gabrielly-backend
+    buildCommand: npm install
+    startCommand: node server.js
+
+    # SINTAXE CORRIGIDA: envVars é uma lista de mapas
     envVars:
       - key: NODE_ENV
         value: production
@@ -50,50 +54,53 @@ services:
           property: password
       - key: OPENAI_API_KEY
         sync: false
+      - key: REACT_APP_API_URL
+        sync: false
       - key: EMAIL_USER
         sync: false
       - key: EMAIL_PASS
         sync: false
       - key: LOJISTA_EMAIL
         sync: false
-      - key: REACT_APP_API_URL
-        sync: false
 
   # =================================================================
-  # 3. BACKEND JAVA (API Frete) - Spring Boot
+  # 2. BACKEND JAVA (API Frete) - Spring Boot/Docker
+  # CRÍTICO: DEVE SER STARTER, NÃO FREE.
   # =================================================================
   - type: web
     name: gabrielly-frete-api
     runtime: docker
-    plan: free
-    dockerfilePath: ./frete-api-java/Dockerfile
+    region: oregon
+    plan: starter # CORREÇÃO: Necessita de 'starter' para Docker/Java estável
+    rootDir: frete-api-java
+    dockerfilePath: Dockerfile
     dockerContext: ./frete-api-java
+
+    # SINTAXE CORRIGIDA: envVars é uma lista de mapas
     envVars:
       - key: PORT
         value: "8080"
       - key: JAVA_OPTS
-        value: "-Xmx512m -Xms256m"
+        value: "-Xmx384m -Xms256m" # Corrigido para estabilidade
       - key: SPRING_PROFILES_ACTIVE
         value: production
+      # Adicione as chaves MELHORENVIO aqui (após o deploy)
 
   # =================================================================
-  # 4. FRONTEND REACT (SPA)
+  # 3. FRONTEND REACT (Site Estático)
+  # CRÍTICO: DEVE SER 'type: static'
   # =================================================================
-  - type: web
+  - type: static # CORREÇÃO: Deve ser 'static' para sites estáticos
     name: gabrielly-frontend
-    runtime: static
-    plan: free
-    buildCommand: cd gabrielly-frontend && npm install && npm run build
-    staticPublishPath: gabrielly-frontend/build
+    region: oregon
+    plan: free # 'free' é permitido para sites estáticos
+    rootDir: gabrielly-frontend
+    buildCommand: npm install && npm run build
+    publishPath: build # O caminho de publicação é relativo ao rootDir
+
+    # SINTAXE CORRIGIDA: envVars é uma lista de mapas
     envVars:
       - key: REACT_APP_API_URL
         value: https://gabrielly-backend-node.onrender.com
       - key: REACT_APP_FRETE_API_URL
         value: https://gabrielly-frete-api.onrender.com
-
-# =================================================================
-# MUDANÇA CRÍTICA:
-# =================================================================
-# ✅ Banco agora está em "databases:" não em "services:"
-# ✅ Esta é a sintaxe CORRETA do render.yaml
-# =================================================================
