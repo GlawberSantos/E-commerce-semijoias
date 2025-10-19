@@ -2,7 +2,7 @@
 
 # 1. Fase de Build (Compilação): Usa uma imagem com Java e Maven
 # Usamos o Eclipse Temurin, que é uma imagem estável com o Java 17/Maven
-FROM eclipse-temurin:17-jdk-focal as build
+FROM eclipse-temurin:17-jdk-focal AS build
 
 # Define o diretório de trabalho
 WORKDIR /app

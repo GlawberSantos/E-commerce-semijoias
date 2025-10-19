@@ -1,13 +1,14 @@
+# Arquivo: render.yaml
 services:
   - type: web
-    name: frete-api-java
-    env: docker
-    plan: free
+    name: gabrielly-frete-api
+    runtime: docker # CORRIGIDO: Usa 'runtime' em vez de 'env'
+    plan: starter # ALTERADO: Free pode ser muito limitado para Docker. Use Starter ($7/mês).
     rootDir: frete-api-java
     dockerfilePath: frete-api-java/Dockerfile
     autoDeploy: true
     envVars:
       - key: JAVA_OPTS
-        value: "-Xmx512m"
+        value: "-Xmx384m"
       - key: PORT
         value: "8080"
