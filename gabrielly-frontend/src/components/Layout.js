@@ -110,7 +110,7 @@ function Layout({ children }) {
               <a href="https://www.linkedin.com/company/gabriellysemijoias" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer"><img src={linkedinIcon} alt="LinkedIn" /></a>
               <a href="https://www.facebook.com/gabriellysemijoias" aria-label="Facebook" target="_blank" rel="noopener noreferrer"><img src={facebookIcon} alt="Facebook" /></a>
               <a href="https://wa.me/5583987855966" aria-label="Whatsapp" target="_blank" rel="noopener noreferrer"><img src={whatsappIcon} alt="Whatsapp" /></a>
-              <a href="https://www.instagram.com/gabriellysemijoias" aria-label="Instagram" target="_blank" rel="noopener noreferrer"><img src={instagramIcon} alt="Instagram" /></a>
+              <a href="https://www.instagram.com/gabriellysemijoias9215" aria-label="Instagram" target="_blank" rel="noopener noreferrer"><img src={instagramIcon} alt="Instagram" /></a>
               <a href="https://www.youtube.com/@gabriellysemijoias3517" aria-label="YouTube" target="_blank" rel="noopener noreferrer"><img src={youtubeIcon} alt="YouTube" /></a>
             </div>
           </div>

@@ -25,6 +25,3 @@ build/
 .idea/
 *.swp
 *.swo
-
-# Render
-render.yaml.bak
