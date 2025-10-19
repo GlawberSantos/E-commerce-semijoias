@@ -1,8 +1,8 @@
 # Dockerfile na pasta frete-api-java
 
-# 1. Fase de Build (Compilação): USA IMAGEM COM MAVEN PRÉ-INSTALADO
-# A imagem 'maven:3.8.6-jdk-17' já contém o Maven e o Java 17, resolvendo o erro 'mvn: not found'.
-FROM maven:3.8.6-jdk-17 AS build
+# 1. Fase de Build (Compilação): CORREÇÃO DA IMAGEM BASE
+# Usamos a imagem oficial do Maven com OpenJDK 17.
+FROM maven:3.9.6-openjdk-17 AS build
 
 # Define o diretório de trabalho
 WORKDIR /app
