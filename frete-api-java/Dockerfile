@@ -1,8 +1,8 @@
 # Dockerfile na pasta frete-api-java
 
-# 1. Fase de Build (Compilação): Usa uma imagem com Java e Maven
-# Usamos o Eclipse Temurin, que é uma imagem estável com o Java 17/Maven
-FROM eclipse-temurin:17-jdk-focal AS build
+# 1. Fase de Build (Compilação): USA IMAGEM COM MAVEN PRÉ-INSTALADO
+# A imagem 'maven:3.8.6-jdk-17' já contém o Maven e o Java 17, resolvendo o erro 'mvn: not found'.
+FROM maven:3.8.6-jdk-17 AS build
 
 # Define o diretório de trabalho
 WORKDIR /app
@@ -12,11 +12,10 @@ COPY pom.xml .
 COPY src /app/src
 
 # Compila a aplicação Spring Boot
-# Usa -DskipTests para pular os testes e acelerar o build
 RUN mvn clean package -DskipTests
 
 # 2. Fase de Execução: Usa uma imagem de runtime mais leve
-# Usamos o Java JRE para economizar espaço e memória
+# Usamos o JRE (Java Runtime Environment) para economizar espaço e memória
 FROM eclipse-temurin:17-jre-focal
 
 # Define o diretório de trabalho
