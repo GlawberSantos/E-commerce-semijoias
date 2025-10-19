@@ -1,14 +1,96 @@
-# Arquivo: render.yaml
+# =================================================================
+# RENDER.YAML - Configuração Final Otimizada
+# =================================================================
+
 services:
+  # =================================================================
+  # 1. BANCO DE DADOS POSTGRESQL
+  # =================================================================
+  - type: pserv
+    name: gabrielly-db
+    plan: free
+    region: oregon
+
+  # =================================================================
+  # 2. BACKEND NODE.JS (API Principal + Chatbot + Email)
+  # =================================================================
+  - type: web
+    name: gabrielly-backend-node
+    runtime: node
+    region: oregon
+    plan: free
+    buildCommand: cd gabrielly-backend && npm install
+    startCommand: cd gabrielly-backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "10000"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: gabrielly-db
+          property: connectionString
+      - key: DB_HOST
+        fromDatabase:
+          name: gabrielly-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: gabrielly-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: gabrielly-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: gabrielly-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: gabrielly-db
+          property: password
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASS
+        sync: false
+      - key: LOJISTA_EMAIL
+        sync: false
+      - key: REACT_APP_API_URL
+        sync: false
+
+  # =================================================================
+  # 3. BACKEND JAVA (API Frete) - Spring Boot
+  # =================================================================
   - type: web
     name: gabrielly-frete-api
-    runtime: docker # CORRIGIDO: Usa 'runtime' em vez de 'env'
-    plan: starter # ALTERADO: Free pode ser muito limitado para Docker. Use Starter ($7/mês).
-    rootDir: frete-api-java
-    dockerfilePath: Dockerfile
-    autoDeploy: true
+    runtime: docker
+    region: oregon
+    plan: free
+    dockerfilePath: ./frete-api-java/Dockerfile
+    dockerContext: ./frete-api-java
     envVars:
-      - key: JAVA_OPTS
-        value: "-Xmx384m"
       - key: PORT
         value: "8080"
+      - key: JAVA_OPTS
+        value: "-Xmx512m -Xms256m"
+      - key: SPRING_PROFILES_ACTIVE
+        value: production
+
+  # =================================================================
+  # 4. FRONTEND REACT (SPA)
+  # =================================================================
+  - type: web
+    name: gabrielly-frontend
+    runtime: static
+    region: oregon
+    plan: free
+    buildCommand: cd gabrielly-frontend && npm install && npm run build
+    staticPublishPath: gabrielly-frontend/build
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://gabrielly-backend-node.onrender.com
+      - key: REACT_APP_FRETE_API_URL
+        value: https://gabrielly-frete-api.onrender.com
