@@ -1,37 +1,43 @@
-# =================================================================
-# RENDER.YAML - CONFIGURAÇÃO FINAL E VÁLIDA
-# =================================================================
+# Arquivo render.yaml - Configuração CORRIGIDA para Render Blueprints
 
-# O Render exige que o Banco de Dados use a seção 'databases' e que seja
-# um plano pago para ser estável, mas tentaremos o 'free'.
+# A seção 'databases' define os bancos de dados
 databases:
   - name: gabrielly-db
-    plan: free # Permitido para o PostgreSQL
+    # plan: free é o correto para bancos de dados PostgreSQL gratuitos
+    plan: free
 
+# A seção 'services' define os serviços web e estáticos
 services:
-  # =================================================================
-  # 1. BACKEND NODE.JS (API Principal)
-  # CRÍTICO: DEVE SER STARTER, NÃO FREE, para ser um Web Service 24/7.
-  # =================================================================
+  # 1. BACKEND NODE.JS (API Principal + Chatbot + Email)
   - type: web
     name: gabrielly-backend-node
     runtime: node
     region: oregon
-    plan: starter # CORREÇÃO: Mude para 'starter' ou 'standard' para Web Services
-    rootDir: gabrielly-backend
-    buildCommand: npm install
-    startCommand: node server.js
-
-    # SINTAXE CORRIGIDA: envVars é uma lista de mapas
+    # plan: free é o correto para web services do Node.js
+    plan: free
+    # A propriedade 'rootDir' é útil se os comandos 'buildCommand' e 'startCommand'
+    # forem executados a partir de um subdiretório. Se o monorepo estiver na raiz,
+    # 'rootDir' deve ser 'gabrielly-backend' e os comandos podem ser mais simples.
+    # Assumindo que você executa os comandos na raiz do repositório:
+    # Se você quiser que o Render entre no diretório primeiro, faça o seguinte:
+    # rootDir: gabrielly-backend # Descomente e ajuste os comandos abaixo se usar rootDir
+    buildCommand: cd gabrielly-backend && npm install
+    startCommand: cd gabrielly-backend && npm start
     envVars:
       - key: NODE_ENV
         value: production
+      # O Render expõe a porta na variável de ambiente $PORT. O valor "10000" pode ser removido
+      # ou, se o seu app Node.js precisar de um valor fixo, certifique-se de que ele o utilize.
+      # Se você não precisar de um valor fixo, remova. Caso precise, mantenha, mas saiba
+      # que o Render prioriza a variável $PORT.
       - key: PORT
         value: "10000"
+      # Configuração da string de conexão do banco de dados (prática recomendada)
       - key: DATABASE_URL
         fromDatabase:
           name: gabrielly-db
           property: connectionString
+      # Variáveis de ambiente extras (apenas se 'DATABASE_URL' não for suficiente)
       - key: DB_HOST
         fromDatabase:
           name: gabrielly-db
@@ -52,54 +58,55 @@ services:
         fromDatabase:
           name: gabrielly-db
           property: password
+      # Variáveis de ambiente que DEVEM SER DEFINIDAS NO PAINEL DO RENDER
+      # (sync: false não existe. Use o `value: "sua_chave_aqui"` ou omita o `value` para
+      # que a variável DEVA ser definida no painel do Render após a criação do Blueprint.
+      # A sintaxe abaixo faz com que você precise configurar o valor no painel.)
       - key: OPENAI_API_KEY
-        sync: false
-      - key: REACT_APP_API_URL
-        sync: false
       - key: EMAIL_USER
-        sync: false
       - key: EMAIL_PASS
-        sync: false
       - key: LOJISTA_EMAIL
-        sync: false
+      - key: REACT_APP_API_URL # Esta variável deve ser definida com a URL de produção do frontend
 
-  # =================================================================
-  # 2. BACKEND JAVA (API Frete) - Spring Boot/Docker
-  # CRÍTICO: DEVE SER STARTER, NÃO FREE.
-  # =================================================================
+  # 2. BACKEND JAVA (API Frete) - Spring Boot
   - type: web
     name: gabrielly-frete-api
+    # Para Java/Spring Boot que usa um Dockerfile, 'runtime: docker' é correto
     runtime: docker
     region: oregon
-    plan: starter # CORREÇÃO: Necessita de 'starter' para Docker/Java estável
-    rootDir: frete-api-java
-    dockerfilePath: Dockerfile
+    plan: free
+    # Os caminhos devem ser relativos à raiz do repositório
+    dockerfilePath: ./frete-api-java/Dockerfile
     dockerContext: ./frete-api-java
-
-    # SINTAXE CORRIGIDA: envVars é uma lista de mapas
+    # Se o erro persistir na implantação do Docker no plano 'free',
+    # considere mudar 'plan: free' para 'plan: starter'
     envVars:
       - key: PORT
+        # A porta interna para um app Spring Boot normalmente é 8080
         value: "8080"
       - key: JAVA_OPTS
-        value: "-Xmx384m -Xms256m" # Corrigido para estabilidade
+        # Valores de memória sugeridos para o plano 'free'
+        value: "-Xmx512m -Xms256m"
       - key: SPRING_PROFILES_ACTIVE
         value: production
-      # Adicione as chaves MELHORENVIO aqui (após o deploy)
 
-  # =================================================================
-  # 3. FRONTEND REACT (Site Estático)
-  # CRÍTICO: DEVE SER 'type: static'
-  # =================================================================
-  - type: static # CORREÇÃO: Deve ser 'static' para sites estáticos
+  # 3. FRONTEND REACT (SPA) - SITE ESTÁTICO
+  - type: web
     name: gabrielly-frontend
-    region: oregon
-    plan: free # 'free' é permitido para sites estáticos
-    rootDir: gabrielly-frontend
-    buildCommand: npm install && npm run build
-    publishPath: build # O caminho de publicação é relativo ao rootDir
-
-    # SINTAXE CORRIGIDA: envVars é uma lista de mapas
+    # O tipo CORRETO para React/SPA que é servido como assets é 'web'.
+    # Sites estáticos NÃO precisam de 'runtime', 'region' ou 'plan'.
+    # A remoção destas chaves é CRÍTICA para a validação.
+    # runtime: static # Este campo não é necessário
+    # region: oregon # Este campo não é necessário
+    # plan: free # Este campo não é necessário e causa erro de validação
+    # O buildCommand deve ser executado para gerar os arquivos estáticos
+    buildCommand: cd gabrielly-frontend && npm install && npm run build
+    # O caminho para a pasta que contém o index.html gerado
+    staticPublishPath: gabrielly-frontend/build
     envVars:
+      # Variáveis de ambiente em sites estáticos são usadas DURANTE O BUILD.
+      # Elas precisam dos valores *finais* (URLs de produção).
+      # As URLs de serviço do Render são previsíveis e podem ser usadas aqui.
       - key: REACT_APP_API_URL
         value: https://gabrielly-backend-node.onrender.com
       - key: REACT_APP_FRETE_API_URL
