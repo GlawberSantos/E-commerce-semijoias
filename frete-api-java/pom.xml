@@ -26,8 +26,17 @@
 		<tag/>
 		<url/>
 	</scm>
-	<properties>
-	</properties>
+<profiles>
+  <profile>
+    <id>jdk-17</id>
+    <activation>
+      <activeByDefault>true</activeByDefault>
+    </activation>
+    <properties>
+      <java.home>C:\Program Files\Java\jdk-17.0.15.6</java.home>
+    </properties>
+  </profile>
+</profiles>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
