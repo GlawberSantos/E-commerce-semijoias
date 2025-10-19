@@ -1,1 +1,15 @@
 .env
+# Node
+node_modules/
+npm-debug.log
+.env
+.env.local
+
+# Java
+target/
+*.class
+*.log
+
+# React Build
+build/
+.DS_Store
