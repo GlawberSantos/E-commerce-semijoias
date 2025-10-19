@@ -5,7 +5,7 @@ services:
     runtime: docker # CORRIGIDO: Usa 'runtime' em vez de 'env'
     plan: starter # ALTERADO: Free pode ser muito limitado para Docker. Use Starter ($7/mês).
     rootDir: frete-api-java
-    dockerfilePath: frete-api-java/Dockerfile
+    dockerfilePath: Dockerfile
     autoDeploy: true
     envVars:
       - key: JAVA_OPTS
