@@ -1,15 +1,15 @@
 # =================================================================
-# RENDER.YAML - Configuração CORRETA para Render
+# RENDER.YAML - Configuração DEFINITIVA
 # =================================================================
 
-services:
+databases:
   # =================================================================
   # 1. BANCO DE DADOS POSTGRESQL
   # =================================================================
-  - type: pserv
-    name: gabrielly-db
+  - name: gabrielly-db
     plan: free
 
+services:
   # =================================================================
   # 2. BACKEND NODE.JS (API Principal + Chatbot + Email)
   # =================================================================
@@ -92,9 +92,8 @@ services:
         value: https://gabrielly-frete-api.onrender.com
 
 # =================================================================
-# CORREÇÕES APLICADAS:
+# MUDANÇA CRÍTICA:
 # =================================================================
-# 1. Removido "region" de TODOS os serviços (Render escolhe automaticamente)
-# 2. Banco PostgreSQL (pserv) não precisa de runtime nem startCommand
-# 3. Sites estáticos (runtime: static) não podem ter region
+# ✅ Banco agora está em "databases:" não em "services:"
+# ✅ Esta é a sintaxe CORRETA do render.yaml
 # =================================================================
