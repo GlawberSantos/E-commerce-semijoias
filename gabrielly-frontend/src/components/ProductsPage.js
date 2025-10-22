@@ -4,6 +4,7 @@ import '../styles/ProductsPage.css';
 import { formatCurrency } from '../utils/format';
 import QuickViewModal from '../components/QuickViewModal';
 import { useCart } from '../contexts/CartContext';
+import { productsAPI } from '../api'; // ← IMPORTAÇÃO DO NOVO API
 
 const ProductsPage = () => {
   const { category } = useParams();
@@ -15,9 +16,6 @@ const ProductsPage = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-
-  // URL da API
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
   const handleAddToCartAndNavigate = (product) => {
     const quantityInCart = getItemQuantityInCart(product.id);
@@ -41,36 +39,27 @@ const ProductsPage = () => {
     setSelectedProduct(null);
   };
 
-  // 🔄 FUNÇÃO PARA BUSCAR PRODUTOS DA API
+  // 🔄 FUNÇÃO ATUALIZADA PARA BUSCAR PRODUTOS DA API
   const fetchProducts = useCallback(async (categoryFilter) => {
     try {
       setLoading(true);
       setError(null);
 
-      // Monta a URL com ou sem filtro de categoria
-      const endpoint = categoryFilter
-        ? `${API_URL}/products?category=${categoryFilter}`
-        : `${API_URL}/products`;
+      console.log('🔍 Buscando produtos da API:', categoryFilter || 'todos');
 
-      console.log('🔍 Buscando produtos da API:', endpoint);
-
-      const response = await fetch(endpoint);
-
-      if (!response.ok) {
-        throw new Error(`Erro ${response.status}: Falha ao carregar produtos`);
-      }
-
-      const data = await response.json();
+      // USA A NOVA API
+      const data = await productsAPI.getAll(categoryFilter);
+      
       console.log('✅ Produtos carregados:', data.length);
-
       setProducts(data);
+      
     } catch (err) {
       console.error('❌ Erro ao buscar produtos:', err);
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, [API_URL]);
+  }, []);
 
   useEffect(() => {
     fetchProducts(category);
@@ -113,7 +102,7 @@ const ProductsPage = () => {
           🔄 Tentar novamente
         </button>
         <p style={{ marginTop: '20px', fontSize: '0.9rem', color: '#666' }}>
-          Verifique se o servidor está rodando em {API_URL}
+          Verifique se o servidor backend está rodando
         </p>
       </div>
     );
@@ -144,7 +133,7 @@ const ProductsPage = () => {
                     loading="lazy"
                     onError={(e) => {
                       console.error('Erro ao carregar imagem:', e.target.src);
-                      e.target.src = '/placeholder-product.jpg'; // Imagem de fallback
+                      e.target.src = '/placeholder-product.jpg';
                     }}
                   />
                   {isOutOfStock && (
@@ -199,34 +188,6 @@ const ProductsPage = () => {
           </p>
         )}
       </div>
-
-      {/* Botão de debug apenas em desenvolvimento */}
-      {process.env.NODE_ENV === 'development' && (
-        <button
-          style={{
-            position: 'fixed',
-            bottom: '10px',
-            left: '10px',
-            padding: '10px',
-            backgroundColor: '#333',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            zIndex: 999
-          }}
-          onClick={() => {
-            console.log('=== DEBUG INFO ===');
-            console.log('API URL:', API_URL);
-            console.log('Categoria atual:', category);
-            console.log('Produtos carregados:', products.length);
-            console.log('Produtos:', products);
-            fetchProducts(category);
-          }}
-        >
-          🐛 DEBUG
-        </button>
-      )}
     </div>
   );
 };
