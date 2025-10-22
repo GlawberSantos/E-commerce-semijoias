@@ -18,6 +18,25 @@ services:
       timeout: 5s
       retries: 5
 
+  backend:
+    build: 
+      context: .                    # ← MUDOU AQUI (era ./gabrielly-backend)
+      dockerfile: Dockerfile
+    container_name: gabrielly_backend
+    restart: always
+    ports:
+      - "5001:5001"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: gabrielly
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: gabrielly_semijoias
+      NODE_ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres_data:
     driver: local
