@@ -1,4 +1,4 @@
-// CustomError.js
+// utils/CustomError.js
 export class CustomError extends Error {
     constructor(message, status = 500) {
         super(message);

@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import { query, getClient } from './db.js';
 import { CustomError } from './utils/CustomError.js';
 import { calculateDiscount } from './utils/couponLogic.js';
+import { calculateShipping } from './utils/freteService.js';
 
 dotenv.config();
 
@@ -381,6 +382,35 @@ app.post("/chat", async (req, res) => {
       console.error("Dados da resposta:", err.response.data);
     }
     return res.status(500).json({ reply: "Erro ao gerar resposta com a OpenRouter." });
+  }
+});
+// ==================== ENDPOINT DE FRETE ====================
+app.post("/api/frete/calcular", async (req, res) => {
+  try {
+    const { cepDestino, pesoTotal, comprimento, largura, altura } = req.body;
+
+    // Validação básica
+    if (!cepDestino) {
+      return res.status(400).json({ error: "CEP de destino é obrigatório" });
+    }
+
+    // Calcula o frete
+    const results = await calculateShipping({
+      cepDestino,
+      pesoTotal: pesoTotal || 1.0,
+      comprimento: comprimento || 20.0,
+      largura: largura || 15.0,
+      altura: altura || 10.0
+    });
+
+    return res.json(results);
+
+  } catch (err) {
+    console.error("Erro ao calcular frete:", err);
+    return res.status(500).json({
+      error: "Erro ao calcular frete",
+      message: err.message
+    });
   }
 });
 // ==================== SERVIDOR ====================
