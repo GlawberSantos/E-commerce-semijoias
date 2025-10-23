@@ -5,7 +5,7 @@
 const API_BASE_URL =
   import.meta.env.VITE_API_URL ||
   process.env.REACT_APP_API_URL ||
-  "https://e-commerce-semijoias-production.up.railway.app";
+  'https://e-commerce-semijoias-production.up.railway.app';
 
 // Helper para fazer requisições à API
 const api = {
@@ -106,10 +106,12 @@ const api = {
 export const productsAPI = {
   getAll: (category = null) => {
     const endpoint = category
-      ? `/api/products?category=${category}` // ✅ Precisa do /api/
+      ? `/api/products?category=${category}`  // ✅ Importante: com /api/
       : '/api/products';
     return api.get(endpoint);
   },
+
+  getById: (id) => api.get(`/api/products/${id}`),
 };
 
 export const ordersAPI = {
