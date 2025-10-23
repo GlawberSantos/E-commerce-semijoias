@@ -25,7 +25,7 @@ async function getAccessToken() {
 
   try {
     console.log('🔄 Gerando token do Melhor Envio...\n');
-    
+
     const response = await fetch('https://melhorenvio.com.br/oauth/token', {
       method: 'POST',
       headers: {
@@ -48,7 +48,7 @@ async function getAccessToken() {
     } else {
       console.error('❌ Erro ao gerar token:');
       console.error(JSON.stringify(data, null, 2));
-      
+
       if (data.error === 'invalid_client') {
         console.log('\n💡 Dica: Verifique se CLIENT_ID e CLIENT_SECRET estão corretos');
       }
