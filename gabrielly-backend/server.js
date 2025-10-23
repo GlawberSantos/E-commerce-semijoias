@@ -16,7 +16,7 @@ app.use(cors({
   origin: [
     'http://localhost:3000',
     'http://localhost:5173',
-    'https://gabriellysemijoias.vercel.app'
+    'https://gabriellysemiijoias.vercel.app'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -49,7 +49,46 @@ app.get("/health", (req, res) => {
   res.json({ status: "healthy" });
 });
 
-// ==================== ENDPOINTS DE PRODUTOS ====================
+// ==================== ROTA COMPATIBILIDADE (sem /api/) ====================
+// Suporta chamadas diretas a /products (compatibilidade com versões antigas do frontend)
+app.get("/products", async (req, res) => {
+  const { category } = req.query;
+  try {
+    let sql = 'SELECT * FROM products WHERE active = TRUE';
+    const params = [];
+    if (category) {
+      sql += ' AND category = $1';
+      params.push(category);
+    }
+    sql += ' ORDER BY category, name';
+    const result = await query(sql, params);
+    console.log(`📦 GET /products${category ? `?category=${category}` : ''} - ${result.rows.length} produtos retornados`);
+    return res.json(result.rows);
+  } catch (err) {
+    console.error("Erro ao buscar produtos:", err);
+    return res.status(500).json({ error: "Erro ao buscar produtos" });
+  }
+});
+
+app.get("/products/:id", async (req, res) => {
+  const productId = parseInt(req.params.id);
+  try {
+    const result = await query(
+      'SELECT * FROM products WHERE id = $1 AND active = TRUE',
+      [productId]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Produto não encontrado" });
+    }
+    console.log(`📦 GET /products/${productId} - Produto encontrado`);
+    return res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Erro ao buscar produto:", err);
+    return res.status(500).json({ error: "Erro ao buscar produto" });
+  }
+});
+
+// ==================== ENDPOINTS DE PRODUTOS (com /api/) ====================
 // GET /api/products - Lista todos os produtos ou filtra por categoria
 app.get("/api/products", async (req, res) => {
   const { category } = req.query;
@@ -92,7 +131,6 @@ app.get("/api/products/:id", async (req, res) => {
 app.post("/api/orders", async (req, res) => {
   const { items, customerInfo, shippingMethod, paymentMethod, totalAmount, couponCode, shippingCost = 0 } = req.body;
   
-  // Validações de entrada
   if (!items || !Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: "Itens do pedido são obrigatórios" });
   }
@@ -104,7 +142,6 @@ app.post("/api/orders", async (req, res) => {
   try {
     await client.query('BEGIN');
     
-    // 1. CALCULA SUBTOTAL REAL E VERIFICA ESTOQUE DISPONÍVEL
     let calculatedSubtotal = 0;
     for (const item of items) {
       const productResult = await client.query(
@@ -121,7 +158,6 @@ app.post("/api/orders", async (req, res) => {
       calculatedSubtotal += (parseFloat(product.price) * item.quantity);
     }
     
-    // 2. APLICA CUPOM
     let discount = 0;
     let appliedCoupon = null;
     if (couponCode) {
@@ -134,10 +170,8 @@ app.post("/api/orders", async (req, res) => {
       }
     }
     
-    // 3. CALCULA TOTAL FINAL
     const finalTotal = calculatedSubtotal - discount + shippingCost;
     
-    // 4. Cria ou busca cliente
     let customerId;
     const firstName = customerInfo.firstName;
     const lastName = customerInfo.lastName || '';
@@ -159,7 +193,6 @@ app.post("/api/orders", async (req, res) => {
       customerId = newCustomer.rows[0].id;
     }
     
-    // 5. Cria endereço se fornecido
     let addressId = null;
     if (customerInfo.address) {
       const addr = customerInfo.address;
@@ -170,7 +203,6 @@ app.post("/api/orders", async (req, res) => {
       addressId = addressResult.rows[0].id;
     }
     
-    // 6. Cria o pedido
     const orderNumber = `ORD-${Date.now()}`;
     const orderResult = await client.query(
       'INSERT INTO orders (order_number, customer_id, total_amount, discount, shipping_cost, payment_method, shipping_method, shipping_address_id, notes, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id',
@@ -178,7 +210,6 @@ app.post("/api/orders", async (req, res) => {
     );
     const orderId = orderResult.rows[0].id;
     
-    // 7. Adiciona itens do pedido e atualiza estoque
     for (const item of items) {
       const productResult = await client.query(
         'SELECT name, price, stock FROM products WHERE id = $1',
@@ -451,6 +482,8 @@ app.listen(PORT, () => {
   console.log("🔗 Endpoints disponíveis:");
   console.log(" GET  /");
   console.log(" GET  /health");
+  console.log(" GET  /products (compatibilidade)");
+  console.log(" GET  /products/:id (compatibilidade)");
   console.log(" GET  /api/products");
   console.log(" GET  /api/products?category=brincos");
   console.log(" GET  /api/products/:id");
