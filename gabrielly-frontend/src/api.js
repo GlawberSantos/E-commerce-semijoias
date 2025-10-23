@@ -2,9 +2,10 @@
 // Em produção, use a URL do Railway
 // Em desenvolvimento, use localhost
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 
-                     process.env.REACT_APP_API_URL || 
-                     'http://localhost:5000';
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  process.env.REACT_APP_API_URL ||
+  "https://e-commerce-semijoias-production.up.railway.app";
 
 // Helper para fazer requisições à API
 const api = {
