@@ -104,14 +104,12 @@ const api = {
 
 // Funções específicas para cada endpoint
 export const productsAPI = {
-  // Buscar todos os produtos ou por categoria
   getAll: (category = null) => {
-    const endpoint = category ? `/api/products?category=${category}` : '/api/products';
+    const endpoint = category
+      ? `/api/products?category=${category}` // ✅ Precisa do /api/
+      : '/api/products';
     return api.get(endpoint);
   },
-
-  // Buscar produto por ID
-  getById: (id) => api.get(`/api/products/${id}`),
 };
 
 export const ordersAPI = {
