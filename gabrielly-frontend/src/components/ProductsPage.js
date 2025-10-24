@@ -49,10 +49,10 @@ const ProductsPage = () => {
 
       // USA A NOVA API
       const data = await productsAPI.getAll(categoryFilter);
-      
+
       console.log('✅ Produtos carregados:', data.length);
       setProducts(data);
-      
+
     } catch (err) {
       console.error('❌ Erro ao buscar produtos:', err);
       setError(err.message);

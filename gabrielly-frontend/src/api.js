@@ -3,8 +3,8 @@
 // Em desenvolvimento, use localhost
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL ||
-  process.env.REACT_APP_API_URL ||
+  (import.meta.env.VITE_API_URL?.replace(/\/$/, '')) ||
+  (process.env.REACT_APP_API_URL?.replace(/\/$/, '')) ||
   'https://e-commerce-semijoias-production.up.railway.app';
 
 // Helper para fazer requisições à API
