@@ -38,8 +38,8 @@ const openai = apiKey ? new OpenAI({
 
 // ==================== HEALTH CHECK ====================
 app.get("/", (req, res) => {
-  res.json({ 
-    status: "online", 
+  res.json({
+    status: "online",
     message: "API Gabrielly Semijoias",
     timestamp: new Date().toISOString()
   });
@@ -130,18 +130,18 @@ app.get("/api/products/:id", async (req, res) => {
 // POST /api/orders - Cria um novo pedido
 app.post("/api/orders", async (req, res) => {
   const { items, customerInfo, shippingMethod, paymentMethod, totalAmount, couponCode, shippingCost = 0 } = req.body;
-  
+
   if (!items || !Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: "Itens do pedido são obrigatórios" });
   }
   if (!customerInfo || !customerInfo.firstName || !customerInfo.email) {
     return res.status(400).json({ error: "Informações do cliente (nome/email) são obrigatórias" });
   }
-  
+
   const client = await getClient();
   try {
     await client.query('BEGIN');
-    
+
     let calculatedSubtotal = 0;
     for (const item of items) {
       const productResult = await client.query(
@@ -157,7 +157,7 @@ app.post("/api/orders", async (req, res) => {
       }
       calculatedSubtotal += (parseFloat(product.price) * item.quantity);
     }
-    
+
     let discount = 0;
     let appliedCoupon = null;
     if (couponCode) {
@@ -169,9 +169,9 @@ app.post("/api/orders", async (req, res) => {
         throw couponErr;
       }
     }
-    
+
     const finalTotal = calculatedSubtotal - discount + shippingCost;
-    
+
     let customerId;
     const firstName = customerInfo.firstName;
     const lastName = customerInfo.lastName || '';
@@ -192,7 +192,7 @@ app.post("/api/orders", async (req, res) => {
       );
       customerId = newCustomer.rows[0].id;
     }
-    
+
     let addressId = null;
     if (customerInfo.address) {
       const addr = customerInfo.address;
@@ -202,14 +202,14 @@ app.post("/api/orders", async (req, res) => {
       );
       addressId = addressResult.rows[0].id;
     }
-    
+
     const orderNumber = `ORD-${Date.now()}`;
     const orderResult = await client.query(
       'INSERT INTO orders (order_number, customer_id, total_amount, discount, shipping_cost, payment_method, shipping_method, shipping_address_id, notes, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id',
       [orderNumber, customerId, finalTotal, discount, shippingCost, paymentMethod, shippingMethod, addressId, appliedCoupon ? `Cupom: ${appliedCoupon}` : null, 'pending']
     );
     const orderId = orderResult.rows[0].id;
-    
+
     for (const item of items) {
       const productResult = await client.query(
         'SELECT name, price, stock FROM products WHERE id = $1',
@@ -218,12 +218,12 @@ app.post("/api/orders", async (req, res) => {
       const product = productResult.rows[0];
       const unitPrice = parseFloat(product.price);
       const subtotalItem = item.quantity * unitPrice;
-      
+
       await client.query(
         'INSERT INTO order_items (order_id, product_id, product_name, quantity, unit_price, subtotal) VALUES ($1, $2, $3, $4, $5, $6)',
         [orderId, item.productId, product.name, item.quantity, unitPrice, subtotalItem]
       );
-      
+
       const newStock = product.stock - item.quantity;
       await client.query(
         'UPDATE products SET stock = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
@@ -234,7 +234,7 @@ app.post("/api/orders", async (req, res) => {
         [item.productId, orderId, -item.quantity, product.stock, newStock, 'order_created']
       );
     }
-    
+
     await client.query('COMMIT');
     console.log(`✅ Pedido criado: ${orderNumber} (Total: R$${finalTotal.toFixed(2)})`);
     return res.status(201).json({
@@ -286,7 +286,7 @@ app.post("/api/orders/:id/cancel", async (req, res) => {
   const client = await getClient();
   try {
     await client.query('BEGIN');
-    
+
     const orderResult = await client.query(
       'SELECT order_number, status FROM orders WHERE id = $1',
       [orderId]
@@ -301,12 +301,12 @@ app.post("/api/orders/:id/cancel", async (req, res) => {
     if (order.status === 'cancelled') {
       throw new Error("Pedido já foi cancelado");
     }
-    
+
     const itemsResult = await client.query(
       'SELECT product_id, quantity FROM order_items WHERE order_id = $1',
       [orderId]
     );
-    
+
     for (const item of itemsResult.rows) {
       const productResult = await client.query(
         'SELECT stock FROM products WHERE id = $1',
@@ -323,7 +323,7 @@ app.post("/api/orders/:id/cancel", async (req, res) => {
         [item.product_id, orderId, item.quantity, currentStock, newStock, 'order_cancelled']
       );
     }
-    
+
     await client.query(
       'UPDATE orders SET status = $1, cancelled_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
       ['cancelled', orderId]
