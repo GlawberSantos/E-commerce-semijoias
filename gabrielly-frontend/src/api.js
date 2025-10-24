@@ -1,35 +1,37 @@
 // src/api.js
 
 const API_BASE_URL = (
-  // 1. Tenta ler a variável VITE_API_URL (Convenção do Vite)
-  import.meta.env.VITE_API_URL ||
-
-  // 2. Tenta ler a variável REACT_APP_API_URL (Sua variável de trabalho)
+  // 1. Prioriza o REACT_APP_API_URL (que você confirmou ser o que funciona para o catálogo)
   process.env.REACT_APP_API_URL ||
 
-  // 3. Fallback final (URL do Railway)
-  'https://e-commerce-semijoias-production.up.railway.app'
-)
-  .replace(/\/$/, '') // Remove barra final (/) da URL base
-  .replace(/\/api$/, ''); // Remove o '/api' se estiver no final (para evitar duplicidade)
+  // 2. Tenta ler VITE_API_URL (Convenção do Vite, caso use esse padrão)
+  import.meta.env.VITE_API_URL ||
 
-// =================================================================
-// ADICIONAMOS A LÓGICA DE VERIFICAÇÃO PARA DEBUG
-// SE VOCÊ AINDA VER LOCALHOST, O PROBLEMA ESTÁ NO DEPLOY/CACHE DO VERCEL
-// =================================================================
+  // 3. Fallback Final (URL completa do Railway, incluindo /api)
+  'https://e-commerce-semijoias-production.up.railway.app/api'
+)
+  // Remove apenas a barra final (/) para garantir que a URL base não tenha barra dupla,
+  // mas MANTÉM o '/api' que é crucial para o catálogo funcionar.
+  .replace(/\/$/, '');
+
+// O console.log aqui irá mostrar o valor que está sendo usado. 
+// Deve ser: https://e-commerce-semijoias-production.up.railway.app/api
 console.log('🔗 API_BASE_URL configurada para:', API_BASE_URL);
 
 
 const api = {
   async get(endpoint) {
-    const url = `${API_BASE_URL}${endpoint}`; // URL completa
+    // endpoint já deve vir sem o /api
+    const url = `${API_BASE_URL}${endpoint}`;
+    console.log('Requisição GET para:', url);
     const response = await fetch(url);
     if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
     return await response.json();
   },
 
   async post(endpoint, data) {
-    const url = `${API_BASE_URL}${endpoint}`; // URL completa
+    // endpoint já deve vir sem o /api
+    const url = `${API_BASE_URL}${endpoint}`;
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -44,14 +46,15 @@ const api = {
 };
 
 export const productsAPI = {
-  // Os endpoints de chamada precisam do /api/ se o API_BASE_URL não o contiver
+  // ALTERAÇÃO: Removemos o '/api' do início aqui, pois ele já está no API_BASE_URL
   getAll: (category = null) =>
-    api.get(category ? `/api/products?category=${category}` : '/api/products'),
-  getById: (id) => api.get(`/api/products/${id}`),
+    api.get(category ? `/products?category=${category}` : '/products'),
+  getById: (id) => api.get(`/products/${id}`),
 };
 
 export const shippingAPI = {
-  calculate: (shippingData) => api.post('/api/frete/calcular', shippingData),
+  // ALTERAÇÃO: Removemos o '/api' do início para corrigir a chamada de frete
+  calculate: (shippingData) => api.post('/frete/calcular', shippingData),
 };
 
 export { API_BASE_URL };
