@@ -5,10 +5,10 @@ import '../styles/CheckoutPage.css';
 import { formatCurrency } from '../utils/format';
 import { FaArrowRight, FaCreditCard, FaBarcode, FaBolt } from 'react-icons/fa';
 import CartSummary from '../components/CartSummary';
-import { shippingAPI, ordersAPI } from '../api'; // ← IMPORTAÇÕES DO NOVO API
+import { shippingAPI, ordersAPI } from '../api'; // ← IMPORTAÇÕES CORRETAS
 
 // =================================================================
-//                 FUNÇÕES DE FORMATAÇÃO (mantidas)
+//                 FUNÇÕES DE FORMATAÇÃO
 // =================================================================
 
 const formatPhone = (value) => {
@@ -39,28 +39,40 @@ const formatCardExpiry = (value) => {
 
 const cleanCep = (cep) => cep.replace(/\D/g, '');
 
-// ATUALIZADA: Função que chama o backend Node.js para calcular o frete
-const fetchShippingFromBackend = async (cepDestinoLimpo, cartItems, setShippingCosts) => {
-    const numbers = cepDestinoLimpo;
-    if (numbers.length !== 8) return;
+// =================================================================
+//                 FUNÇÕES DE API (Corrigido para usar shippingAPI)
+// =================================================================
 
-    const totalWeight = cartItems.reduce((sum, item) => sum + (item.weight || 0) * (item.quantity || 0), 0) || 1.0;
+const fetchShippingFromBackend = async (cepDestinoLimpo, cartItems, setShippingCosts) => {
+    console.log('🔍 Tentando calcular frete para CEP:', cepDestinoLimpo);
+    if (!cepDestinoLimpo || cepDestinoLimpo.length !== 8) {
+        console.warn('CEP inválido para cálculo de frete:', cepDestinoLimpo);
+        return;
+    }
+
+    // Calcula peso e define dimensões padrão
+    const totalWeight = cartItems.reduce((sum, item) => sum + ((item.weight || 0) * (item.quantity || 0)), 0) || 1.0;
     const dimensions = { comprimento: 20.0, largura: 15.0, altura: 10.0 };
 
     try {
-        // USA A NOVA API
-        const data = await shippingAPI.calculate({
-            cepDestino: numbers,
+        const payload = {
+            cepDestino: cepDestinoLimpo, // Nome da variável que o backend espera
             pesoTotal: totalWeight,
             comprimento: dimensions.comprimento,
             largura: dimensions.largura,
             altura: dimensions.altura
-        });
+        };
 
+        console.log('📡 Enviando requisição de frete ao backend com payload:', payload);
+
+        // USANDO CORRETAMENTE A FUNÇÃO IMPORTADA (shippingAPI)
+        const data = await shippingAPI.calculate(payload);
+
+        console.log('✅ Frete calculado:', data);
         setShippingCosts(data);
-
     } catch (error) {
-        console.error('Erro ao buscar frete:', error);
+        console.error('❌ Erro detalhado ao buscar frete:', error);
+        // Em caso de falha, tenta reverter para os valores padrão do backend
         setShippingCosts(null);
     }
 };
@@ -131,7 +143,7 @@ const handleBlurLogic = (e, setFormData, cartItems, setShippingCosts) => {
 };
 
 // =================================================================
-//                 COMPONENTES DE FORMULÁRIO (mantidos)
+//                 COMPONENTES DE FORMULÁRIO
 // =================================================================
 
 const StepHeader = ({ stepNumber, title, isCompleted, setStep }) => (
@@ -177,7 +189,7 @@ const AddressForm = ({ formData, handleChange, handleBlur, cepRef }) => (
         </label>
         <div className="input-row name-group">
             <input type="text" placeholder="Cidade" name="city" value={formData.city} onChange={handleChange} required />
-            <input type="text" placeholder="Estado (Ex: SP)" name="state" value={formData.state} onChange={handleChange} maxLength="2" required />
+            <input type="text" placeholder="Estado (Ex: PE)" name="state" value={formData.state} onChange={handleChange} maxLength="2" required />
         </div>
     </form>
 );
@@ -270,7 +282,7 @@ const PaymentOptions = ({ formData, handleChange, handleBlur, cardNumberRef, car
 );
 
 // =================================================================
-//                 COMPONENTE PRINCIPAL
+//                 COMPONENTE PRINCIPAL
 // =================================================================
 
 function CheckoutPage() {
@@ -354,10 +366,10 @@ function CheckoutPage() {
 
             console.log('Pedido criado com sucesso:', result);
             alert('Pedido Finalizado com Sucesso!');
-            
+
             clearCart(); // Limpa o carrinho
             navigate('/success', { state: { orderNumber: result.orderNumber } });
-            
+
         } catch (error) {
             console.error('Erro ao finalizar pedido:', error);
             alert(`Erro ao finalizar pedido: ${error.message}`);
