@@ -3,135 +3,61 @@ import React from 'react';
 const ProductFilters = ({
   filters,
   setFilters,
-  availableFilters
+  availableFilters,
+  handleFilterChange
 }) => {
-  const handlePriceChange = (e) => {
-    const { name, value } = e.target;
+
+  const handlePriceChange = (type, value) => {
     setFilters(prev => ({
       ...prev,
-      price: {
-        ...prev.price,
-        [name]: value
-      }
+      price: { ...prev.price, [type]: value }
     }));
   };
 
-  const handleFilterChange = (filterType, value) => {
-    setFilters(prev => ({
-      ...prev,
-      [filterType]: prev[filterType].includes(value)
-        ? prev[filterType].filter(item => item !== value)
-        : [...prev[filterType], value]
-    }));
+  const handleCheckboxChange = (filterType, value) => {
+    const newValues = filters[filterType].includes(value)
+      ? filters[filterType].filter(v => v !== value)
+      : [...filters[filterType], value];
+    handleFilterChange(filterType, newValues);
   };
 
   return (
-    <div className="product-filters">
+    <div className="filters-sidebar">
       <div className="filter-section">
-        <h3>Preço</h3>
+        <h3>Faixa de Preço</h3>
         <div className="price-inputs">
-          <div className="input-group">
-            <label htmlFor="min">De:</label>
-            <input
-              type="number"
-              id="min"
-              name="min"
-              value={filters.price.min}
-              onChange={handlePriceChange}
-              min="0"
-              placeholder="R$ Min"
-            />
+          <input
+            type="number"
+            placeholder="Min: R$1,100"
+            value={filters.price.min}
+            onChange={(e) => handlePriceChange('min', e.target.value)}
+          />
+          <input
+            type="number"
+            placeholder="Max: R$2,200"
+            value={filters.price.max}
+            onChange={(e) => handlePriceChange('max', e.target.value)}
+          />
+        </div>
+      </div>
+
+      {Object.entries(availableFilters).map(([filterType, options]) => (
+        <div key={filterType} className="filter-section">
+          <h3>{filterType.charAt(0).toUpperCase() + filterType.slice(1)}</h3>
+          <div className="filter-options">
+            {options.map(option => (
+              <label key={option} className="filter-option">
+                <input
+                  type="checkbox"
+                  checked={filters[filterType].includes(option)}
+                  onChange={() => handleCheckboxChange(filterType, option)}
+                />
+                {option}
+              </label>
+            ))}
           </div>
-          <div className="input-group">
-            <label htmlFor="max">Até:</label>
-            <input
-              type="number"
-              id="max"
-              name="max"
-              value={filters.price.max}
-              onChange={handlePriceChange}
-              min="0"
-              placeholder="R$ Max"
-            />
-          </div>
         </div>
-      </div>
-
-      <div className="filter-section">
-        <h3>Material</h3>
-        <div className="checkbox-group">
-          {availableFilters.materiais.map(material => (
-            <label key={material} className="checkbox-label">
-              <input
-                type="checkbox"
-                checked={filters.materiais.includes(material)}
-                onChange={() => handleFilterChange('materiais', material)}
-              />
-              {material}
-            </label>
-          ))}
-        </div>
-      </div>
-
-      <div className="filter-section">
-        <h3>Cor</h3>
-        <div className="color-options">
-          {availableFilters.cores.map(color => (
-            <button
-              key={color}
-              className={`color-button ${filters.cores.includes(color) ? 'selected' : ''}`}
-              style={{ backgroundColor: color }}
-              onClick={() => handleFilterChange('cores', color)}
-              aria-label={`Filtrar por cor ${color}`}
-            />
-          ))}
-        </div>
-      </div>
-
-      <div className="filter-section">
-        <h3>Estilo</h3>
-        <div className="checkbox-group">
-          {availableFilters.Estilos.map(style => (
-            <label key={style} className="checkbox-label">
-              <input
-                type="checkbox"
-                checked={filters.Estilos.includes(style)}
-                onChange={() => handleFilterChange('Estilos', style)}
-              />
-              {style}
-            </label>
-          ))}
-        </div>
-      </div>
-
-      <div className="filter-section">
-        <h3>Ocasião</h3>
-        <div className="checkbox-group">
-          {availableFilters.ocasião.map(occasion => (
-            <label key={occasion} className="checkbox-label">
-              <input
-                type="checkbox"
-                checked={filters.ocasião.includes(occasion)}
-                onChange={() => handleFilterChange('ocasião', occasion)}
-              />
-              {occasion}
-            </label>
-          ))}
-        </div>
-      </div>
-
-      <button
-        className="clear-filters"
-        onClick={() => setFilters({
-          price: { min: '', max: '' },
-          materiais: [],
-          cores: [],
-          Estilos: [],
-          ocasião: []
-        })}
-      >
-        Limpar filtros
-      </button>
+      ))}
     </div>
   );
 };
