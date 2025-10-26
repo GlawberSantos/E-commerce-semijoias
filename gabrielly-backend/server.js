@@ -36,6 +36,124 @@ const openai = apiKey ? new OpenAI({
   baseURL: "https://openrouter.ai/api/v1"
 }) : null;
 
+// ==================== ROTAS DE PRODUTOS ====================
+app.get('/api/products', async (req, res) => {
+  try {
+    const { category } = req.query;
+    let sql = `
+      SELECT id, name, price, price_discount, image, folder, category, 
+             material, color, style, occasion, stock, description
+      FROM products 
+      WHERE active = true
+    `;
+    const params = [];
+
+    if (category) {
+      sql += ' AND category = $1';
+      params.push(category);
+    }
+
+    sql += ' ORDER BY created_at DESC';
+
+    const result = await query(sql, params);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Erro ao buscar produtos:', error);
+    res.status(500).json({ error: 'Erro interno ao buscar produtos' });
+  }
+});
+
+app.get('/api/products/:id', async (req, res) => {
+  try {
+    const result = await query(
+      `SELECT id, name, price, price_discount, image, folder, category, 
+              material, color, style, occasion, stock, description
+       FROM products 
+       WHERE id = $1 AND active = true`,
+      [req.params.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Produto não encontrado' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Erro ao buscar produto:', error);
+    res.status(500).json({ error: 'Erro interno ao buscar produto' });
+  }
+});
+
+app.post('/api/products', async (req, res) => {
+  const client = await getClient();
+  try {
+    await client.query('BEGIN');
+
+    const {
+      name, price, priceDiscount, image, folder, category,
+      material, color, style, occasion, stock, description
+    } = req.body;
+
+    const result = await client.query(
+      `INSERT INTO products (
+        name, price, price_discount, image, folder, category,
+        material, color, style, occasion, stock, description
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      RETURNING *`,
+      [name, price, priceDiscount, image, folder, category,
+       material, color, style, occasion, stock, description]
+    );
+
+    await client.query('COMMIT');
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Erro ao criar produto:', error);
+    res.status(500).json({ error: 'Erro interno ao criar produto' });
+  } finally {
+    client.release();
+  }
+});
+
+app.put('/api/products/:id', async (req, res) => {
+  const client = await getClient();
+  try {
+    await client.query('BEGIN');
+
+    const {
+      name, price, priceDiscount, image, folder, category,
+      material, color, style, occasion, stock, description
+    } = req.body;
+
+    const result = await client.query(
+      `UPDATE products 
+       SET name = $1, price = $2, price_discount = $3, image = $4, 
+           folder = $5, category = $6, material = $7, color = $8,
+           style = $9, occasion = $10, stock = $11, description = $12,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $13 AND active = true
+       RETURNING *`,
+      [name, price, priceDiscount, image, folder, category,
+       material, color, style, occasion, stock, description,
+       req.params.id]
+    );
+
+    if (result.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Produto não encontrado' });
+    }
+
+    await client.query('COMMIT');
+    res.json(result.rows[0]);
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Erro ao atualizar produto:', error);
+    res.status(500).json({ error: 'Erro interno ao atualizar produto' });
+  } finally {
+    client.release();
+  }
+});
+
 // ==================== HEALTH CHECK ====================
 app.get("/", (req, res) => {
   res.json({

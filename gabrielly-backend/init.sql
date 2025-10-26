@@ -7,11 +7,73 @@ CREATE TABLE products (
     image VARCHAR(255),
     folder VARCHAR(50),
     category VARCHAR(50) NOT NULL,
+    material VARCHAR(50),
+    color VARCHAR(50),
+    style VARCHAR(50),
+    occasion VARCHAR(50),
     stock INTEGER NOT NULL DEFAULT 0,
     description TEXT,
     active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Inserir produtos exemplo
+INSERT INTO products (
+    name, price, category, image, folder, stock, description,
+    material, color, style, occasion
+) VALUES 
+(
+    'Anel Solitário Elegance', 
+    99.90, 
+    'aneis',
+    'anel-solitario-elegance.jpg',
+    'aneis',
+    10,
+    'Anel solitário com zircônia central e acabamento brilhante.',
+    'Prata 925',
+    'prateado',
+    'Elegante',
+    'Casamento'
+),
+(
+    'Colar Infinity Love',
+    129.90,
+    'colares',
+    'colar-infinity-love.jpg',
+    'colares',
+    15,
+    'Colar delicado com símbolo do infinito cravejado.',
+    'Ouro 18k',
+    'dourado',
+    'Moderno',
+    'Presente'
+),
+(
+    'Brinco Gota Crystal',
+    79.90,
+    'brincos',
+    'brinco-gota-crystal.jpg',
+    'brincos',
+    20,
+    'Brinco em formato de gota com zircônias.',
+    'Prata 925',
+    'rosé',
+    'Clássico',
+    'Festa'
+),
+(
+    'Pulseira Energy',
+    89.90,
+    'pulseiras',
+    'pulseira-energy.jpg',
+    'pulseiras',
+    8,
+    'Pulseira com design minimalista e pedras naturais.',
+    'Aço Inoxidável',
+    'dourado',
+    'Minimalista',
+    'Casual'
 );
 
 -- ==================== TABELA DE CLIENTES ====================

@@ -7,11 +7,16 @@ import facebookIcon from '../assets/icons/logo-facebook.svg';
 import whatsappIcon from '../assets/icons/logo-whatsapp.svg';
 import instagramIcon from '../assets/icons/logo-instagram.svg';
 import youtubeIcon from '../assets/icons/logo-youtube.svg';
+import SearchBar from './SearchBar';
+import AuthModal from './AuthModal';
+import { useAuth } from '../contexts/AuthContext';
 
 function Layout({ children }) {
   const [isSubmenuOpen, setIsSubmenuOpen] = useState(false);
   const [isNavbarActive, setIsNavbarActive] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const location = useLocation();
+  const { user, logout } = useAuth();
 
   // Link do WhatsApp (use seu número real)
   const whatsappLink = "https://wa.me/5583987855966";
@@ -36,6 +41,8 @@ function Layout({ children }) {
           <Link to="/" className="logo-link" aria-label="Ir para a página inicial">
             <img src={logo} alt="Logo da Gabrielly Semijoias" className="logo-icon" />
           </Link>
+
+
 
           <button
             className="hamburger"
@@ -82,20 +89,47 @@ function Layout({ children }) {
             </ul>
           </nav>
 
-          {/* NOVO BLOCO: FALE CONOSCO (substitui o carrinho) */}
-          <a
-            href={whatsappLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="fale-conosco-link"
-            aria-label="Fale Conosco pelo WhatsApp"
-          >
-            <i className="fas fa-headset" aria-hidden="true"></i>
-            <span className="fale-conosco-text">FALE CONOSCO</span>
-          </a>
           {/* FIM DO NOVO BLOCO */}
+          <div className="header-center">
+            <SearchBar />
+          </div>
+
+          <div className="header-right">
+            {user ? (
+              <div className="user-menu">
+                <button className="user-button">
+                  <i className="fas fa-user"></i>
+                  <span>{user.name.split(' ')[0]}</span>
+                </button>
+                <div className="user-dropdown">
+                  <Link to="/minha-conta">Minha Conta</Link>
+                  <Link to="/meus-pedidos">Meus Pedidos</Link>
+                  <button onClick={logout}>Sair</button>
+                </div>
+              </div>
+            ) : (
+              <button
+                className="login-button"
+                onClick={() => setIsAuthModalOpen(true)}
+              >
+                <i className="fas fa-user"></i>
+                <span>Entrar</span>
+              </button>
+            )}
+          </div>
 
         </div>
+        {/* NOVO BLOCO: FALE CONOSCO (substitui o carrinho) */}
+        <a
+          href={whatsappLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="fale-conosco-link"
+          aria-label="Fale Conosco pelo WhatsApp"
+        >
+          <i className="fas fa-headset" aria-hidden="true"></i>
+          <span className="fale-conosco-text">FALE CONOSCO</span>
+        </a>
       </header>
 
       <main className="main-content" role="main">
@@ -117,6 +151,12 @@ function Layout({ children }) {
           <p className="copyright">Todos os direitos reservados &copy; 2023</p>
         </div>
       </footer>
+      {isAuthModalOpen && (
+        <AuthModal
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+        />
+      )}
     </div>
   );
 }

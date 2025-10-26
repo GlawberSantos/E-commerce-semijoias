@@ -1,0 +1,98 @@
+.filters-sidebar {
+    background: #111;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+}
+
+.toggle-filters-btn {
+    width: 100%;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+}
+
+.toggle-filters-btn:hover {
+    background-color: #e0e0e0;
+}
+
+.filters-content {
+    overflow-y: auto;
+    max-height: calc(100vh - 200px);
+}
+
+.filter-section {
+    margin-bottom: 25px;
+}
+
+.filter-section h3 {
+    font-size: 1rem;
+    /* Deixa herdar do global.css ou force: */
+    color: var(--highlight-color) !important;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #333;
+}
+
+.price-inputs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.price-inputs input {
+    width: calc(50% - 20px);
+    padding: 8px;
+    border: 1px solid #444;
+    border-radius: 4px;
+    background-color: #222;
+    color: var(--text-color);
+}
+
+.price-inputs span {
+    color: var(--text-color);
+}
+
+.filter-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.filter-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    color: var(--text-color);
+}
+
+.filter-option:hover {
+    color: var(--highlight-color);
+}
+
+.filter-option input[type="checkbox"] {
+    margin: 0;
+    cursor: pointer;
+    accent-color: var(--highlight-color);
+}
+
+@media (max-width: 768px) {
+    .products-page {
+        grid-template-columns: 1fr;
+    }
+
+    .filters-sidebar {
+        position: relative;
+        top: 0;
+    }
+}
