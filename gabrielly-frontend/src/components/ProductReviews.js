@@ -27,7 +27,7 @@ const ProductReviews = ({ productId }) => {
             }
 
             setReviews(data.reviews);
-            
+
             if (user) {
                 const userReview = data.reviews.find(review => review.userId === user.id);
                 setUserReview(userReview);
@@ -41,7 +41,7 @@ const ProductReviews = ({ productId }) => {
 
     const handleSubmitReview = async (e) => {
         e.preventDefault();
-        
+
         if (!user) {
             alert('Faça login para deixar uma avaliação');
             return;
@@ -91,7 +91,7 @@ const ProductReviews = ({ productId }) => {
                 throw new Error(data.message);
             }
 
-            setReviews(reviews.map(review => 
+            setReviews(reviews.map(review =>
                 review.id === userReview.id ? data.review : review
             ));
             setUserReview(data.review);
@@ -138,13 +138,13 @@ const ProductReviews = ({ productId }) => {
     return (
         <div className="product-reviews">
             <h3>Avaliações dos Clientes</h3>
-            
+
             <div className="reviews-summary">
                 <div className="average-rating">
                     <span className="rating-value">{averageRating}</span>
                     <div className="stars">
                         {[1, 2, 3, 4, 5].map((star) => (
-                            <span 
+                            <span
                                 key={star}
                                 className={star <= averageRating ? 'star filled' : 'star'}
                             >
@@ -222,7 +222,7 @@ const ProductReviews = ({ productId }) => {
                             </div>
                             <div className="review-rating">
                                 {[1, 2, 3, 4, 5].map((star) => (
-                                    <span 
+                                    <span
                                         key={star}
                                         className={star <= review.rating ? 'star filled' : 'star'}
                                     >

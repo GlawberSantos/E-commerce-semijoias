@@ -71,30 +71,30 @@ const ProductsPage = () => {
 
   return (
     <div className="products-page-container">
-      <ProductFilters 
-        filters={filters} 
-        setFilters={setFilters} 
-        availableFilters={availableFilters} 
-        handleFilterChange={handleFilterChange} 
+      <ProductFilters
+        filters={filters}
+        setFilters={setFilters}
+        availableFilters={availableFilters}
+        handleFilterChange={handleFilterChange}
       />
 
       <div className="main-content">
         <div className="products-header">
-            <div className="breadcrumb">
-                Home / {categoryTitle}
-            </div>
-            <div className="view-options">
-                <select name="sort-by" id="sort-by">
-                    <option value="position">Posição</option>
-                    <option value="price-asc">Preço: Menor ao Maior</option>
-                    <option value="price-desc">Preço: Maior ao Menor</option>
-                </select>
-                <select name="display" id="display">
-                    <option value="6">6 por página</option>
-                    <option value="12">12 por página</option>
-                    <option value="24">24 por página</option>
-                </select>
-            </div>
+          <div className="breadcrumb">
+            Home / {categoryTitle}
+          </div>
+          <div className="view-options">
+            <select name="sort-by" id="sort-by">
+              <option value="position">Posição</option>
+              <option value="price-asc">Preço: Menor ao Maior</option>
+              <option value="price-desc">Preço: Maior ao Menor</option>
+            </select>
+            <select name="display" id="display">
+              <option value="6">6 por página</option>
+              <option value="12">12 por página</option>
+              <option value="24">24 por página</option>
+            </select>
+          </div>
         </div>
 
         <div className="products-grid">
@@ -110,7 +110,7 @@ const ProductsPage = () => {
                       loading="lazy"
                     />
                   </div>
-                  
+
                   <h3>{product.name}</h3>
 
                   <div className="product-rating">★★★★★</div>
@@ -142,9 +142,9 @@ const ProductsPage = () => {
         </div>
 
         <div className="pagination">
-            <span>1</span>
-            <button>2</button>
-            <button className="next-page">Next</button>
+          <span>1</span>
+          <button>2</button>
+          <button className="next-page">Next</button>
         </div>
       </div>
     </div>
