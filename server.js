@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import OpenAI from "openai";
 import dotenv from "dotenv";
-import { query, getClient } from './db.js';
+import { query, getClient, initializeDatabase } from './db.js';
 import { CustomError } from './utils/CustomError.js';
 import { calculateDiscount } from './utils/couponLogic.js';
 import { calculateShipping } from './utils/freteService.js';
@@ -54,7 +54,7 @@ app.get('/api/products', async (req, res) => {
   try {
     const { category } = req.query;
     let sql = `
-      SELECT id, name, price, price_discount, image, folder, category, 
+      SELECT id, name, price, price_discount, image, category, 
              material, color, style, occasion, stock, description
       FROM products 
       WHERE active = true
@@ -79,7 +79,7 @@ app.get('/api/products', async (req, res) => {
 app.get('/api/products/:id', async (req, res) => {
   try {
     const result = await query(
-      `SELECT id, name, price, price_discount, image, folder, category, 
+      `SELECT id, name, price, price_discount, image, category, 
               material, color, style, occasion, stock, description
        FROM products 
        WHERE id = $1 AND active = true`,
@@ -103,17 +103,17 @@ app.post('/api/products', async (req, res) => {
     await client.query('BEGIN');
 
     const {
-      name, price, priceDiscount, image, folder, category,
+      name, price, priceDiscount, image, category,
       material, color, style, occasion, stock, description
     } = req.body;
 
     const result = await client.query(
       `INSERT INTO products (
-        name, price, price_discount, image, folder, category,
+        name, price, price_discount, image, category,
         material, color, style, occasion, stock, description
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       RETURNING *`,
-      [name, price, priceDiscount, image, folder, category,
+      [name, price, priceDiscount, image, category,
        material, color, style, occasion, stock, description]
     );
 
@@ -134,19 +134,19 @@ app.put('/api/products/:id', async (req, res) => {
     await client.query('BEGIN');
 
     const {
-      name, price, priceDiscount, image, folder, category,
+      name, price, priceDiscount, image, category,
       material, color, style, occasion, stock, description
     } = req.body;
 
     const result = await client.query(
       `UPDATE products 
        SET name = $1, price = $2, price_discount = $3, image = $4, 
-           folder = $5, category = $6, material = $7, color = $8,
-           style = $9, occasion = $10, stock = $11, description = $12,
+           category = $5, material = $6, color = $7, style = $8,
+           occasion = $9, stock = $10, description = $11,
            updated_at = CURRENT_TIMESTAMP
-       WHERE id = $13 AND active = true
+       WHERE id = $12 AND active = true
        RETURNING *`,
-      [name, price, priceDiscount, image, folder, category,
+      [name, price, priceDiscount, image, category,
        material, color, style, occasion, stock, description,
        req.params.id]
     );
@@ -511,25 +511,35 @@ app.post("/api/frete/calcular", async (req, res) => {
 // ==================== INICIALIZAÇÃO DO SERVIDOR ====================
 const PORT = process.env.PORT || 5000;
 
-// Iniciar servidor somente após conectar ao banco
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando na porta ${PORT}`);
-  console.log(`🌍 Ambiente: ${process.env.NODE_ENV || 'development'}`);
-  console.log("🔗 Endpoints disponíveis:");
-  console.log(" GET  /");
-  console.log(" GET  /health");
-  console.log(" GET  /api/products");
-  console.log(" GET  /api/products?category=brincos");
-  console.log(" GET  /api/products/:id");
-  console.log(" POST /api/products");
-  console.log(" PUT  /api/products/:id");
-  console.log(" POST /api/orders");
-  console.log(" POST /api/orders/:id/confirm");
-  console.log(" POST /api/orders/:id/cancel");
-  console.log(" GET  /api/orders");
-  console.log(" GET  /api/orders/:id");
-  console.log(" GET  /api/stats/low-stock");
-  console.log(" GET  /api/stats/sales");
-  console.log(" POST /api/frete/calcular");
-  console.log(" POST /chat");
-});
+const startServer = () => {
+    app.listen(PORT, () => {
+        console.log(`🚀 Servidor rodando na porta ${PORT}`);
+        console.log(`🌍 Ambiente: ${process.env.NODE_ENV || 'development'}`);
+        console.log("🔗 Endpoints disponíveis:");
+        console.log(" GET  /");
+        console.log(" GET  /health");
+        console.log(" GET  /api/products");
+        console.log(" GET  /api/products?category=brincos");
+        console.log(" GET  /api/products/:id");
+        console.log(" POST /api/products");
+        console.log(" PUT  /api/products/:id");
+        console.log(" POST /api/orders");
+        console.log(" POST /api/orders/:id/confirm");
+        console.log(" POST /api/orders/:id/cancel");
+        console.log(" GET  /api/orders");
+        console.log(" GET  /api/orders/:id");
+        console.log(" GET  /api/stats/low-stock");
+        console.log(" GET  /api/stats/sales");
+        console.log(" POST /api/frete/calcular");
+        console.log(" POST /chat");
+    });
+};
+
+initializeDatabase()
+    .then(() => {
+        startServer();
+    })
+    .catch(err => {
+        console.error("❌ Falha ao iniciar o servidor:", err);
+        process.exit(1);
+    });

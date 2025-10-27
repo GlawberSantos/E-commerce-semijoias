@@ -1,5 +1,7 @@
 import pg from 'pg';
 import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
 
 dotenv.config();
 
@@ -40,44 +42,16 @@ pool.on('error', (err) => {
   process.exit(-1);
 });
 
-// Testar conexão imediatamente
-(async () => {
-  let retries = 10;
-  while (retries > 0) {
-    try {
-      const result = await pool.query('SELECT NOW() as now, current_database() as db, current_user as user');      
-      console.log('✅ Conexão com banco estabelecida!');
-      console.log('📦 Banco:', result.rows[0].db);
-      console.log('👤 Usuário:', result.rows[0].user);
-      console.log('⏰ Timestamp:', result.rows[0].now);
-      break;
-    } catch (error) {
-      retries--;
-      console.log(`⏳ Tentativa ${10 - retries}/10: Aguardando banco de dados...`);
-      console.error('   Erro:', error.message);
-
-      if (retries === 0) {
-        console.error('❌ Falha ao conectar ao banco após 10 tentativas');
-        console.error('🔍 Verifique se:');
-        console.error('   1. O serviço PostgreSQL está rodando');
-        console.error('   2. As credenciais estão corretas');
-        console.error('   3. A variável DATABASE_URL está configurada no Railway');
-        console.error('   4. SSL está habilitado (Railway requer SSL)');
-        process.exit(-1);
-      }
-
-      await new Promise(resolve => setTimeout(resolve, 3000));
-    }
-  }
-})();
-
 // Função helper para queries
 export const query = async (text, params) => {
   const start = Date.now();
   try {
     const res = await pool.query(text, params);
     const duration = Date.now() - start;
-    console.log(`✅ Query executada em ${duration}ms (${res.rowCount} linhas)`);
+    // Evitar log excessivo para queries de inicialização
+    if (!text.includes('pg_catalog.pg_tables')) {
+        console.log(`✅ Query executada em ${duration}ms (${res.rowCount} linhas)`);
+    }
     return res;
   } catch (error) {
     console.error('❌ Erro na query:', error.message);
@@ -105,5 +79,37 @@ export const getClient = async () => {
 
   return { query, release: client.release };
 };
+
+// Função para inicializar o banco de dados
+export const initializeDatabase = async () => {
+    console.log('🔍 Verificando se o banco de dados precisa ser inicializado...');
+    try {
+        const tableCheck = await query(
+            "SELECT 1 FROM pg_catalog.pg_tables WHERE schemaname = 'public' AND tablename = 'products'"
+        );
+
+        if (tableCheck.rowCount === 0) {
+            console.log('⏳ Tabela "products" não encontrada. Inicializando o banco de dados...');
+            
+            // O __dirname não existe em ES Modules, então usamos import.meta.url
+            const sqlFilePath = path.join(path.dirname(new URL(import.meta.url).pathname), 'init.sql');
+            
+            // Corrigir o caminho para ambientes Windows que podem adicionar uma / extra
+            const correctedPath = process.platform === "win32" ? sqlFilePath.substring(1) : sqlFilePath;
+
+            const initSql = fs.readFileSync(correctedPath, 'utf8');
+            
+            await pool.query(initSql);
+            console.log('✅ Banco de dados inicializado com sucesso a partir de init.sql!');
+        } else {
+            console.log('👍 Banco de dados já está inicializado.');
+        }
+    } catch (error) {
+        console.error('❌ Falha catastrófica ao inicializar o banco de dados:', error);
+        // Sair do processo se a inicialização falhar, pois a aplicação não pode rodar
+        process.exit(1);
+    }
+};
+
 
 export default pool;
