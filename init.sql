@@ -1,3 +1,4 @@
+-- Script para PostgreSQL
 -- ==================== TABELA DE PRODUTOS ====================
 CREATE TABLE products (
     id SERIAL PRIMARY KEY,
@@ -5,7 +6,6 @@ CREATE TABLE products (
     price DECIMAL(10,2) NOT NULL,
     price_discount DECIMAL(10,2),
     image VARCHAR(255),
-    folder VARCHAR(50),
     category VARCHAR(50) NOT NULL,
     material VARCHAR(50),
     color VARCHAR(50),
@@ -16,64 +16,6 @@ CREATE TABLE products (
     active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Inserir produtos exemplo
-INSERT INTO products (
-    name, price, category, image, folder, stock, description,
-    material, color, style, occasion
-) VALUES 
-(
-    'Anel Solitário Elegance', 
-    99.90, 
-    'aneis',
-    'anel-solitario-elegance.jpg',
-    'aneis',
-    10,
-    'Anel solitário com zircônia central e acabamento brilhante.',
-    'Prata 925',
-    'prateado',
-    'Elegante',
-    'Casamento'
-),
-(
-    'Colar Infinity Love',
-    129.90,
-    'colares',
-    'colar-infinity-love.jpg',
-    'colares',
-    15,
-    'Colar delicado com símbolo do infinito cravejado.',
-    'Ouro 18k',
-    'dourado',
-    'Moderno',
-    'Presente'
-),
-(
-    'Brinco Gota Crystal',
-    79.90,
-    'brincos',
-    'brinco-gota-crystal.jpg',
-    'brincos',
-    20,
-    'Brinco em formato de gota com zircônias.',
-    'Prata 925',
-    'rosé',
-    'Clássico',
-    'Festa'
-),
-(
-    'Pulseira Energy',
-    89.90,
-    'pulseiras',
-    'pulseira-energy.jpg',
-    'pulseiras',
-    8,
-    'Pulseira com design minimalista e pedras naturais.',
-    'Aço Inoxidável',
-    'dourado',
-    'Minimalista',
-    'Casual'
 );
 
 -- ==================== TABELA DE CLIENTES ====================
@@ -176,58 +118,59 @@ CREATE TRIGGER update_orders_updated_at BEFORE UPDATE ON orders
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ==================== DADOS INICIAIS DOS PRODUTOS ====================
-INSERT INTO products (name, price, price_discount, image, folder, category, stock) VALUES
+INSERT INTO products (name, price, price_discount, image, category, stock, material, color, style, occasion, description) VALUES
 -- Anéis
-('Anel Elegance', 150.00, 135.00, 'anel-elegance.webp', 'aneis', 'aneis', 5),
-('Anel de Prata', 120.00, 108.00, 'anel-prata.webp', 'aneis', 'aneis', 3),
+('Anel Elegance', 150.00, 135.00, 'anel-elegance.webp', 'aneis', 5, 'Ouro 18k', 'dourado', 'Elegante', 'Festa', 'Anel elegante com design sofisticado.'),
+('Anel de Prata', 120.00, 108.00, 'anel-prata.webp', 'aneis', 3, 'Prata 925', 'prateado', 'Clássico', 'Casual', 'Anel clássico de prata, ideal para o dia a dia.'),
+('Anel Zircônia', 110.00, NULL, 'anel-zirconia.webp', 'aneis', 10, 'Zircônia', 'prateado', 'Moderno', 'Trabalho', 'Anel moderno com detalhe em zircônia.'),
 
 -- Brincos
-('Brinco Folheado', 95.00, 85.50, 'pedrinhas.webp', 'brincos', 'brincos', 10),
-('Brinco Argola', 80.00, NULL, 'coracao.webp', 'brincos', 'brincos', 8),
-('Brinco Borboleta', 95.00, NULL, 'duploborboleta.webp', 'brincos', 'brincos', 6),
-('Brinco Argola 2', 80.00, NULL, 'borboletas.webp', 'brincos', 'brincos', 4),
-('Brinco Escudo', 95.00, NULL, 'escudopedrabolinha.webp', 'brincos', 'brincos', 7),
-('Brinco Coração', 80.00, NULL, 'coration.webp', 'brincos', 'brincos', 5),
-('Brinco Peneira', 95.00, NULL, 'peneira.webp', 'brincos', 'brincos', 9),
-('Brinco Flor', 80.00, NULL, 'florpedrabolinha.webp', 'brincos', 'brincos', 3),
-('Brinco Pizza', 95.00, NULL, 'pizza.webp', 'brincos', 'brincos', 12),
-('Brinco Grade', 80.00, NULL, 'grade.webp', 'brincos', 'brincos', 6),
+('Brinco Folheado', 95.00, 85.50, 'pedrinhas.webp', 'brincos', 10, 'Aço Inoxidável', 'dourado', 'Moderno', 'Casual', 'Brinco folheado com pequenas pedras.'),
+('Brinco Argola Coração', 80.00, NULL, 'coracao.webp', 'brincos', 8, 'Prata 925', 'prateado', 'Moderno', 'Casual', 'Brinco de argola com pingente de coração.'),
+('Brinco Borboleta', 95.00, NULL, 'duploborboleta.webp', 'brincos', 6, 'Prata 925', 'rosé', 'Delicado', 'Casual', 'Brinco delicado em formato de borboleta.'),
+('Brinco Argola 2', 80.00, NULL, 'borboletas.webp', 'brincos', 4, 'Ouro 18k', 'dourado', 'Moderno', 'Festa', 'Brinco de argola com detalhes de borboletas.'),
+('Brinco Escudo', 95.00, NULL, 'escudopedrabolinha.webp', 'brincos', 7, 'Prata 925', 'prateado', 'Clássico', 'Festa', 'Brinco em formato de escudo com pedras.'),
+('Brinco Coração Zircônia', 80.00, NULL, 'coration.webp', 'brincos', 5, 'Zircônia', 'rosé', 'Elegante', 'Presente', 'Brinco de coração cravejado com zircônias.'),
+('Brinco Peneira', 95.00, NULL, 'peneira.webp', 'brincos', 9, 'Aço Inoxidável', 'dourado', 'Moderno', 'Casual', 'Brinco com design moderno estilo peneira.'),
+('Brinco Flor', 80.00, NULL, 'florpedrabolinha.webp', 'brincos', 3, 'Prata 925', 'prateado', 'Delicado', 'Presente', 'Brinco em formato de flor com pedra central.'),
+('Brinco Pizza', 95.00, NULL, 'pizza.webp', 'brincos', 12, 'Zircônia', 'multicor', 'Festa', 'Festa', 'Brinco estilo pizza com zircônias multicoloridas.'),
+('Brinco Grade', 80.00, NULL, 'grade.webp', 'brincos', 6, 'Aço Inoxidável', 'prateado', 'Moderno', 'Trabalho', 'Brinco com design de grade, para um look de trabalho.'),
 
 -- Colares
-('Colar de Pérolas', 200.00, NULL, 'abencoado.webp', 'colares', 'colares', 4),
-('Colar de Coração', 150.00, NULL, 'gratidao.webp', 'colares', 'colares', 7),
-('Colar Letrán', 150.00, NULL, 'letran.webp', 'colares', 'colares', 5),
-('Colar Espírito Santo', 150.00, NULL, 'espiritosanto.webp', 'colares', 'colares', 8),
-('Colar Menino', 150.00, NULL, 'menino.webp', 'colares', 'colares', 3),
-('Colar de Filhos', 150.00, NULL, 'meninomenina.webp', 'colares', 'colares', 6),
+('Colar Abençoado', 200.00, NULL, 'abencoado.webp', 'colares', 4, 'Ouro 18k', 'dourado', 'Clássico', 'Presente', 'Colar com pingente escrito "Abençoado".'),
+('Colar Gratidão', 150.00, NULL, 'gratidao.webp', 'colares', 7, 'Prata 925', 'prateado', 'Moderno', 'Casual', 'Colar com pingente escrito "Gratidão".'),
+('Colar Letra N', 150.00, NULL, 'letran.webp', 'colares', 5, 'Ouro 18k', 'dourado', 'Minimalista', 'Casual', 'Colar com um pingente da letra N.'),
+('Colar Espírito Santo', 150.00, NULL, 'espiritosanto.webp', 'colares', 8, 'Prata 925', 'prateado', 'Clássico', 'Presente', 'Colar com pingente do Espírito Santo.'),
+('Colar Menino', 150.00, NULL, 'menino.webp', 'colares', 3, 'Ouro 18k', 'dourado', 'Delicado', 'Presente', 'Colar com pingente de menino.'),
+('Colar Filhos', 150.00, NULL, 'meninomenina.webp', 'colares', 6, 'Prata 925', 'prateado', 'Delicado', 'Presente', 'Colar com pingentes de menino e menina.'),
 
 -- Pulseiras
-('Pulseira Pedrinha', 110.00, NULL, 'pedrinha.webp', 'pulseiras', 'pulseiras', 10),
-('Pulseira Dourada', 90.00, NULL, 'pulseira-dourada.webp', 'pulseiras', 'pulseiras', 5),
+('Pulseira Pedrinha', 110.00, NULL, 'pedrinha.webp', 'pulseiras', 10, 'Prata 925', 'multicor', 'Delicado', 'Casual', 'Pulseira delicada com pedras multicoloridas.'),
+('Pulseira Dourada', 90.00, NULL, 'pulseira-dourada.webp', 'pulseiras', 5, 'Aço Inoxidável', 'dourado', 'Minimalista', 'Trabalho', 'Pulseira dourada com design minimalista.'),
 
 -- Conjuntos
-('Conjunto Borboleta', 110.00, NULL, 'borboleta.webp', 'conjuntos', 'conjuntos', 4),
-('Conjunto Flores', 150.00, NULL, 'conjunto.webp', 'conjuntos', 'conjuntos', 6),
-('Conjunto Pérolas', 200.00, NULL, 'gotaperola.webp', 'conjuntos', 'conjuntos', 3),
-('Conjunto Pandas', 150.00, NULL, 'panda.webp', 'conjuntos', 'conjuntos', 5),
-('Conjunto Coração', 120.00, NULL, 'coracao.webp', 'conjuntos', 'conjuntos', 8),
-('Conjunto Borboleta 2', 110.00, NULL, 'coracaopedrinhas.webp', 'conjuntos', 'conjuntos', 7),
-('Conjunto Folheado', 150.00, NULL, 'minnie.webp', 'conjuntos', 'conjuntos', 4),
-('Conjunto Santa', 95.00, NULL, 'santa.webp', 'conjuntos', 'conjuntos', 9),
-('Conjunto Borboletas', 80.00, NULL, 'borboletas.webp', 'conjuntos', 'conjuntos', 6),
-('Conjunto Escudo', 95.00, NULL, 'escudopedrabolinha.webp', 'conjuntos', 'conjuntos', 5);
+('Conjunto Borboleta', 110.00, NULL, 'borboleta.webp', 'conjuntos', 4, 'Prata 925', 'rosé', 'Delicado', 'Casual', 'Conjunto de colar e brincos de borboleta.'),
+('Conjunto Flores', 150.00, NULL, 'conjunto.webp', 'conjuntos', 6, 'Ouro 18k', 'dourado', 'Clássico', 'Festa', 'Conjunto de colar e brincos de flores.'),
+('Conjunto Pérolas', 200.00, NULL, 'gotaperola.webp', 'conjuntos', 3, 'Prata 925', 'prateado', 'Elegante', 'Casamento', 'Conjunto de colar e brincos de pérola.'),
+('Conjunto Pandas', 150.00, NULL, 'panda.webp', 'conjuntos', 5, 'Aço Inoxidável', 'prateado', 'Moderno', 'Casual', 'Conjunto divertido de colar e brincos de panda.'),
+('Conjunto Coração', 120.00, NULL, 'coracao.webp', 'conjuntos', 8, 'Prata 925', 'rosé', 'Delicado', 'Presente', 'Conjunto de colar e brincos de coração.'),
+('Conjunto Pedrinhas', 110.00, NULL, 'coracaopedrinhas.webp', 'conjuntos', 7, 'Zircônia', 'multicor', 'Moderno', 'Festa', 'Conjunto de colar e brincos com pedrinhas coloridas.'),
+('Conjunto Minnie', 150.00, NULL, 'minnie.webp', 'conjuntos', 4, 'Aço Inoxidável', 'rosé', 'Delicado', 'Casual', 'Conjunto temático da Minnie.'),
+('Conjunto Santa', 95.00, NULL, 'santa.webp', 'conjuntos', 9, 'Prata 925', 'prateado', 'Clássico', 'Presente', 'Conjunto religioso com imagem de santa.'),
+('Conjunto Borboletas Vazadas', 80.00, NULL, 'borboletas.webp', 'conjuntos', 6, 'Ouro 18k', 'dourado', 'Moderno', 'Festa', 'Conjunto de borboletas com design vazado.'),
+('Conjunto Escudo', 95.00, NULL, 'escudopedrabolinha.webp', 'conjuntos', 5, 'Prata 925', 'prateado', 'Clássico', 'Festa', 'Conjunto de colar e brincos em formato de escudo.');
 
 -- ==================== VIEWS ÚTEIS ====================
 
 -- View de produtos com baixo estoque
-CREATE VIEW low_stock_products AS
+CREATE OR REPLACE VIEW low_stock_products AS
 SELECT id, name, category, stock, price
 FROM products
 WHERE stock <= 5 AND active = TRUE
 ORDER BY stock ASC;
 
 -- View de resumo de vendas
-CREATE VIEW sales_summary AS
+CREATE OR REPLACE VIEW sales_summary AS
 SELECT 
     p.name AS product_name,
     p.category,
@@ -237,6 +180,6 @@ SELECT
 FROM order_items oi
 JOIN products p ON oi.product_id = p.id
 JOIN orders o ON oi.order_id = o.id
-WHERE o.status = 'paid'
+WHERE o.paid_at IS NOT NULL
 GROUP BY p.id, p.name, p.category
 ORDER BY total_revenue DESC;
