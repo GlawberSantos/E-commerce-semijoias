@@ -5,25 +5,65 @@ dotenv.config();
 
 const { Pool } = pg;
 
+// Construir connectionString a partir de DATABASE_URL ou variáveis individuais
+const connectionString = process.env.DATABASE_URL ||
+  `postgresql://${process.env.DB_USER || process.env.PGUSER}:${process.env.DB_PASSWORD || process.env.PGPASSWORD}@${process.env.DB_HOST || process.env.PGHOST}:${process.env.DB_PORT || process.env.PGPORT || 5432}/${process.env.DB_NAME || process.env.PGDATABASE}`;
+
 const pool = new Pool({
-  host: process.env.DB_HOST || process.env.PGHOST,
-  port: process.env.DB_PORT || process.env.PGPORT,
-  user: process.env.DB_USER || process.env.PGUSER,
-  password: process.env.DB_PASSWORD || process.env.PGPASSWORD,
-  database: process.env.DB_NAME || process.env.PGDATABASE,
+  connectionString,
+  ssl: false, // Railway não precisa de SSL entre containers
   max: 20,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  connectionTimeoutMillis: 10000,
 });
 
-// Teste de conexão
+// Log de configuração (sem mostrar senha)
+console.log('🔧 Configuração do banco:', {
+  host: process.env.DB_HOST || process.env.PGHOST || 'via DATABASE_URL',
+  port: process.env.DB_PORT || process.env.PGPORT || 5432,
+  database: process.env.DB_NAME || process.env.PGDATABASE || 'via DATABASE_URL',
+  user: process.env.DB_USER || process.env.PGUSER || 'via DATABASE_URL'
+});
+
+// Eventos do pool
 pool.on('connect', () => {
-  console.log('✅ Conectado ao PostgreSQL');
+  console.log('✅ Nova conexão estabelecida com PostgreSQL');
 });
 
 pool.on('error', (err) => {
-  console.error('❌ Erro no pool do PostgreSQL:', err);
+  console.error('❌ Erro inesperado no pool do PostgreSQL:', err);
+  process.exit(-1);
 });
+
+// Testar conexão imediatamente
+(async () => {
+  let retries = 10;
+  while (retries > 0) {
+    try {
+      const result = await pool.query('SELECT NOW() as now, current_database() as db, current_user as user');
+      console.log('✅ Conexão com banco estabelecida!');
+      console.log('📦 Banco:', result.rows[0].db);
+      console.log('👤 Usuário:', result.rows[0].user);
+      console.log('⏰ Timestamp:', result.rows[0].now);
+      break;
+    } catch (error) {
+      retries--;
+      console.log(`⏳ Tentativa ${10 - retries}/10: Aguardando banco de dados...`);
+      console.error('   Erro:', error.message);
+
+      if (retries === 0) {
+        console.error('❌ Falha ao conectar ao banco após 10 tentativas');
+        console.error('🔍 Verifique se:');
+        console.error('   1. O serviço PostgreSQL está rodando');
+        console.error('   2. As credenciais estão corretas');
+        console.error('   3. A variável DATABASE_URL está configurada no Railway');
+        process.exit(-1);
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 3000));
+    }
+  }
+})();
 
 // Função helper para queries
 export const query = async (text, params) => {
@@ -31,10 +71,11 @@ export const query = async (text, params) => {
   try {
     const res = await pool.query(text, params);
     const duration = Date.now() - start;
-    console.log('📊 Query executada:', { text, duration, rows: res.rowCount });
+    console.log(`✅ Query executada em ${duration}ms (${res.rowCount} linhas)`);
     return res;
   } catch (error) {
-    console.error('❌ Erro na query:', error);
+    console.error('❌ Erro na query:', error.message);
+    console.error('   SQL:', text.substring(0, 100) + '...');
     throw error;
   }
 };
@@ -47,8 +88,8 @@ export const getClient = async () => {
 
   // Timeout para evitar conexões travadas
   const timeout = setTimeout(() => {
-    console.error('⚠️ Cliente do banco não foi liberado após 5 segundos');
-  }, 5000);
+    console.error('⚠️ Cliente do banco não foi liberado após 10 segundos');
+  }, 10000);
 
   client.release = () => {
     clearTimeout(timeout);

@@ -36,6 +36,19 @@ const openai = apiKey ? new OpenAI({
   baseURL: "https://openrouter.ai/api/v1"
 }) : null;
 
+// ==================== HEALTH CHECK ====================
+app.get("/", (req, res) => {
+  res.json({
+    status: "online",
+    message: "API Gabrielly Semijoias",
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get("/health", (req, res) => {
+  res.json({ status: "healthy" });
+});
+
 // ==================== ROTAS DE PRODUTOS ====================
 app.get('/api/products', async (req, res) => {
   try {
@@ -154,21 +167,7 @@ app.put('/api/products/:id', async (req, res) => {
   }
 });
 
-// ==================== HEALTH CHECK ====================
-app.get("/", (req, res) => {
-  res.json({
-    status: "online",
-    message: "API Gabrielly Semijoias",
-    timestamp: new Date().toISOString()
-  });
-});
-
-app.get("/health", (req, res) => {
-  res.json({ status: "healthy" });
-});
-
 // ==================== ENDPOINTS DE PEDIDOS ====================
-// POST /api/orders - Cria um novo pedido
 app.post("/api/orders", async (req, res) => {
   const { items, customerInfo, shippingMethod, paymentMethod, totalAmount, couponCode, shippingCost = 0 } = req.body;
 
@@ -298,7 +297,6 @@ app.post("/api/orders", async (req, res) => {
   }
 });
 
-// POST /api/orders/:id/confirm - Confirma pagamento do pedido
 app.post("/api/orders/:id/confirm", async (req, res) => {
   const orderId = parseInt(req.params.id);
   try {
@@ -321,7 +319,6 @@ app.post("/api/orders/:id/confirm", async (req, res) => {
   }
 });
 
-// POST /api/orders/:id/cancel - Cancela pedido e devolve estoque
 app.post("/api/orders/:id/cancel", async (req, res) => {
   const orderId = parseInt(req.params.id);
   const client = await getClient();
@@ -385,7 +382,6 @@ app.post("/api/orders/:id/cancel", async (req, res) => {
   }
 });
 
-// GET /api/orders - Lista todos os pedidos
 app.get("/api/orders", async (req, res) => {
   try {
     const result = await query(
@@ -405,7 +401,6 @@ app.get("/api/orders", async (req, res) => {
   }
 });
 
-// GET /api/orders/:id - Busca um pedido específico com detalhes
 app.get("/api/orders/:id", async (req, res) => {
   const orderId = parseInt(req.params.id);
   try {
@@ -437,7 +432,6 @@ app.get("/api/orders/:id", async (req, res) => {
 });
 
 // ==================== ENDPOINTS DE ESTATÍSTICAS ====================
-// GET /api/stats/low-stock - Produtos com baixo estoque
 app.get("/api/stats/low-stock", async (req, res) => {
   try {
     const result = await query('SELECT * FROM low_stock_products');
@@ -448,7 +442,6 @@ app.get("/api/stats/low-stock", async (req, res) => {
   }
 });
 
-// GET /api/stats/sales - Resumo de vendas
 app.get("/api/stats/sales", async (req, res) => {
   try {
     const result = await query('SELECT * FROM sales_summary LIMIT 10');
@@ -515,19 +508,21 @@ app.post("/api/frete/calcular", async (req, res) => {
   }
 });
 
-// ==================== SERVIDOR ====================
+// ==================== INICIALIZAÇÃO DO SERVIDOR ====================
 const PORT = process.env.PORT || 5000;
+
+// Iniciar servidor somente após conectar ao banco
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
   console.log(`🌍 Ambiente: ${process.env.NODE_ENV || 'development'}`);
   console.log("🔗 Endpoints disponíveis:");
   console.log(" GET  /");
   console.log(" GET  /health");
-  console.log(" GET  /products (compatibilidade)");
-  console.log(" GET  /products/:id (compatibilidade)");
   console.log(" GET  /api/products");
   console.log(" GET  /api/products?category=brincos");
   console.log(" GET  /api/products/:id");
+  console.log(" POST /api/products");
+  console.log(" PUT  /api/products/:id");
   console.log(" POST /api/orders");
   console.log(" POST /api/orders/:id/confirm");
   console.log(" POST /api/orders/:id/cancel");
