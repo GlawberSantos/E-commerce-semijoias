@@ -9,9 +9,12 @@ const { Pool } = pg;
 const connectionString = process.env.DATABASE_URL ||
   `postgresql://${process.env.DB_USER || process.env.PGUSER}:${process.env.DB_PASSWORD || process.env.PGPASSWORD}@${process.env.DB_HOST || process.env.PGHOST}:${process.env.DB_PORT || process.env.PGPORT || 5432}/${process.env.DB_NAME || process.env.PGDATABASE}`;
 
+// Detectar se está no Railway (ou qualquer ambiente de produção)
+const isProduction = process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENVIRONMENT;
+
 const pool = new Pool({
   connectionString,
-  ssl: false, // Railway não precisa de SSL entre containers
+  ssl: isProduction ? { rejectUnauthorized: false } : false,
   max: 20,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 10000,
@@ -22,7 +25,9 @@ console.log('🔧 Configuração do banco:', {
   host: process.env.DB_HOST || process.env.PGHOST || 'via DATABASE_URL',
   port: process.env.DB_PORT || process.env.PGPORT || 5432,
   database: process.env.DB_NAME || process.env.PGDATABASE || 'via DATABASE_URL',
-  user: process.env.DB_USER || process.env.PGUSER || 'via DATABASE_URL'
+  user: process.env.DB_USER || process.env.PGUSER || 'via DATABASE_URL',
+  ssl: isProduction ? 'enabled (rejectUnauthorized: false)' : 'disabled',
+  environment: process.env.NODE_ENV || 'development'
 });
 
 // Eventos do pool
@@ -40,7 +45,7 @@ pool.on('error', (err) => {
   let retries = 10;
   while (retries > 0) {
     try {
-      const result = await pool.query('SELECT NOW() as now, current_database() as db, current_user as user');
+      const result = await pool.query('SELECT NOW() as now, current_database() as db, current_user as user');      
       console.log('✅ Conexão com banco estabelecida!');
       console.log('📦 Banco:', result.rows[0].db);
       console.log('👤 Usuário:', result.rows[0].user);
@@ -57,6 +62,7 @@ pool.on('error', (err) => {
         console.error('   1. O serviço PostgreSQL está rodando');
         console.error('   2. As credenciais estão corretas');
         console.error('   3. A variável DATABASE_URL está configurada no Railway');
+        console.error('   4. SSL está habilitado (Railway requer SSL)');
         process.exit(-1);
       }
 
