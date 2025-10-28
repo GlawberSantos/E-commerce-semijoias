@@ -80,7 +80,7 @@ router.put('/account/details', protect, async (req, res) => {
     const { rows } = await query(
       `UPDATE customers 
        SET first_name = $1, email = $2, phone = $3, updated_at = CURRENT_TIMESTAMP
-       WHERE id = $4 RETURNING id, first_name, email, phone`,
+       WHERE id = $4 RETURNING id, first_name AS name, email, phone`,
       [name, email, phone, userId]
     );
 
