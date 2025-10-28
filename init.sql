@@ -1,4 +1,4 @@
-sql-- Script para PostgreSQL - Gabrielly Semijoias
+-- Script para PostgreSQL - Gabrielly Semijoias
 -- ==================== TABELA DE CLIENTES ====================
 CREATE TABLE IF NOT EXISTS customers (
     id SERIAL PRIMARY KEY,
