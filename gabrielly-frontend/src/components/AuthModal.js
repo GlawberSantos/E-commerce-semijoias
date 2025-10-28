@@ -10,6 +10,13 @@ const AuthModal = ({ isOpen, onClose }) => {
         confirmPassword: ''
     });
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    // URL da API - detecta automaticamente entre desenvolvimento e produção
+    const API_URL = process.env.REACT_APP_API_URL || 
+        (window.location.hostname === 'localhost' 
+            ? 'http://localhost:5000' 
+            : 'https://e-commerce-semijoias-production.up.railway.app');
 
     const handleChange = (e) => {
         setFormData({
@@ -22,24 +29,34 @@ const AuthModal = ({ isOpen, onClose }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        setLoading(true);
 
+        // Validações
         if (!isLoginMode && formData.password !== formData.confirmPassword) {
             setError('As senhas não coincidem');
+            setLoading(false);
+            return;
+        }
+
+        if (!isLoginMode && formData.password.length < 6) {
+            setError('A senha deve ter no mínimo 6 caracteres');
+            setLoading(false);
             return;
         }
 
         try {
-            // Aqui você implementará a lógica de autenticação com seu backend
-            const response = await fetch(
-                `http://localhost:3001/api/auth/${isLoginMode ? 'login' : 'register'}`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formData),
-                }
-            );
+            const endpoint = isLoginMode ? 'login' : 'register';
+            const body = isLoginMode 
+                ? { email: formData.email, password: formData.password }
+                : { name: formData.name, email: formData.email, password: formData.password };
+
+            const response = await fetch(`${API_URL}/api/auth/${endpoint}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(body),
+            });
 
             const data = await response.json();
 
@@ -51,34 +68,57 @@ const AuthModal = ({ isOpen, onClose }) => {
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
 
-            // Fecha o modal e atualiza o estado da aplicação
-            onClose();
-            window.location.reload(); // Atualiza a página para refletir o login
+            // Feedback visual
+            setError('');
+            
+            // Fecha o modal e atualiza a página
+            setTimeout(() => {
+                onClose();
+                window.location.reload();
+            }, 500);
 
         } catch (error) {
+            console.error('Erro na autenticação:', error);
             setError(error.message || 'Ocorreu um erro. Tente novamente.');
+        } finally {
+            setLoading(false);
         }
+    };
+
+    const toggleMode = () => {
+        setIsLoginMode(!isLoginMode);
+        setError('');
+        setFormData({
+            email: '',
+            password: '',
+            name: '',
+            confirmPassword: ''
+        });
     };
 
     if (!isOpen) return null;
 
     return (
-        <div className="auth-modal-overlay">
-            <div className="auth-modal">
+        <div className="auth-modal-overlay" onClick={onClose}>
+            <div className="auth-modal" onClick={(e) => e.stopPropagation()}>
                 <button className="close-button" onClick={onClose}>&times;</button>
                 
                 <div className="auth-header">
                     <h2>{isLoginMode ? 'Login' : 'Criar Conta'}</h2>
                     <div className="auth-toggle">
                         <button
+                            type="button"
                             className={isLoginMode ? 'active' : ''}
                             onClick={() => setIsLoginMode(true)}
+                            disabled={loading}
                         >
                             Login
                         </button>
                         <button
+                            type="button"
                             className={!isLoginMode ? 'active' : ''}
                             onClick={() => setIsLoginMode(false)}
+                            disabled={loading}
                         >
                             Cadastro
                         </button>
@@ -97,6 +137,8 @@ const AuthModal = ({ isOpen, onClose }) => {
                                 name="name"
                                 value={formData.name}
                                 onChange={handleChange}
+                                placeholder="Seu nome completo"
+                                disabled={loading}
                                 required
                             />
                         </div>
@@ -110,6 +152,8 @@ const AuthModal = ({ isOpen, onClose }) => {
                             name="email"
                             value={formData.email}
                             onChange={handleChange}
+                            placeholder="seu@email.com"
+                            disabled={loading}
                             required
                         />
                     </div>
@@ -122,6 +166,8 @@ const AuthModal = ({ isOpen, onClose }) => {
                             name="password"
                             value={formData.password}
                             onChange={handleChange}
+                            placeholder={isLoginMode ? "Sua senha" : "Mínimo 6 caracteres"}
+                            disabled={loading}
                             required
                         />
                     </div>
@@ -135,34 +181,31 @@ const AuthModal = ({ isOpen, onClose }) => {
                                 name="confirmPassword"
                                 value={formData.confirmPassword}
                                 onChange={handleChange}
+                                placeholder="Repita sua senha"
+                                disabled={loading}
                                 required
                             />
                         </div>
                     )}
 
-                    <button type="submit" className="auth-submit">
-                        {isLoginMode ? 'Entrar' : 'Criar conta'}
+                    <button type="submit" className="auth-submit" disabled={loading}>
+                        {loading ? (isLoginMode ? 'Entrando...' : 'Cadastrando...') : (isLoginMode ? 'Entrar' : 'Criar conta')}
                     </button>
                 </form>
 
-                {isLoginMode && (
-                    <button className="forgot-password">
-                        Esqueceu sua senha?
-                    </button>
-                )}
-
-                <div className="social-login">
-                    <p>Ou continue com</p>
-                    <div className="social-buttons">
-                        <button className="google">
-                            <i className="fab fa-google"></i>
-                            Google
+                <div className="auth-footer">
+                    <p>
+                        {isLoginMode ? 'Não tem uma conta?' : 'Já tem uma conta?'}
+                        {' '}
+                        <button 
+                            type="button" 
+                            onClick={toggleMode} 
+                            className="toggle-link"
+                            disabled={loading}
+                        >
+                            {isLoginMode ? 'Cadastre-se' : 'Faça login'}
                         </button>
-                        <button className="facebook">
-                            <i className="fab fa-facebook"></i>
-                            Facebook
-                        </button>
-                    </div>
+                    </p>
                 </div>
             </div>
         </div>

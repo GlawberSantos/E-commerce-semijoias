@@ -14,7 +14,7 @@
     color: var(--text-color);
     border-bottom: 1px solid #222;
     position: sticky;
-    top: 2.5rem; /* Altura do banner */
+    top: 2.5rem;
     z-index: 999;
     width: 100%;
 }
@@ -66,7 +66,7 @@
 
 .header .navbar .nav-list .nav-item a,
 .header .navbar .nav-list .catalog-toggle {
-    color: #FFFFFF !important; /* Força a cor branca */
+    color: #FFFFFF !important;
     text-decoration: none;
     font-weight: 500;
     padding: 0.5rem 1rem;
@@ -84,7 +84,6 @@
 .header .navbar .nav-list .catalog-toggle[aria-expanded="true"] {
     color: var(--briliant-color) !important;
 }
-
 
 /* Submenu */
 .submenu {
@@ -127,7 +126,12 @@
     gap: 20px;
 }
 
-.login-button,
+/* ========== MENU DE USUÁRIO ========== */
+.user-menu {
+    position: relative;
+    z-index: 1001;
+}
+
 .user-button {
     background: none;
     border: none;
@@ -137,18 +141,151 @@
     align-items: center;
     gap: 8px;
     font-size: 1rem;
-    transition: color 0.3s ease;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
 }
 
-.login-button:hover,
 .user-button:hover {
     color: var(--briliant-color);
+    background: rgba(212, 175, 55, 0.1);
+}
+
+.user-button i {
+    font-size: 1.2rem;
+}
+
+.user-name {
+    font-weight: 500;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Dropdown do Usuário - CORRIGIDO */
+.user-dropdown {
+    position: absolute;
+    top: calc(100% + 2px);
+    /* ← REDUZIDO PARA 2px */
+    right: 0;
+    background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 12px;
+    min-width: 220px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    animation: slideDown 0.3s ease;
+    z-index: 1000;
+    padding-top: 5px;
+    /* ← ADICIONADO ESPAÇO NO TOPO */
+    margin-top: -5px;
+    /* ← COMPENSA O PADDING */
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.user-dropdown-header {
+    padding: 1rem;
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(244, 208, 63, 0.15) 100%);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.user-dropdown-header i {
+    font-size: 2rem;
+    color: var(--briliant-color);
+}
+
+.user-dropdown-header span {
+    color: var(--text-color);
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.user-dropdown a,
+.user-dropdown .logout-dropdown-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    color: var(--text-color);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+}
+
+.user-dropdown a:hover,
+.user-dropdown .logout-dropdown-btn:hover {
+    background: rgba(212, 175, 55, 0.1);
+    color: var(--briliant-color);
+    padding-left: 1.25rem;
+}
+
+.user-dropdown a i,
+.user-dropdown .logout-dropdown-btn i {
+    width: 1.25rem;
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+.logout-dropdown-btn {
+    border-top: 1px solid rgba(212, 175, 55, 0.2);
+    color: #ff6b6b;
+}
+
+.logout-dropdown-btn:hover {
+    background: rgba(255, 107, 107, 0.1);
+    color: #ff8787;
+}
+
+/* Botão Login */
+.login-button {
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(244, 208, 63, 0.15) 100%);
+    border: 1px solid rgba(212, 175, 55, 0.5);
+    color: var(--text-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1rem;
+    padding: 0.5rem 1.25rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.login-button:hover {
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.25) 0%, rgba(244, 208, 63, 0.25) 100%);
+    border-color: rgba(212, 175, 55, 0.8);
+    color: var(--briliant-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
 }
 
 .cart-icon-link {
     color: var(--text-color);
     font-size: 1.5rem;
     transition: color 0.3s ease;
+    padding: 0.5rem;
 }
 
 .cart-icon-link:hover {
@@ -157,10 +294,21 @@
 
 /* Sliding Banner */
 @keyframes marquee {
-    0%   { transform: translateX(100%); }
-    20%  { transform: translateX(0); }
-    80%  { transform: translateX(0); }
-    100% { transform: translateX(-100%); }
+    0% {
+        transform: translateX(100%);
+    }
+
+    20% {
+        transform: translateX(0);
+    }
+
+    80% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-100%);
+    }
 }
 
 .sliding-banner {
@@ -264,9 +412,14 @@
     gap: 20px;
 }
 
+.payment-methods {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .payment-methods i {
     font-size: 2rem;
-    margin-right: 10px;
     color: var(--text-color);
 }
 
@@ -286,7 +439,8 @@
         justify-content: space-between;
     }
 
-    .navbar, .header-right {
+    .navbar,
+    .header-right {
         display: none;
     }
 
@@ -334,6 +488,11 @@
         border: none;
         background-color: #111;
         transform: none;
+    }
+
+    .user-dropdown {
+        right: -10px;
+        min-width: 200px;
     }
 
     .footer-content {

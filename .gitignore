@@ -1,16 +1,23 @@
-# Arquivos de ambiente
+# ==============================
+# 🔒 ARQUIVOS DE AMBIENTE
+# ==============================
 .env
 .env.*
 !.env.example
 .env.local
 .env.production
 
-# Node
+# ==============================
+# 🧩 NODE
+# ==============================
 node_modules/
 npm-debug.log
 yarn-error.log
+yarn-debug.log
 
-# Java
+# ==============================
+# ☕ JAVA (caso use libs Java)
+# ==============================
 target/
 *.class
 *.log
@@ -18,15 +25,21 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-# React
+# ==============================
+# ⚛️ REACT (se tiver frontend integrado)
+# ==============================
 build/
 .DS_Store
 
-# IDEs
+# ==============================
+# 💻 IDEs / SISTEMAS
+# ==============================
 .vscode/
 .idea/
 *.swp
 *.swo
 
-
+# ==============================
+# 📦 DEPLOY / HOSTS
+# ==============================
 .vercel

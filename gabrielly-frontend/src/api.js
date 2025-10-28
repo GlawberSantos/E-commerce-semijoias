@@ -54,4 +54,9 @@ export const ordersAPI = {
   cancel: (id) => api.post(`/orders/${id}/cancel`, {}),
 };
 
+export const authAPI = {
+  login: (credentials) => api.post('/auth/login', credentials),
+  register: (userData) => api.post('/auth/register', userData),
+};
+
 export { API_BASE_URL };

@@ -20,6 +20,7 @@ function Layout({ children }) {
   const [isSubmenuOpen, setIsSubmenuOpen] = useState(false);
   const [isNavbarActive, setIsNavbarActive] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const location = useLocation();
   const { user, logout } = useAuth();
@@ -27,17 +28,15 @@ function Layout({ children }) {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentMessageIndex((prevIndex) => (prevIndex + 1) % messages.length);
-    }, 5000); // Muda a cada 5 segundos
+    }, 5000);
 
     return () => clearInterval(interval);
   }, []);
 
   const getMenuItemClass = (path) => {
-    // Per the user's request, the home page link should never be active.
     if (path === '/') {
       return 'nav-item';
     }
-    // For all other links, make them active if the URL path starts with their path.
     return location.pathname.startsWith(path) ? 'nav-item active' : 'nav-item';
   };
 
@@ -46,6 +45,11 @@ function Layout({ children }) {
   };
 
   const closeSubmenu = () => setIsSubmenuOpen(false);
+
+  const handleLogout = () => {
+    logout();
+    setIsUserMenuOpen(false);
+  };
 
   return (
     <div className="layout-container">
@@ -108,16 +112,36 @@ function Layout({ children }) {
             <SearchBar />
 
             {user ? (
-              <div className="user-menu">
+              <div 
+                className="user-menu"
+                onMouseEnter={() => setIsUserMenuOpen(true)}
+                onMouseLeave={() => setIsUserMenuOpen(false)}
+              >
                 <button className="user-button">
                   <i className="fas fa-user"></i>
-                  <span>{user.name.split(' ')[0]}</span>
+                  <span className="user-name">{user.name.split(' ')[0]}</span>
                 </button>
-                <div className="user-dropdown">
-                  <Link to="/minha-conta">Minha Conta</Link>
-                  <Link to="/meus-pedidos">Meus Pedidos</Link>
-                  <button onClick={logout}>Sair</button>
-                </div>
+                
+                {isUserMenuOpen && (
+                  <div className="user-dropdown">
+                    <div className="user-dropdown-header">
+                      <i className="fas fa-user-circle"></i>
+                      <span>{user.name}</span>
+                    </div>
+                    <Link to="/minha-conta" onClick={() => setIsUserMenuOpen(false)}>
+                      <i className="fas fa-user-cog"></i>
+                      Minha Conta
+                    </Link>
+                    <Link to="/meus-pedidos" onClick={() => setIsUserMenuOpen(false)}>
+                      <i className="fas fa-box"></i>
+                      Meus Pedidos
+                    </Link>
+                    <button onClick={handleLogout} className="logout-dropdown-btn">
+                      <i className="fas fa-sign-out-alt"></i>
+                      Sair
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               <button
@@ -170,11 +194,21 @@ function Layout({ children }) {
           <div className="footer-section social-media">
             <h3>Redes Sociais</h3>
             <div className="social-icons">
-              <a href="https://www.linkedin.com/company/gabriellysemijoias" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer"><img src={linkedinIcon} alt="LinkedIn" /></a>
-              <a href="https://www.facebook.com/gabri.bab" aria-label="Facebook" target="_blank" rel="noopener noreferrer"><img src={facebookIcon} alt="Facebook" /></a>
-              <a href="https://wa.me/5583987855966" aria-label="Whatsapp" target="_blank" rel="noopener noreferrer"><img src={whatsappIcon} alt="Whatsapp" /></a>
-              <a href="https://www.instagram.com/gabriellysemijoias9215" aria-label="Instagram" target="_blank" rel="noopener noreferrer"><img src={instagramIcon} alt="Instagram" /></a>
-              <a href="https://www.youtube.com/@gabriellysemijoias3517" aria-label="YouTube" target="_blank" rel="noopener noreferrer"><img src={youtubeIcon} alt="YouTube" /></a>
+              <a href="https://www.linkedin.com/company/gabriellysemijoias" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer">
+                <img src={linkedinIcon} alt="LinkedIn" />
+              </a>
+              <a href="https://www.facebook.com/gabri.bab" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
+                <img src={facebookIcon} alt="Facebook" />
+              </a>
+              <a href="https://wa.me/5583987855966" aria-label="Whatsapp" target="_blank" rel="noopener noreferrer">
+                <img src={whatsappIcon} alt="Whatsapp" />
+              </a>
+              <a href="https://www.instagram.com/gabriellysemijoias9215" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
+                <img src={instagramIcon} alt="Instagram" />
+              </a>
+              <a href="https://www.youtube.com/@gabriellysemijoias3517" aria-label="YouTube" target="_blank" rel="noopener noreferrer">
+                <img src={youtubeIcon} alt="YouTube" />
+              </a>
             </div>
           </div>
         </div>
@@ -186,9 +220,12 @@ function Layout({ children }) {
             <i className="fab fa-cc-mastercard"></i>
             <i className="fab fa-pix"></i>
           </div>
-          <p className="copyright">Todos os direitos reservados &copy; 2023 - Aviso:Todos os preços e condições deste site são válidos apenas para compras na loja online e não se aplica à loja Física.</p>
+          <p className="copyright">
+            Todos os direitos reservados &copy; 2023 - Aviso: Todos os preços e condições deste site são válidos apenas para compras na loja online e não se aplica à loja Física.
+          </p>
         </div>
       </footer>
+
       {isAuthModalOpen && (
         <AuthModal
           isOpen={isAuthModalOpen}

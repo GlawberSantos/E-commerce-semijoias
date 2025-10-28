@@ -15,6 +15,7 @@ const app = express();
 app.use(cors({
   origin: [
     'http://localhost:3000',
+    'http://localhost:5001',
     'http://localhost:5173',
     'https://gabriellysemijoias.vercel.app'
   ],
@@ -114,7 +115,7 @@ app.post('/api/products', async (req, res) => {
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       RETURNING *`,
       [name, price, priceDiscount, image, category,
-       material, color, style, occasion, stock, description]
+        material, color, style, occasion, stock, description]
     );
 
     await client.query('COMMIT');
@@ -147,8 +148,8 @@ app.put('/api/products/:id', async (req, res) => {
        WHERE id = $12 AND active = true
        RETURNING *`,
       [name, price, priceDiscount, image, category,
-       material, color, style, occasion, stock, description,
-       req.params.id]
+        material, color, style, occasion, stock, description,
+        req.params.id]
     );
 
     if (result.rows.length === 0) {
@@ -431,6 +432,10 @@ app.get("/api/orders/:id", async (req, res) => {
   }
 });
 
+// ==================== ROTAS DE AUTENTICAÇÃO ====================
+import authRoutes from './utils/authRoutes.js';
+app.use('/api/auth', authRoutes);
+
 // ==================== ENDPOINTS DE ESTATÍSTICAS ====================
 app.get("/api/stats/low-stock", async (req, res) => {
   try {
@@ -512,34 +517,34 @@ app.post("/api/frete/calcular", async (req, res) => {
 const PORT = process.env.PORT || 5000;
 
 const startServer = () => {
-    app.listen(PORT, () => {
-        console.log(`🚀 Servidor rodando na porta ${PORT}`);
-        console.log(`🌍 Ambiente: ${process.env.NODE_ENV || 'development'}`);
-        console.log("🔗 Endpoints disponíveis:");
-        console.log(" GET  /");
-        console.log(" GET  /health");
-        console.log(" GET  /api/products");
-        console.log(" GET  /api/products?category=brincos");
-        console.log(" GET  /api/products/:id");
-        console.log(" POST /api/products");
-        console.log(" PUT  /api/products/:id");
-        console.log(" POST /api/orders");
-        console.log(" POST /api/orders/:id/confirm");
-        console.log(" POST /api/orders/:id/cancel");
-        console.log(" GET  /api/orders");
-        console.log(" GET  /api/orders/:id");
-        console.log(" GET  /api/stats/low-stock");
-        console.log(" GET  /api/stats/sales");
-        console.log(" POST /api/frete/calcular");
-        console.log(" POST /chat");
-    });
+  app.listen(PORT, () => {
+    console.log(`🚀 Servidor rodando na porta ${PORT}`);
+    console.log(`🌍 Ambiente: ${process.env.NODE_ENV || 'development'}`);
+    console.log("🔗 Endpoints disponíveis:");
+    console.log(" GET  /");
+    console.log(" GET  /health");
+    console.log(" GET  /api/products");
+    console.log(" GET  /api/products?category=brincos");
+    console.log(" GET  /api/products/:id");
+    console.log(" POST /api/products");
+    console.log(" PUT  /api/products/:id");
+    console.log(" POST /api/orders");
+    console.log(" POST /api/orders/:id/confirm");
+    console.log(" POST /api/orders/:id/cancel");
+    console.log(" GET  /api/orders");
+    console.log(" GET  /api/orders/:id");
+    console.log(" GET  /api/stats/low-stock");
+    console.log(" GET  /api/stats/sales");
+    console.log(" POST /api/frete/calcular");
+    console.log(" POST /chat");
+  });
 };
 
 initializeDatabase()
-    .then(() => {
-        startServer();
-    })
-    .catch(err => {
-        console.error("❌ Falha ao iniciar o servidor:", err);
-        process.exit(1);
-    });
+  .then(() => {
+    startServer();
+  })
+  .catch(err => {
+    console.error("❌ Falha ao iniciar o servidor:", err);
+    process.exit(1);
+  });
