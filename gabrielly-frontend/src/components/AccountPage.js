@@ -43,8 +43,8 @@ const AccountPage = () => {
         setMessage({ type: '', text: '' });
 
         try {
-            const { data } = await authAPI.updateDetails(detailsData);
-            updateUser(data.user);
+            const { user } = await authAPI.updateDetails(detailsData);
+            updateUser(user);
             setMessage({ type: 'success', text: 'Dados atualizados com sucesso!' });
         } catch (error) {
             setMessage({ type: 'error', text: error.message || 'Erro ao atualizar dados.' });
