@@ -1,57 +1,73 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { authAPI } from '../api';
 import '../styles/AccountPage.css';
 
 const AccountPage = () => {
     const { user, updateUser } = useAuth();
-    const [formData, setFormData] = useState({
-        name: user?.name || '',
-        email: user?.email || '',
-        phone: user?.phone || '',
+
+    const [detailsData, setDetailsData] = useState({
+        name: '',
+        email: '',
+        phone: ''
+    });
+
+    const [passwordData, setPasswordData] = useState({
         currentPassword: '',
         newPassword: '',
         confirmPassword: ''
     });
+
     const [message, setMessage] = useState({ type: '', text: '' });
 
-    const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
+    useEffect(() => {
+        if (user) {
+            setDetailsData({
+                name: user.name || '',
+                email: user.email || '',
+                phone: user.phone || ''
+            });
+        }
+    }, [user]);
+
+    const handleDetailsChange = (e) => {
+        setDetailsData({ ...detailsData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = async (e) => {
+    const handlePasswordChange = (e) => {
+        setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
+    };
+
+    const handleDetailsSubmit = async (e) => {
         e.preventDefault();
         setMessage({ type: '', text: '' });
 
         try {
-            const response = await fetch('http://localhost:3001/api/user/update', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify(formData)
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Erro ao atualizar dados');
-            }
-
+            const { data } = await authAPI.updateDetails(detailsData);
             updateUser(data.user);
-            setMessage({
-                type: 'success',
-                text: 'Dados atualizados com sucesso!'
-            });
-
+            setMessage({ type: 'success', text: 'Dados atualizados com sucesso!' });
         } catch (error) {
-            setMessage({
-                type: 'error',
-                text: error.message
+            setMessage({ type: 'error', text: error.message || 'Erro ao atualizar dados.' });
+        }
+    };
+
+    const handlePasswordSubmit = async (e) => {
+        e.preventDefault();
+        setMessage({ type: '', text: '' });
+
+        if (passwordData.newPassword !== passwordData.confirmPassword) {
+            return setMessage({ type: 'error', text: 'As novas senhas não coincidem.' });
+        }
+
+        try {
+            const { message: successMessage } = await authAPI.updatePassword({
+                currentPassword: passwordData.currentPassword,
+                newPassword: passwordData.newPassword
             });
+            setMessage({ type: 'success', text: successMessage });
+            setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' }); // Limpa os campos
+        } catch (error) {
+            setMessage({ type: 'error', text: error.message || 'Erro ao alterar a senha.' });
         }
     };
 
@@ -68,15 +84,15 @@ const AccountPage = () => {
             <div className="account-grid">
                 <section className="profile-section">
                     <h2>Dados Pessoais</h2>
-                    <form onSubmit={handleSubmit}>
+                    <form onSubmit={handleDetailsSubmit}>
                         <div className="form-group">
                             <label htmlFor="name">Nome completo</label>
                             <input
                                 type="text"
                                 id="name"
                                 name="name"
-                                value={formData.name}
-                                onChange={handleChange}
+                                value={detailsData.name}
+                                onChange={handleDetailsChange}
                                 required
                             />
                         </div>
@@ -87,8 +103,8 @@ const AccountPage = () => {
                                 type="email"
                                 id="email"
                                 name="email"
-                                value={formData.email}
-                                onChange={handleChange}
+                                value={detailsData.email}
+                                onChange={handleDetailsChange}
                                 required
                             />
                         </div>
@@ -99,8 +115,8 @@ const AccountPage = () => {
                                 type="tel"
                                 id="phone"
                                 name="phone"
-                                value={formData.phone}
-                                onChange={handleChange}
+                                value={detailsData.phone}
+                                onChange={handleDetailsChange}
                                 placeholder="(00) 00000-0000"
                             />
                         </div>
@@ -113,15 +129,16 @@ const AccountPage = () => {
 
                 <section className="password-section">
                     <h2>Alterar Senha</h2>
-                    <form onSubmit={handleSubmit}>
+                    <form onSubmit={handlePasswordSubmit}>
                         <div className="form-group">
                             <label htmlFor="currentPassword">Senha atual</label>
                             <input
                                 type="password"
                                 id="currentPassword"
                                 name="currentPassword"
-                                value={formData.currentPassword}
-                                onChange={handleChange}
+                                value={passwordData.currentPassword}
+                                onChange={handlePasswordChange}
+                                required
                             />
                         </div>
 
@@ -131,8 +148,9 @@ const AccountPage = () => {
                                 type="password"
                                 id="newPassword"
                                 name="newPassword"
-                                value={formData.newPassword}
-                                onChange={handleChange}
+                                value={passwordData.newPassword}
+                                onChange={handlePasswordChange}
+                                required
                             />
                         </div>
 
@@ -142,8 +160,9 @@ const AccountPage = () => {
                                 type="password"
                                 id="confirmPassword"
                                 name="confirmPassword"
-                                value={formData.confirmPassword}
-                                onChange={handleChange}
+                                value={passwordData.confirmPassword}
+                                onChange={handlePasswordChange}
+                                required
                             />
                         </div>
 

@@ -31,6 +31,24 @@ const api = {
     }
     return await response.json();
   },
+
+  async put(endpoint, data) {
+    const url = `${API_BASE_URL}${endpoint}`;
+    console.log('📡 PUT:', url, data);
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => ({ message: `Erro HTTP: ${response.status}` }));
+      throw new Error(errorBody.message || `Erro HTTP: ${response.status}`);
+    }
+    return await response.json();
+  },
 };
 
 // ==================== EXPORTAÇÕES ====================
@@ -45,7 +63,6 @@ export const shippingAPI = {
   calculate: (shippingData) => api.post('/frete/calcular', shippingData),
 };
 
-// ⚠️ ADICIONE ESTA EXPORTAÇÃO QUE ESTÁ FALTANDO:
 export const ordersAPI = {
   create: (orderData) => api.post('/orders', orderData),
   getAll: () => api.get('/orders'),
@@ -57,6 +74,8 @@ export const ordersAPI = {
 export const authAPI = {
   login: (credentials) => api.post('/auth/login', credentials),
   register: (userData) => api.post('/auth/register', userData),
+  updateDetails: (details) => api.put('/auth/account/details', details),
+  updatePassword: (passwords) => api.put('/auth/account/password', passwords),
 };
 
 export { API_BASE_URL };
