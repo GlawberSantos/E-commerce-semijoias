@@ -1,5 +1,6 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { Analytics } from "@vercel/analytics/react";
 import Layout from './components/Layout';
 import HomePage from './components/HomePage';
 import ProductsPage from './components/ProductsPage';
@@ -17,6 +18,7 @@ function App() {
     <AuthProvider>
       <CartProvider>
         <Layout>
+          <Analytics />
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/quem-somos" element={<AboutUsPage />} />

@@ -16,6 +16,7 @@ app.use(cors({
   origin: [
     'http://localhost:3000',
     'http://localhost:5001',
+    'http://192.168.15.45:5001',
     'http://localhost:5173',
     'https://gabriellysemijoias.vercel.app'
   ],
