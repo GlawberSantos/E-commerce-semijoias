@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import '../styles/AuthModal.css';
+import { authAPI } from '../api';
 
 const AuthModal = ({ isOpen, onClose }) => {
     const [isLoginMode, setIsLoginMode] = useState(true);
@@ -11,12 +12,6 @@ const AuthModal = ({ isOpen, onClose }) => {
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-
-    // URL da API - detecta automaticamente entre desenvolvimento e produção
-    const API_URL = process.env.REACT_APP_API_URL || 
-        (window.location.hostname === 'localhost' 
-            ? 'http://localhost:5000' 
-            : 'https://e-commerce-semijoias-production.up.railway.app');
 
     const handleChange = (e) => {
         setFormData({
@@ -45,23 +40,13 @@ const AuthModal = ({ isOpen, onClose }) => {
         }
 
         try {
-            const endpoint = isLoginMode ? 'login' : 'register';
-            const body = isLoginMode 
-                ? { email: formData.email, password: formData.password }
-                : { name: formData.name, email: formData.email, password: formData.password };
-
-            const response = await fetch(`${API_URL}/api/auth/${endpoint}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(body),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Erro na autenticação');
+            let data;
+            if (isLoginMode) {
+                const body = { email: formData.email, password: formData.password };
+                data = await authAPI.login(body);
+            } else {
+                const body = { name: formData.name, email: formData.email, password: formData.password };
+                data = await authAPI.register(body);
             }
 
             // Armazena o token e informações do usuário
