@@ -28,23 +28,28 @@ export const CartProvider = ({ children }) => {
     }, [cartItems]);
 
     // FUNÇÃO PARA ADICIONAR ITEM (com verificação de estoque)
-    const addToCart = (product) => {
+    const addToCart = (product, quantity = 1) => {
         setCartItems((currentItems) => {
             const existingItem = currentItems.find((item) => item.id === product.id);
             const maxStock = product.stock || 50; // Usa o stock do produto ou 50 por padrão
 
             if (existingItem) {
-                if (existingItem.quantity >= maxStock) {
+                const newQuantity = existingItem.quantity + quantity;
+                if (newQuantity > maxStock) {
                     alert(`Estoque máximo atingido! Apenas ${maxStock} unidades disponíveis.`);
                     return currentItems;
                 }
                 return currentItems.map((item) =>
                     item.id === product.id
-                        ? { ...item, quantity: item.quantity + 1 }
+                        ? { ...item, quantity: newQuantity }
                         : item
                 );
             } else {
-                return [...currentItems, { ...product, quantity: 1 }];
+                if (quantity > maxStock) {
+                    alert(`Estoque máximo atingido! Apenas ${maxStock} unidades disponíveis.`);
+                    return currentItems;
+                }
+                return [...currentItems, { ...product, quantity }];
             }
         });
     };

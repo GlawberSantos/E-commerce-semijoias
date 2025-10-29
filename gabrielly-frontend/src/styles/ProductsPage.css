@@ -64,13 +64,45 @@
     position: relative;
     overflow: hidden;
     cursor: pointer;
+    height: 300px;
 }
 
 .product-image-container img {
     width: 100%;
-    height: auto;
+    height: 100%;
     object-fit: cover;
     transition: transform 0.3s ease;
+}
+
+.product-actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.product-actions button {
+    background: rgba(255, 255, 255, 0.8);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+    transition: background 0.3s;
+}
+
+.product-actions button:hover {
+    background: #fff;
+}
+
+.product-actions .favorite.favorited {
+    color: red;
 }
 
 .product-card:hover .product-image-container img {
@@ -97,13 +129,48 @@
 }
 
 .product-prices {
-    margin-bottom: 15px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .price-total {
     font-size: 1.2rem;
     font-weight: bold;
     color: #000;
+}
+
+.price-installments {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.product-stock {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.quantity-selector {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.quantity-selector button {
+    background: #f0f0f0;
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.quantity-selector input {
+    width: 40px;
+    text-align: center;
+    border: 1px solid #ccc;
+    margin: 0 5px;
 }
 
 /* Ações de Compra */
