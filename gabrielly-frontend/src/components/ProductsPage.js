@@ -1,11 +1,12 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import '../styles/ProductsPage.css';
 import '../styles/Filters.css';
 import { formatCurrency } from '../utils/format';
 import { useCart } from '../contexts/CartContext';
 import { productsAPI } from '../api';
-import ProductFilters from './ProductFilters'; // Importando o componente de filtros
+import ProductFilters from './ProductFilters';
+import QuickViewModal from './QuickViewModal';
 
 const ProductsPage = () => {
   const { category } = useParams();
@@ -13,6 +14,19 @@ const ProductsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { addToCart } = useCart();
+  const [hoveredProductId, setHoveredProductId] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
+
+  const handleOpenQuickView = (product) => {
+    setSelectedProduct(product);
+    setIsQuickViewOpen(true);
+  };
+
+  const handleCloseQuickView = () => {
+    setIsQuickViewOpen(false);
+    setSelectedProduct(null);
+  };
   const [filters, setFilters] = useState({
     price: { min: '', max: '' },
     materiais: [],
@@ -21,7 +35,6 @@ const ProductsPage = () => {
     ocasião: []
   });
 
-  // Filtros disponíveis (mock)
   const availableFilters = {
     materiais: ['Prata 925', 'Ouro 18k', 'Aço Inoxidável', 'Zircônia'],
     cores: ['dourado', 'prateado', 'rosé', 'multicor'],
@@ -46,23 +59,7 @@ const ProductsPage = () => {
     return true;
   });
 
-  const fetchProducts = useCallback(async (categoryFilter) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await productsAPI.getAll(categoryFilter);
-      setProducts(data);
-    } catch (err) {
-      console.error('Erro ao buscar produtos:', err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
-  useEffect(() => {
-    fetchProducts(category);
-  }, [category, fetchProducts]);
 
   const categoryTitle = category ? category.charAt(0).toUpperCase() + category.slice(1) : 'Catálogo';
 
@@ -70,7 +67,7 @@ const ProductsPage = () => {
   if (error) return <div className="error-container"><p>Erro ao carregar produtos: {error}</p></div>;
 
   return (
-    <div className="products-page-container">
+    <div className={isQuickViewOpen ? 'products-page-container blurred' : 'products-page-container'}>
       <ProductFilters
         filters={filters}
         setFilters={setFilters}
@@ -101,37 +98,42 @@ const ProductsPage = () => {
           {filteredProducts.length > 0 ? (
             filteredProducts.map(product => {
               const imageFolder = category || product.folder || product.category;
+              const isHovered = product.id === hoveredProductId;
+              const imageName = isHovered && product.image_hover ? product.image_hover : product.image;
+
               return (
-                <div key={product.id} className="product-card">
-                  <div className="product-image-container">
+                <div
+                  key={product.id}
+                  className="product-card"
+                  onMouseEnter={() => setHoveredProductId(product.id)}
+                  onMouseLeave={() => setHoveredProductId(null)}
+                >
+                  <div className="product-image-container" onClick={() => handleOpenQuickView(product)}>
                     <img
-                      src={`/products/${imageFolder}/${product.image}`}
+                      src={`/products/${imageFolder}/${imageName}`}
                       alt={product.name}
                       loading="lazy"
+                      className={isHovered ? 'product-image-zoom' : ''}
                     />
+                    {isHovered && (
+                      <div className="buy-actions">
+                        <button
+                          className="btn-buy-now"
+                          onClick={(e) => { e.stopPropagation(); addToCart(product); }}
+                          disabled={product.stock === 0}
+                        >
+                          ADICIONAR AO CARRINHO
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   <h3>{product.name}</h3>
 
                   <div className="product-rating">★★★★★</div>
 
-                  <p className="product-description">
-                    Integer neque quam, convallis sed malesuada eget, tempus ac tortor.
-                  </p>
-
                   <div className="product-prices">
                     <span className="price-total">{formatCurrency(product.price)}</span>
-                  </div>
-
-                  <div className="buy-actions">
-                    <input type="number" defaultValue="1" min="1" max={product.stock} />
-                    <button
-                      className="btn-buy-now"
-                      onClick={() => addToCart(product)} // Simplificado por agora
-                      disabled={product.stock === 0}
-                    >
-                      BUY NOW
-                    </button>
                   </div>
                 </div>
               );
@@ -144,9 +146,12 @@ const ProductsPage = () => {
         <div className="pagination">
           <span>1</span>
           <button>2</button>
-          <button className="next-page">Next</button>
+          <button className="next-page">Próximo</button>
         </div>
       </div>
+      {isQuickViewOpen && selectedProduct && (
+        <QuickViewModal product={selectedProduct} onClose={handleCloseQuickView} />
+      )}
     </div>
   );
 };
