@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import '../styles/ProductsPage.css';
 import '../styles/Filters.css';
@@ -59,7 +59,22 @@ const ProductsPage = () => {
     return true;
   });
 
+  const fetchProducts = useCallback(async (categoryFilter) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await productsAPI.getAll(categoryFilter);
+      setProducts(data);
+    } catch (err) {
+      console.error('Erro ao buscar produtos:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }  }, []);
 
+  useEffect(() => {
+    fetchProducts(category);
+  }, [category, fetchProducts]);
 
   const categoryTitle = category ? category.charAt(0).toUpperCase() + category.slice(1) : 'Catálogo';
 
@@ -67,92 +82,94 @@ const ProductsPage = () => {
   if (error) return <div className="error-container"><p>Erro ao carregar produtos: {error}</p></div>;
 
   return (
-    <div className={isQuickViewOpen ? 'products-page-container blurred' : 'products-page-container'}>
-      <ProductFilters
-        filters={filters}
-        setFilters={setFilters}
-        availableFilters={availableFilters}
-        handleFilterChange={handleFilterChange}
-      />
+    <>
+      <div className={isQuickViewOpen ? 'products-page-container blurred' : 'products-page-container'}>
+        <ProductFilters
+          filters={filters}
+          setFilters={setFilters}
+          availableFilters={availableFilters}
+          handleFilterChange={handleFilterChange}
+        />
 
-      <div className="main-content">
-        <div className="products-header">
-          <div className="breadcrumb">
-            Home / {categoryTitle}
+        <div className="main-content">
+          <div className="products-header">
+            <div className="breadcrumb">
+              Home / {categoryTitle}
+            </div>
+            <div className="view-options">
+              <select name="sort-by" id="sort-by">
+                <option value="position">Posição</option>
+                <option value="price-asc">Preço: Menor ao Maior</option>
+                <option value="price-desc">Preço: Maior ao Menor</option>
+              </select>
+              <select name="display" id="display">
+                <option value="6">6 por página</option>
+                <option value="12">12 por página</option>
+                <option value="24">24 por página</option>
+              </select>
+            </div>
           </div>
-          <div className="view-options">
-            <select name="sort-by" id="sort-by">
-              <option value="position">Posição</option>
-              <option value="price-asc">Preço: Menor ao Maior</option>
-              <option value="price-desc">Preço: Maior ao Menor</option>
-            </select>
-            <select name="display" id="display">
-              <option value="6">6 por página</option>
-              <option value="12">12 por página</option>
-              <option value="24">24 por página</option>
-            </select>
+
+          <div className="products-grid">
+            {filteredProducts.length > 0 ? (
+              filteredProducts.map(product => {
+                const imageFolder = category || product.folder || product.category;
+                const isHovered = product.id === hoveredProductId;
+                const imageName = isHovered && product.image_hover ? product.image_hover : product.image;
+
+                return (
+                  <div
+                    key={product.id}
+                    className="product-card"
+                    onMouseEnter={() => setHoveredProductId(product.id)}
+                    onMouseLeave={() => setHoveredProductId(null)}
+                  >
+                    <div className="product-image-container" onClick={() => handleOpenQuickView(product)}>
+                      <img
+                        src={`/products/${imageFolder}/${imageName}`}
+                        alt={product.name}
+                        loading="lazy"
+                        className={isHovered ? 'product-image-zoom' : ''}
+                      />
+                      {isHovered && (
+                        <div className="buy-actions">
+                          <button
+                            className="btn-buy-now"
+                            onClick={(e) => { e.stopPropagation(); addToCart(product); }}
+                            disabled={product.stock === 0}
+                          >
+                            ADICIONAR AO CARRINHO
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <h3>{product.name}</h3>
+
+                    <div className="product-rating">★★★★★</div>
+
+                    <div className="product-prices">
+                      <span className="price-total">{formatCurrency(product.price)}</span>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <p>Nenhum produto encontrado.</p>
+            )}
           </div>
-        </div>
 
-        <div className="products-grid">
-          {filteredProducts.length > 0 ? (
-            filteredProducts.map(product => {
-              const imageFolder = category || product.folder || product.category;
-              const isHovered = product.id === hoveredProductId;
-              const imageName = isHovered && product.image_hover ? product.image_hover : product.image;
-
-              return (
-                <div
-                  key={product.id}
-                  className="product-card"
-                  onMouseEnter={() => setHoveredProductId(product.id)}
-                  onMouseLeave={() => setHoveredProductId(null)}
-                >
-                  <div className="product-image-container" onClick={() => handleOpenQuickView(product)}>
-                    <img
-                      src={`/products/${imageFolder}/${imageName}`}
-                      alt={product.name}
-                      loading="lazy"
-                      className={isHovered ? 'product-image-zoom' : ''}
-                    />
-                    {isHovered && (
-                      <div className="buy-actions">
-                        <button
-                          className="btn-buy-now"
-                          onClick={(e) => { e.stopPropagation(); addToCart(product); }}
-                          disabled={product.stock === 0}
-                        >
-                          ADICIONAR AO CARRINHO
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  <h3>{product.name}</h3>
-
-                  <div className="product-rating">★★★★★</div>
-
-                  <div className="product-prices">
-                    <span className="price-total">{formatCurrency(product.price)}</span>
-                  </div>
-                </div>
-              );
-            })
-          ) : (
-            <p>Nenhum produto encontrado.</p>
-          )}
-        </div>
-
-        <div className="pagination">
-          <span>1</span>
-          <button>2</button>
-          <button className="next-page">Próximo</button>
+          <div className="pagination">
+            <span>1</span>
+            <button>2</button>
+            <button className="next-page">Próximo</button>
+          </div>
         </div>
       </div>
       {isQuickViewOpen && selectedProduct && (
         <QuickViewModal product={selectedProduct} onClose={handleCloseQuickView} />
       )}
-    </div>
+    </>
   );
 };
 

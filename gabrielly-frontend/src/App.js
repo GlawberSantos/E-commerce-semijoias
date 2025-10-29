@@ -12,6 +12,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import SuccessPage from './components/SuccessPage';
 import AccountPage from './components/AccountPage';
 import OrdersPage from './components/OrdersPage';
+import ProductDetailsPage from './components/ProductDetailsPage';
 
 function App() {
   return (
@@ -24,8 +25,9 @@ function App() {
             <Route path="/quem-somos" element={<AboutUsPage />} />
             <Route path="/catalogo" element={<ProductsPage />} />
             <Route path="/catalogo/:category" element={<ProductsPage />} />
+            <Route path="/catalogo/:category/:id" element={<ProductDetailsPage />} />
             <Route path="/carrinho" element={<CartPage />} />
-            <Route path="/checkout" element={<CheckoutPage />} /> 
+            <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/success" element={<SuccessPage />} />
             <Route path="/minha-conta" element={<AccountPage />} />
             <Route path="/meus-pedidos" element={<OrdersPage />} />

@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useParams } from 'react-router-dom';
 import { formatCurrency } from '../utils/format';
 import '../styles/QuickViewModal.css';
 import { useCart } from '../contexts/CartContext';
@@ -10,28 +10,30 @@ function QuickViewModal({ product, onClose }) {
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
     const imageRef = useRef(null);
     const navigate = useNavigate();
+    const { category } = useParams();
+    const [isHovered, setIsHovered] = useState(false);
 
     const installmentPrice = product.price / 10.0;
 
-    // Lógica para o efeito de zoom (move a imagem)
     const handleMouseMove = (e) => {
-        if (zoomLevel > 1 && imageRef.current) {
+        if (imageRef.current) {
             const { left, top, width, height } = imageRef.current.getBoundingClientRect();
-            // Calcula a posição do mouse relativa à imagem (de 0 a 1)
             const x = (e.clientX - left) / width;
             const y = (e.clientY - top) / height;
             setMousePosition({ x, y });
         }
     };
 
-    // Alterna o zoom (ao clicar)
-    const handleZoomToggle = () => {
-        setZoomLevel(zoomLevel === 1 ? 2.5 : 1); // Alterna entre zoom normal e 2.5x
+    const handleZoomToggle = (e) => {
+        const { left, top, width, height } = imageRef.current.getBoundingClientRect();
+        const x = (e.clientX - left) / width;
+        const y = (e.clientY - top) / height;
+        setMousePosition({ x, y });
+        setZoomLevel(zoomLevel === 1 ? 2.5 : 1);
     };
 
-    // Estilo que aplica o zoom e o movimento
     const transformStyle = {
-        transform: `scale(${zoomLevel}) translate(${-mousePosition.x * 100 * (zoomLevel - 1) / zoomLevel}%, ${-mousePosition.y * 100 * (zoomLevel - 1) / zoomLevel}%)`,
+        transform: `scale(${zoomLevel})`,
         transformOrigin: `${mousePosition.x * 100}% ${mousePosition.y * 100}%`,
         cursor: zoomLevel > 1 ? 'zoom-out' : 'zoom-in',
     };
@@ -50,8 +52,9 @@ function QuickViewModal({ product, onClose }) {
         navigate('/carrinho'); // <--- AQUI ESTÁ O REDIRECIONAMENTO!
     };
 
-    // Caminho da imagem: prioriza a category da URL, senão usa a chave 'folder' do produto
-    const imagePath = `/products/${product.folder}/${product.image}`;
+    const imageFolder = category || product.folder || product.category;
+    const imageName = isHovered && product.image_hover ? product.image_hover : product.image;
+    const imagePath = `/products/${imageFolder}/${imageName}`;
 
 
     return (
@@ -67,7 +70,11 @@ function QuickViewModal({ product, onClose }) {
                         className="modal-image-container"
                         onMouseMove={handleMouseMove}
                         onClick={handleZoomToggle}
-                        onMouseLeave={() => setZoomLevel(1)} // Reseta o zoom ao sair
+                        onMouseLeave={() => {
+                            setZoomLevel(1);
+                            setIsHovered(false);
+                        }} // Reseta o zoom ao sair
+                        onMouseEnter={() => setIsHovered(true)}
                     >
                         <img
                             ref={imageRef}

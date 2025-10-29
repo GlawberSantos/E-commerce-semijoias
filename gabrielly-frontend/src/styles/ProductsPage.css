@@ -9,7 +9,6 @@
 }
 
 .products-page-container.blurred {
-    filter: blur(5px);
     pointer-events: none;
 }
 
