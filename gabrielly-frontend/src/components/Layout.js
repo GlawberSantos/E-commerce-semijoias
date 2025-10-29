@@ -119,14 +119,14 @@ function Layout({ children }) {
               >
                 <button className="user-button">
                   <i className="fas fa-user"></i>
-                  <span className="user-name">{user.name.split(' ')[0]}</span>
+                  <span className="user-name">{(user.name || '').split(' ')[0]}</span>
                 </button>
                 
                 {isUserMenuOpen && (
                   <div className="user-dropdown">
                     <div className="user-dropdown-header">
                       <i className="fas fa-user-circle"></i>
-                      <span>{user.name}</span>
+                      <span>{user.name || ''}</span>
                     </div>
                     <Link to="/minha-conta" onClick={() => setIsUserMenuOpen(false)}>
                       <i className="fas fa-user-cog"></i>
