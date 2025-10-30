@@ -15,6 +15,7 @@ import AccountPage from './components/AccountPage';
 import OrdersPage from './components/OrdersPage';
 import ProductDetailsPage from './components/ProductDetailsPage';
 import AdminPage from './components/AdminPage'; // Importa a página de Admin
+import ProtectedRoute from './components/ProtectedRoute'; // Importa o ProtectedRoute
 
 function App() {
   return (
@@ -34,7 +35,7 @@ function App() {
               <Route path="/success" element={<SuccessPage />} />
               <Route path="/minha-conta" element={<AccountPage />} />
               <Route path="/meus-pedidos" element={<OrdersPage />} />
-              <Route path="/admin" element={<AdminPage />} /> {/* Adiciona a rota para a página de Admin */}
+              <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
             </Routes>
           </Layout>
         </ThemeProvider>

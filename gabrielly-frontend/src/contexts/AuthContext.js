@@ -18,6 +18,10 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const login = (userData, token) => {
+        // Adiciona a role de admin para o usuário de exemplo
+        if (userData.email === 'admin@example.com') {
+            userData.role = 'admin';
+        }
         setUser(userData);
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(userData));
