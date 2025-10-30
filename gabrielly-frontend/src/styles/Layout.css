@@ -12,7 +12,7 @@
     background-color: var(--background-color);
     padding: 1rem 2rem;
     color: var(--text-color);
-    border-bottom: 1px solid #222;
+    border-bottom: 1px solid var(--border-color);
     position: sticky;
     top: 2.5rem;
     z-index: 999;
@@ -66,7 +66,7 @@
 
 .header .navbar .nav-list .nav-item a,
 .header .navbar .nav-list .catalog-toggle {
-    color: #FFFFFF !important;
+    color: #FFFFFF;
     text-decoration: none;
     font-weight: 500;
     padding: 0.5rem 1rem;
@@ -99,7 +99,7 @@
     border-radius: 5px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
     z-index: 100;
-    border: 1px solid #222;
+    border: 1px solid var(--border-color);
 }
 
 .nav-item.catalog-menu:hover .submenu,
@@ -282,10 +282,26 @@
 }
 
 .cart-icon-link {
+    position: relative; /* Necessário para posicionar o badge */
     color: var(--text-color);
     font-size: 1.5rem;
     transition: color 0.3s ease;
     padding: 0.5rem;
+}
+
+.cart-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: var(--briliant-color);
+    color: var(--background-color);
+    border-radius: 50%;
+    padding: 0.2em 0.5em;
+    font-size: 0.8rem;
+    font-weight: bold;
+    line-height: 1;
+    text-align: center;
+    min-width: 1.2em;
 }
 
 .cart-icon-link:hover {
@@ -333,6 +349,24 @@
     animation: marquee 5s ease-in-out;
 }
 
+.theme-toggle-button {
+    background: none;
+    border: 1px solid var(--text-color);
+    color: var(--text-color);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.theme-toggle-button:hover {
+    color: var(--briliant-color);
+    border-color: var(--briliant-color);
+}
+
 /* Conteúdo Principal */
 .main-content {
     flex-grow: 1;
@@ -342,9 +376,9 @@
 
 /* Rodapé */
 .footer {
-    background-color: #0a0a0a;
+    background-color: var(--section-background);
     padding: 40px 20px 20px;
-    border-top: 1px solid #222;
+    border-top: 1px solid var(--border-color);
 }
 
 .footer-content {
@@ -404,7 +438,7 @@
     max-width: 1200px;
     margin: 30px auto 0;
     padding-top: 20px;
-    border-top: 1px solid #222;
+    border-top: 1px solid var(--border-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -469,7 +503,7 @@
     .nav-item {
         width: 100%;
         text-align: center;
-        border-bottom: 1px solid #222;
+        border-bottom: 1px solid var(--border-color);
     }
 
     .nav-item:last-child {

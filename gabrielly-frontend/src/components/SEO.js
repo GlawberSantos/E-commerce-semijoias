@@ -1,9 +1,9 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
 
-const SEO = ({ 
-    title, 
-    description, 
+const SEO = ({
+    title,
+    description,
     keywords,
     image = '/logo192.png',
     url = window.location.href

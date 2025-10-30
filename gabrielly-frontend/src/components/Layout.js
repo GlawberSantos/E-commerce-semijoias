@@ -10,6 +10,8 @@ import youtubeIcon from '../assets/icons/logo-youtube.svg';
 import SearchBar from './SearchBar';
 import AuthModal from './AuthModal';
 import { useAuth } from '../contexts/AuthContext';
+import { useCart } from '../contexts/CartContext'; // Importa o hook do carrinho
+import { useTheme } from '../contexts/ThemeContext'; // Importa o hook do tema
 
 const messages = [
   "Pague com Pix e ganhe 10% de desconto. Aproveite!",
@@ -24,6 +26,8 @@ function Layout({ children }) {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { totalItems } = useCart(); // Obtém o total de itens do carrinho
+  const { theme, toggleTheme } = useTheme(); // Obtém o tema e a função de toggle
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -155,7 +159,12 @@ function Layout({ children }) {
 
             <Link to="/carrinho" className="cart-icon-link" aria-label="Ver carrinho de compras">
               <i className="fas fa-shopping-cart"></i>
+              {totalItems > 0 && <span className="cart-badge">{totalItems}</span>}
             </Link>
+
+            <button onClick={toggleTheme} className="theme-toggle-button">
+              {theme === 'dark' ? <i className="fas fa-sun"></i> : <i className="fas fa-moon"></i>}
+            </button>
           </div>
         </div>
       </header>

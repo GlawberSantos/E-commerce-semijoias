@@ -2,12 +2,56 @@
 :root {
   --briliant-color: #fbb606;
   --menu-color: #93cced;
-  --text-color: #d1cece;
+  --text-color: #ffffff;
+  --secondary-text-color: #d1cece;
   --background-color: #000000;
+  --section-background: #1a1a1a;
+  --border-color: #222;
+  --modal-background: #111;
+  --close-button-color: white;
+  --price-color: white;
+  --input-background: #333;
+  --input-text-color: white;
+  --input-border-color: #555;
+  --stock-color: #888;
+  --button-background: #444;
+  --button-text-color: white;
   --font-family: 'Open Sans', sans-serif;
   --font-family-menu: 'Open Sans', sans-serif;
   --font-family-briliant: "Lato", sans-serif;
   --highlight-color: var(--briliant-color);
+}
+
+[data-theme='light'] {
+    --briliant-color: #fbb606;
+    --menu-color: #1a73e8;
+    --text-color: #000000;
+    --secondary-text-color: #555555;
+    --background-color: #ffffff;
+    --section-background: #ffffff;
+    --border-color: #e0e0e0;
+    --modal-background: #ffffff;
+    --close-button-color: #000000;
+    --price-color: #000000;
+    --input-background: #f0f0f0;
+    --input-text-color: #000000;
+    --input-border-color: #ccc;
+    --stock-color: #888;
+    --button-background: #f0f0f0;
+    --button-text-color: #000000;
+}
+
+[data-theme='light'] .header .navbar .nav-list .nav-item a,
+[data-theme='light'] .header .navbar .nav-list .catalog-toggle {
+    color: #000000;
+}
+
+[data-theme='light'] .category-card a:hover h3 {
+    color: #000000;
+}
+
+[data-theme='light'] .logo-icon {
+    filter: invert(1);
 }
 
 *,
@@ -31,6 +75,7 @@ body {
   margin: 0;
   padding: 0;
   line-height: 1.6;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 h1,
@@ -47,6 +92,9 @@ h1 {
   font-size: 2.2rem;
   margin-bottom: 20px;
 }
+
+
+
 
 h2 {
   font-size: 1.5rem;

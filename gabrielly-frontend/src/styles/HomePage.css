@@ -1,7 +1,7 @@
 /* src/styles/HomePage.css */
 
 .homepage-container {
-  background-color: #000;
+  background-color: var(--background-color);
   color: var(--text-color);
 }
 
@@ -145,7 +145,7 @@
 /* Nova Seção: Encontre a sua Joia */
 .find-your-jewelry-section {
   padding: 60px 20px;
-  background-color: #0a0a0a;
+  background-color: var(--section-background);
   text-align: center;
 }
 
@@ -158,7 +158,7 @@
 
 .find-your-jewelry-section p {
   font-size: 1.1rem;
-  color: #bbb;
+  color: var(--secondary-text-color);
   max-width: 700px;
   margin: 0 auto;
   line-height: 1.6;
@@ -200,7 +200,7 @@
   height: 230px;
 
   /* === REGRAS DE ESPAÇAMENTO UNIFORME === */
-  background-color: #1a1a1a;
+  background-color: var(--section-background);
   border-radius: 12px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -325,7 +325,7 @@
 .youtube-highlight-section {
   padding: 80px 20px;
   /* Aumentar o padding vertical */
-  background-color: rgb(210, 205, 199);
+  background-color: var(--section-background);
   /* Fundo mais claro e suave */
   text-align: center;
   overflow: hidden;
@@ -448,8 +448,8 @@
    =================================================== */
 
 .whatsapp-banner-section {
-  background-color: #d2cdc7;
-  color: #333;
+  background-color: var(--section-background);
+  color: var(--text-color);
   padding: 50px 20px;
   text-align: center;
   /* Centraliza tudo */
@@ -470,7 +470,7 @@
 }
 
 .whatsapp-text h2 {
-  color: #000;
+  color: var(--text-color);
   font-size: 2.5rem;
   margin-bottom: 20px;
   text-transform: none;
@@ -480,7 +480,7 @@
 }
 
 .whatsapp-text p {
-  color: #555;
+  color: var(--secondary-text-color);
   font-size: 1.1rem;
   line-height: 1.6;
   text-align: center;
@@ -490,7 +490,7 @@
 .whatsapp-hours {
   font-size: 0.9rem;
   margin-top: 15px;
-  color: #777;
+  color: var(--secondary-text-color);
   text-align: center;
   /* Centraliza o horário */
 }
@@ -616,7 +616,7 @@
    =================================================== */
 
 .trust-bar-section {
-  background-color: #d2cdc7;
+  background-color: var(--section-background);
   padding: 25px 10px;
 }
 
@@ -647,7 +647,7 @@
 }
 
 .trust-item p {
-  color: #000000;
+  color: var(--text-color);
   font-size: 0.9rem;
   line-height: 1.3;
   margin: 0;

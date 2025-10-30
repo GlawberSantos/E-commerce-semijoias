@@ -1,3 +1,4 @@
+/*Ver detalhes completos*/
 import React, { useRef, useState } from 'react';
 import { useNavigate, Link, useParams } from 'react-router-dom';
 import { formatCurrency } from '../utils/format';
@@ -6,6 +7,7 @@ import { useCart } from '../contexts/CartContext';
 
 function QuickViewModal({ product, onClose }) {
     const { addToCart } = useCart();
+    const [quantity, setQuantity] = useState(1);
     const [zoomLevel, setZoomLevel] = useState(1);
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
     const imageRef = useRef(null);
@@ -38,24 +40,32 @@ function QuickViewModal({ product, onClose }) {
         cursor: zoomLevel > 1 ? 'zoom-out' : 'zoom-in',
     };
 
-    // Lógica de fechamento ao clicar fora do modal
     const handleBackdropClick = (e) => {
         if (e.target.className === 'modal-backdrop') {
             onClose();
         }
     };
 
-    // Função para adicionar ao carrinho e fechar o modal
     const handleAddToCart = () => {
-        addToCart(product);
-        onClose(); // Fecha o modal após adicionar
-        navigate('/carrinho'); // <--- AQUI ESTÁ O REDIRECIONAMENTO!
+        addToCart(product, quantity);
+        onClose();
+        navigate('/carrinho');
     };
 
     const imageFolder = category || product.folder || product.category;
-    const imageName = isHovered && product.image_hover ? product.image_hover : product.image;
-    const imagePath = `/products/${imageFolder}/${imageName}`;
+    
+    // Mock images array, assuming product has an 'images' property
+    const productImages = product.images || [
+        product.image,
+        product.image_hover,
+        'brinco-argola.webp', // Placeholder, replace with actual image names
+        'coracao.webp'      // Placeholder, replace with actual image names
+    ];
 
+    const [selectedImage, setSelectedImage] = useState(productImages[0]);
+
+    const imageName = isHovered && product.image_hover ? product.image_hover : selectedImage;
+    const imagePath = `/products/${imageFolder}/${imageName}`;
 
     return (
         <div className="modal-backdrop" onClick={handleBackdropClick}>
@@ -65,50 +75,82 @@ function QuickViewModal({ product, onClose }) {
                 </button>
 
                 <div className="modal-body">
-                    {/* Imagem do Produto com Efeito Zoom */}
-                    <div
-                        className="modal-image-container"
-                        onMouseMove={handleMouseMove}
-                        onClick={handleZoomToggle}
-                        onMouseLeave={() => {
-                            setZoomLevel(1);
-                            setIsHovered(false);
-                        }} // Reseta o zoom ao sair
-                        onMouseEnter={() => setIsHovered(true)}
-                    >
-                        <img
-                            ref={imageRef}
-                            src={imagePath}
-                            alt={product.name}
-                            style={transformStyle}
-                            className="zoomable-image"
-                        />
+                    <div className="modal-image-section">
+                        <div
+                            className="modal-image-container"
+                            onMouseMove={handleMouseMove}
+                            onClick={handleZoomToggle}
+                            onMouseLeave={() => {
+                                setZoomLevel(1);
+                                setIsHovered(false);
+                            }}
+                            onMouseEnter={() => setIsHovered(true)}
+                        >
+                            <img
+                                ref={imageRef}
+                                src={imagePath}
+                                alt={product.name}
+                                style={transformStyle}
+                                className="zoomable-image"
+                            />
+                        </div>
+                        <div className="thumbnail-images">
+                            {productImages.map((img, index) => (
+                                <img
+                                    key={index}
+                                    src={`/products/${imageFolder}/${img}`}
+                                    alt={`${product.name} - thumbnail ${index + 1}`}
+                                    className={`thumbnail ${selectedImage === img ? 'active' : ''}`}
+                                    onClick={() => setSelectedImage(img)}
+                                    onMouseEnter={() => setSelectedImage(img)}
+                                />
+                            ))}
+                        </div>
                     </div>
 
-                    {/* Detalhes do Produto */}
                     <div className="modal-details">
                         <h2 id="quick-view-title">{product.name}</h2>
 
                         <div className="price-info">
-                            {/* Preço Total (Principal) */}
                             <p className="price-total">{formatCurrency(product.price)}</p>
-                            {/* Condição de Parcelamento */}
                             <p className="price-installments">10x sem juros de {formatCurrency(installmentPrice)}</p>
+                        </div>
+
+                        <div class="product-details-static">
+                            <p><strong>Comprimento aprox:</strong> 45 cm</p>
+                            <p><strong>Material:</strong> ouro amarelo</p>
+                            <p><strong>Pedras:</strong> Sem pedra</p>
+                            <p><strong>Sugestão:</strong> Unissex</p>
+                            <p><strong>Observação:</strong> Todas as medidas são aproximadas e podem variar de acordo com a produção.</p>
+                        </div>
+
+                        <div class="quantity-selector-modal">
+                            <label>Quantidade:</label>
+                            <div class="quantity-controls">
+                                <button onClick={() => setQuantity(Math.max(1, quantity - 1))}>-</button>
+                                <input type="number" value={quantity} readOnly />
+                                <button onClick={() => setQuantity(quantity + 1)}>+</button>
+                            </div>
+                            <span class="stock-info">({product.stock} disponíveis)</span>
+                        </div>
+
+                        <div class="shipping-calculator">
+                            <label>Calcular frete e prazo:</label>
+                            <div class="shipping-form">
+                                <input type="text" placeholder="Digite seu CEP" />
+                                <button>Calcular</button>
+                            </div>
                         </div>
 
                         <div className="action-area">
                             <button
                                 className="btn-add-to-cart-modal"
                                 aria-label={`Adicionar ${product.name} ao carrinho`}
-                                onClick={handleAddToCart} // Adiciona ao carrinho e fecha
+                                onClick={handleAddToCart}
                             >
                                 Adicionar ao Carrinho
                             </button>
-                            {/* Link para a página completa do produto */}
-                            <p className="link-full-details">
-                                {/* O link deve ser ajustado para a rota real de detalhes do produto */}
-                                <Link to={`/catalogo/${product.folder}/${product.id}`} onClick={onClose}>Ver detalhes completos &rarr;</Link>
-                            </p>
+
                         </div>
                     </div>
                 </div>
