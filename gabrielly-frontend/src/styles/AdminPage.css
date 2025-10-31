@@ -37,3 +37,30 @@
     font-weight: bold;
     text-transform: uppercase;
 }
+
+.admin-nav {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid #ccc;
+}
+
+.admin-nav button {
+    padding: 1rem;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #555;
+    border-bottom: 2px solid transparent;
+}
+
+.admin-nav button.active {
+    color: var(--briliant-color);
+    border-bottom-color: var(--briliant-color);
+}
+
+.admin-content {
+    margin-top: 2rem;
+}

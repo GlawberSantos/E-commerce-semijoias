@@ -423,15 +423,63 @@
     margin-top: 10px;
 }
 
-.social-icons img {
+.social-icons .social-icon {
+    display: inline-block;
     width: 28px;
     height: 28px;
-    filter: grayscale(100%) invert(100%);
-    transition: filter 0.3s;
+    background-color: var(--text-color);
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    transition: background-color 0.3s ease;
 }
 
-.social-icons img:hover {
-    filter: none;
+.social-icons .linkedin-icon {
+    -webkit-mask-image: url('../assets/icons/logo-linkedin.svg');
+    mask-image: url('../assets/icons/logo-linkedin.svg');
+}
+
+.social-icons .linkedin-icon:hover {
+    background-color: #0A66C2;
+}
+
+.social-icons .facebook-icon {
+    -webkit-mask-image: url('../assets/icons/logo-facebook.svg');
+    mask-image: url('../assets/icons/logo-facebook.svg');
+}
+
+.social-icons .facebook-icon:hover {
+    background-color: #4267B2;
+}
+
+.social-icons .whatsapp-icon {
+    -webkit-mask-image: url('../assets/icons/logo-whatsapp.svg');
+    mask-image: url('../assets/icons/logo-whatsapp.svg');
+}
+
+.social-icons .whatsapp-icon:hover {
+    background-color: #25D366;
+}
+
+.social-icons .instagram-icon {
+    -webkit-mask-image: url('../assets/icons/logo-instagram.svg');
+    mask-image: url('../assets/icons/logo-instagram.svg');
+}
+
+.social-icons .instagram-icon:hover {
+    background-color: #E1306C;
+}
+
+.social-icons .youtube-icon {
+    -webkit-mask-image: url('../assets/icons/logo-youtube.svg');
+    mask-image: url('../assets/icons/logo-youtube.svg');
+}
+
+.social-icons .youtube-icon:hover {
+    background-color: #FF0000;
 }
 
 .footer-bottom {

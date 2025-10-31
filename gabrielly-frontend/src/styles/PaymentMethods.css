@@ -1,0 +1,68 @@
+.payment-methods-mp {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+  }
+  
+  .payment-title {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .payment-title p {
+    margin-right: 10px;
+  }
+  
+  .mp-logo {
+    width: 100px;
+  }
+  
+  .payment-icons-mp {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .payment-icon-mp {
+    font-size: 24px;
+  }
+
+.payment-methods {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.payment-icons {
+  display: flex;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.payment-icon {
+  font-size: 32px;
+  color: #888;
+  transition: color 0.3s ease;
+}
+
+.payment-icon.visa:hover {
+  color: #1a1f71; /* Visa blue */
+}
+
+.payment-icon.mastercard:hover {
+  color: #eb001b; /* Mastercard red */
+}
+
+.payment-icon.amex:hover {
+  color: #2e77bc; /* American Express blue */
+}
+
+.payment-icon.diners:hover {
+  color: #004b8d; /* Diners Club blue */
+}
+
+.payment-icon.pix:hover {
+  color: #32BCAD; /* Pix green */
+}

@@ -6,8 +6,6 @@ const API_BASE_URL = (
   'https://e-commerce-semijoias-production.up.railway.app/api'
 ).replace(/\/$/, '');
 
-console.log('🔗 API_BASE_URL configurada para:', API_BASE_URL);
-
 const api = {
   async get(endpoint) {
     const url = `${API_BASE_URL}${endpoint}`;
@@ -24,6 +22,23 @@ const api = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => ({}));
+      throw new Error(errorBody.error || `Erro HTTP: ${response.status}`);
+    }
+    return await response.json();
+  },
+
+  async postWithFormData(endpoint, formData) {
+    const url = `${API_BASE_URL}${endpoint}`;
+    console.log('📡 POST (FormData):', url);
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: formData,
     });
     if (!response.ok) {
       const errorBody = await response.json().catch(() => ({}));
@@ -49,6 +64,22 @@ const api = {
     }
     return await response.json();
   },
+
+  async delete(endpoint) {
+    const url = `${API_BASE_URL}${endpoint}`;
+    console.log('📡 DELETE:', url);
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+    });
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => ({ message: `Erro HTTP: ${response.status}` }));
+      throw new Error(errorBody.message || `Erro HTTP: ${response.status}`);
+    }
+    return await response.json();
+  },
 };
 
 // ==================== EXPORTAÇÕES ====================
@@ -57,6 +88,9 @@ export const productsAPI = {
   getAll: (category = null) =>
     api.get(category ? `/products?category=${category}` : '/products'),
   getById: (id) => api.get(`/products/${id}`),
+  create: (formData) => api.postWithFormData('/products', formData),
+  update: (id, data) => api.put(`/products/${id}`, data),
+  delete: (id) => api.delete(`/products/${id}`),
 };
 
 export const shippingAPI = {

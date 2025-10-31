@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import '../styles/Layout.css';
+import { useAuth } from '../contexts/AuthContext';
+import { useCart } from '../contexts/CartContext';
+import { useTheme } from '../contexts/ThemeContext';
 import logo from '../assets/logoGS.webp';
-import linkedinIcon from '../assets/icons/logo-linkedin.svg';
-import facebookIcon from '../assets/icons/logo-facebook.svg';
-import whatsappIcon from '../assets/icons/logo-whatsapp.svg';
-import instagramIcon from '../assets/icons/logo-instagram.svg';
-import youtubeIcon from '../assets/icons/logo-youtube.svg';
 import SearchBar from './SearchBar';
 import AuthModal from './AuthModal';
-import { useAuth } from '../contexts/AuthContext';
-import { useCart } from '../contexts/CartContext'; // Importa o hook do carrinho
-import { useTheme } from '../contexts/ThemeContext'; // Importa o hook do tema
+import { FaCcVisa, FaCcMastercard, FaCreditCard, FaCcAmex, FaCcDinersClub } from 'react-icons/fa';
+import { FaPix } from 'react-icons/fa6';
+import '../styles/Layout.css';
+import '../styles/PaymentMethods.css';
 
 const messages = [
   "Pague com Pix e ganhe 10% de desconto. Aproveite!",
@@ -204,19 +202,19 @@ function Layout({ children }) {
             <h3>Redes Sociais</h3>
             <div className="social-icons">
               <a href="https://www.linkedin.com/company/gabriellysemijoias" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer">
-                <img src={linkedinIcon} alt="LinkedIn" />
+                <span className="social-icon linkedin-icon"></span>
               </a>
               <a href="https://www.facebook.com/gabri.bab" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
-                <img src={facebookIcon} alt="Facebook" />
+                <span className="social-icon facebook-icon"></span>
               </a>
               <a href="https://wa.me/5583987855966" aria-label="Whatsapp" target="_blank" rel="noopener noreferrer">
-                <img src={whatsappIcon} alt="Whatsapp" />
+                <span className="social-icon whatsapp-icon"></span>
               </a>
               <a href="https://www.instagram.com/gabriellysemijoias9215" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
-                <img src={instagramIcon} alt="Instagram" />
+                <span className="social-icon instagram-icon"></span>
               </a>
               <a href="https://www.youtube.com/@gabriellysemijoias3517" aria-label="YouTube" target="_blank" rel="noopener noreferrer">
-                <img src={youtubeIcon} alt="YouTube" />
+                <span className="social-icon youtube-icon"></span>
               </a>
             </div>
           </div>
@@ -224,10 +222,14 @@ function Layout({ children }) {
 
         <div className="footer-bottom">
           <div className="payment-methods">
-            <p>Formas de Pagamento</p>
-            <i className="fab fa-cc-visa"></i>
-            <i className="fab fa-cc-mastercard"></i>
-            <i className="fab fa-pix"></i>
+            <h3>Formas de Pagamento</h3>
+            <div className="payment-icons">
+              <FaCcVisa className="payment-icon visa" title="Visa" />
+              <FaCcMastercard className="payment-icon mastercard" title="Mastercard" />
+              <FaCcAmex className="payment-icon amex" title="American Express" />
+              <FaCcDinersClub className="payment-icon diners" title="Diners Club" />
+              <FaPix className="payment-icon pix" title="Pix" />
+            </div>
           </div>
           <p className="copyright">
             Todos os direitos reservados &copy; 2023 - Aviso: Todos os preços e condições deste site são válidos apenas para compras na loja online e não se aplica à loja Física.
