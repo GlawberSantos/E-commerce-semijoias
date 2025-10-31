@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
             const userData = JSON.parse(savedUser);
             
             // CORREÇÃO: Adiciona a role de admin ao carregar do localStorage
-            if (userData.email === 'admin@example.com' && userData.role !== 'admin') {
+            if (userData.name === 'admin' && userData.role !== 'admin') {
                 userData.role = 'admin';
                 localStorage.setItem('user', JSON.stringify(userData));
             }
@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }) => {
 
     const login = (userData, token) => {
         // Adiciona a role de admin para o usuário de exemplo
-        if (userData.email === 'admin@example.com') {
+        if (userData.name === 'admin') {
             userData.role = 'admin';
         }
         setUser(userData);
@@ -43,7 +43,7 @@ export const AuthProvider = ({ children }) => {
 
     const updateUser = (userData) => {
         // Mantém a role de admin se for o email admin
-        if (userData.email === 'admin@example.com') {
+        if (userData.name === 'admin') {
             userData.role = 'admin';
         }
         setUser(userData);
