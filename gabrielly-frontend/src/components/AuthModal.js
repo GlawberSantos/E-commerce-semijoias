@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import '../styles/AuthModal.css';
 import { authAPI } from '../api';
+import { useAuth } from '../contexts/AuthContext'; // Import useAuth
 
 const AuthModal = ({ isOpen, onClose }) => {
     const [isLoginMode, setIsLoginMode] = useState(true);
@@ -12,6 +13,7 @@ const AuthModal = ({ isOpen, onClose }) => {
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const { login } = useAuth(); // Get login function from AuthContext
 
     const handleChange = (e) => {
         setFormData({
@@ -49,9 +51,8 @@ const AuthModal = ({ isOpen, onClose }) => {
                 data = await authAPI.register(body);
             }
 
-            // Armazena o token e informações do usuário
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('user', JSON.stringify(data.user));
+            // Use the login function from AuthContext
+            login(data.user, data.token);
 
             // Feedback visual
             setError('');

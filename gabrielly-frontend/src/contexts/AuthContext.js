@@ -12,7 +12,15 @@ export const AuthProvider = ({ children }) => {
         const savedUser = localStorage.getItem('user');
 
         if (token && savedUser) {
-            setUser(JSON.parse(savedUser));
+            const userData = JSON.parse(savedUser);
+            
+            // CORREÇÃO: Adiciona a role de admin ao carregar do localStorage
+            if (userData.email === 'admin@example.com' && userData.role !== 'admin') {
+                userData.role = 'admin';
+                localStorage.setItem('user', JSON.stringify(userData));
+            }
+            
+            setUser(userData);
         }
         setLoading(false);
     }, []);
@@ -34,6 +42,10 @@ export const AuthProvider = ({ children }) => {
     };
 
     const updateUser = (userData) => {
+        // Mantém a role de admin se for o email admin
+        if (userData.email === 'admin@example.com') {
+            userData.role = 'admin';
+        }
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
     };
