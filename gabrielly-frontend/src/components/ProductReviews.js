@@ -14,30 +14,29 @@ const ProductReviews = ({ productId }) => {
     const { user } = useAuth();
 
     useEffect(() => {
+        const fetchReviews = async () => {
+            try {
+                const response = await fetch(`http://localhost:3001/api/products/${productId}/reviews`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message);
+                }
+
+                setReviews(data.reviews);
+
+                if (user) {
+                    const userReview = data.reviews.find(review => review.userId === user.id);
+                    setUserReview(userReview);
+                }
+            } catch (error) {
+                setError('Erro ao carregar avaliações');
+            } finally {
+                setLoading(false);
+            }
+        };
         fetchReviews();
-    }, [productId]);
-
-    const fetchReviews = async () => {
-        try {
-            const response = await fetch(`http://localhost:3001/api/products/${productId}/reviews`);
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message);
-            }
-
-            setReviews(data.reviews);
-
-            if (user) {
-                const userReview = data.reviews.find(review => review.userId === user.id);
-                setUserReview(userReview);
-            }
-        } catch (error) {
-            setError('Erro ao carregar avaliações');
-        } finally {
-            setLoading(false);
-        }
-    };
+    }, [productId, user]);
 
     const handleSubmitReview = async (e) => {
         e.preventDefault();
@@ -72,35 +71,6 @@ const ProductReviews = ({ productId }) => {
         }
     };
 
-    const handleUpdateReview = async (e) => {
-        e.preventDefault();
-
-        try {
-            const response = await fetch(`http://localhost:3001/api/products/${productId}/reviews/${userReview.id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify(newReview)
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message);
-            }
-
-            setReviews(reviews.map(review =>
-                review.id === userReview.id ? data.review : review
-            ));
-            setUserReview(data.review);
-            setNewReview({ rating: 5, comment: '' });
-
-        } catch (error) {
-            setError('Erro ao atualizar avaliação');
-        }
-    };
 
     const handleDeleteReview = async () => {
         if (!window.confirm('Tem certeza que deseja excluir sua avaliação?')) {

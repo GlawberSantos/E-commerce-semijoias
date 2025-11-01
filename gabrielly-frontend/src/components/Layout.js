@@ -6,7 +6,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import logo from '../assets/logoGS.webp';
 import SearchBar from './SearchBar';
 import AuthModal from './AuthModal';
-import { FaCcVisa, FaCcMastercard, FaCreditCard, FaCcAmex, FaCcDinersClub } from 'react-icons/fa';
+import { FaCcVisa, FaCcMastercard, FaCcAmex, FaCcDinersClub } from 'react-icons/fa';
 import { FaPix } from 'react-icons/fa6';
 import '../styles/Layout.css';
 import '../styles/PaymentMethods.css';
