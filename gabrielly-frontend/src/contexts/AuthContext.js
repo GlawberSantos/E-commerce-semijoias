@@ -6,48 +6,41 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    const handleUser = (userData) => {
+        if (userData && userData.name === 'admin') {
+            userData.role = 'admin';
+        }
+        setUser(userData);
+        if (userData) {
+            localStorage.setItem('user', JSON.stringify(userData));
+        } else {
+            localStorage.removeItem('user');
+        }
+    };
+
     useEffect(() => {
-        // Verifica se há um token salvo
         const token = localStorage.getItem('token');
         const savedUser = localStorage.getItem('user');
 
         if (token && savedUser) {
             const userData = JSON.parse(savedUser);
-            
-            // CORREÇÃO: Adiciona a role de admin ao carregar do localStorage
-            if (userData.name === 'admin' && userData.role !== 'admin') {
-                userData.role = 'admin';
-                localStorage.setItem('user', JSON.stringify(userData));
-            }
-            
-            setUser(userData);
+            handleUser(userData);
         }
         setLoading(false);
     }, []);
 
     const login = (userData, token) => {
-        // Adiciona a role de admin para o usuário de exemplo
-        if (userData.name === 'admin') {
-            userData.role = 'admin';
-        }
-        setUser(userData);
+        handleUser(userData);
         localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(userData));
     };
 
     const logout = () => {
-        setUser(null);
+        handleUser(null);
         localStorage.removeItem('token');
-        localStorage.removeItem('user');
     };
 
     const updateUser = (userData) => {
-        // Mantém a role de admin se for o email admin
-        if (userData.name === 'admin') {
-            userData.role = 'admin';
-        }
-        setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
+        handleUser(userData);
     };
 
     return (

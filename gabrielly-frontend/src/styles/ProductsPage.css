@@ -140,12 +140,12 @@
 .price-total {
     font-size: 1.2rem;
     font-weight: bold;
-    color: #000;
+    color: var(--price-color);
 }
 
 .price-installments {
     font-size: 0.9rem;
-    color: #666;
+    color: var(--price-color);
 }
 
 .product-stock {

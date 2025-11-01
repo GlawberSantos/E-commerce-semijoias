@@ -8,7 +8,8 @@ function ProductManagement() {
     const [product, setProduct] = useState({
         name: '',
         price: '',
-        installments: '',
+        total_installments: 10, // Assumindo 10 parcelas totais fixas
+        max_installments_no_interest: 0, // Novo campo para parcelas sem juros
         description: {
             comprimento: '',
             material: '',
@@ -38,7 +39,7 @@ function ProductManagement() {
         const { name, value } = e.target;
         setProduct(prevProduct => ({
             ...prevProduct,
-            [name]: value
+            [name]: name === 'price' || name === 'max_installments_no_interest' ? parseFloat(value) : value
         }));
     };
 
@@ -65,7 +66,8 @@ function ProductManagement() {
         const formData = new FormData();
         formData.append('name', product.name);
         formData.append('price', product.price);
-        formData.append('installments', product.installments);
+        formData.append('total_installments', product.total_installments);
+        formData.append('max_installments_no_interest', product.max_installments_no_interest);
         formData.append('description', JSON.stringify(product.description));
         
         for (let i = 0; i < product.images.length; i++) {
@@ -78,7 +80,8 @@ function ProductManagement() {
             setProduct({
                 name: '',
                 price: '',
-                installments: '',
+                total_installments: 10,
+                max_installments_no_interest: 0,
                 description: {
                     comprimento: '',
                     material: '',
@@ -160,8 +163,8 @@ function ProductManagement() {
                     <input type="number" id="price" name="price" value={product.price} onChange={handleChange} required />
                 </div>
                 <div className="form-group">
-                    <label htmlFor="installments">Parcelas sem juros</label>
-                    <input type="number" id="installments" name="installments" value={product.installments} onChange={handleChange} required />
+                    <label htmlFor="max_installments_no_interest">Parcelas Sem Juros (máx. 10)</label>
+                    <input type="number" id="max_installments_no_interest" name="max_installments_no_interest" value={product.max_installments_no_interest} onChange={handleChange} min="0" max="10" />
                 </div>
 
                 <h2>Descrição</h2>

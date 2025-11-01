@@ -3,7 +3,11 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
-    const { user } = useAuth();
+    const { user, loading } = useAuth();
+
+    if (loading) {
+        return null; // Ou um spinner de carregamento
+    }
 
     if (!user || user.role !== 'admin') {
         return <Navigate to="/" />;

@@ -2,15 +2,26 @@ import React, { useState, useEffect } from 'react';
 import '../styles/EditProductModal.css';
 
 function EditProductModal({ product, onClose, onSave }) {
-    const [editedProduct, setEditedProduct] = useState(product);
+    const [editedProduct, setEditedProduct] = useState({
+        ...product,
+        total_installments: product.total_installments || 10, // Garante que total_installments exista
+        max_installments_no_interest: product.max_installments_no_interest || 0 // Garante que max_installments_no_interest exista
+    });
 
     useEffect(() => {
-        setEditedProduct(product);
+        setEditedProduct({
+            ...product,
+            total_installments: product.total_installments || 10,
+            max_installments_no_interest: product.max_installments_no_interest || 0
+        });
     }, [product]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setEditedProduct(prev => ({ ...prev, [name]: value }));
+        setEditedProduct(prev => ({
+            ...prev,
+            [name]: name === 'price' || name === 'max_installments_no_interest' ? parseFloat(value) : value
+        }));
     };
 
     const handleDescriptionChange = (e) => {
@@ -44,8 +55,8 @@ function EditProductModal({ product, onClose, onSave }) {
                         <input type="number" name="price" value={editedProduct.price} onChange={handleChange} />
                     </div>
                     <div className="form-group">
-                        <label>Parcelas</label>
-                        <input type="number" name="installments" value={editedProduct.installments} onChange={handleChange} />
+                        <label>Parcelas Sem Juros (máx. 10)</label>
+                        <input type="number" name="max_installments_no_interest" value={editedProduct.max_installments_no_interest} onChange={handleChange} min="0" max="10" />
                     </div>
                     <h3>Descrição</h3>
                     <div className="form-group">
