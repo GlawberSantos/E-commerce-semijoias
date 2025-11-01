@@ -1,7 +1,7 @@
 /* src/components/QuickViewModal.css */
 
 /* Fundo do Modal com Blur */
-.modal-backdrop {
+.quick-view-modal.modal-backdrop {
     position: fixed;
     top: 0;
     left: 0;
@@ -18,7 +18,7 @@
 }
 
 /* Conteúdo do Modal */
-.modal-content {
+.quick-view-modal .modal-content {
     background-color: var(--modal-background);
     color: var(--text-color);
     border-radius: 16px;
@@ -31,11 +31,11 @@
     display: flex;
     flex-direction: column;
     gap: 0;
-    padding: 0;                  /* Removido padding aqui */
+    padding: 0;
 }
 
 /* Corpo do Modal (Imagem + Detalhes) */
-.modal-body {
+.quick-view-modal .modal-body {
     display: flex;
     gap: 32px;
     padding: 32px;               /* Padding interno */
@@ -43,7 +43,7 @@
 }
 
 /* === SEÇÃO DA IMAGEM === */
-.modal-image-section {
+.quick-view-modal .modal-image-section {
     flex: 1;
     min-width: 300px;
     max-width: 500px;            /* Limite máximo para imagem não crescer demais */
@@ -52,7 +52,7 @@
     gap: 16px;
 }
 
-.modal-image-container {
+.quick-view-modal .modal-image-container {
     width: 100%;
     height: 480px;               /* Altura fixa para consistência */
     overflow: hidden;
@@ -62,7 +62,7 @@
     position: relative;
 }
 
-.zoomable-image {
+.quick-view-modal .zoomable-image {
     width: 100%;
     height: 100%;
     object-fit: contain;         /* PROPORÇÃO CORRETA */
@@ -72,19 +72,19 @@
 }
 
 /* Zoom ao passar o mouse */
-.modal-image-container:hover .zoomable-image {
+.quick-view-modal .modal-image-container:hover .zoomable-image {
     transform: scale(1.8);       /* Zoom suave e controlado */
 }
 
 /* Miniaturas */
-.thumbnail-images {
+.quick-view-modal .thumbnail-images {
     display: flex;
     justify-content: center;
     gap: 12px;
     flex-wrap: wrap;
 }
 
-.thumbnail {
+.quick-view-modal .thumbnail {
     width: 70px;
     height: 70px;
     object-fit: cover;
@@ -95,20 +95,20 @@
     opacity: 0.8;
 }
 
-.thumbnail:hover {
+.quick-view-modal .thumbnail:hover {
     opacity: 1;
     border-color: var(--briliant-color);
     transform: scale(1.05);
 }
 
-.thumbnail.active {
+.quick-view-modal .thumbnail.active {
     border-color: var(--briliant-color);
     opacity: 1;
     box-shadow: 0 0 0 2px #fff;
 }
 
 /* === DETALHES DO PRODUTO === */
-.modal-details {
+.quick-view-modal .modal-details {
     flex: 1;
     min-width: 320px;
     display: flex;
@@ -117,7 +117,7 @@
     padding-top: 8px;
 }
 
-.modal-details h2 {
+.quick-view-modal .modal-details h2 {
     font-size: 2rem;
     font-weight: 700;
     color: var(--briliant-color);
@@ -126,24 +126,24 @@
     text-transform: uppercase;
 }
 
-.price-info {
+.quick-view-modal .price-info {
     margin-bottom: 24px;
 }
 
-.price-total {
+.quick-view-modal .price-total {
     font-size: 2rem;
     font-weight: 800;
     color: var(--price-color);
 }
 
-.price-installments {
+.quick-view-modal .price-installments {
     font-size: 1rem;
     color: var(--secondary-text-color);
     margin-top: 4px;
 }
 
 /* Detalhes estáticos */
-.product-details-static {
+.quick-view-modal .product-details-static {
     font-size: 0.95rem;
     color: var(--secondary-text-color);
     line-height: 1.6;
@@ -152,29 +152,29 @@
     padding-top: 16px;
 }
 
-.product-details-static p {
+.quick-view-modal .product-details-static p {
     margin: 6px 0;
 }
 
 /* Quantidade */
-.quantity-selector-modal {
+.quick-view-modal .quantity-selector-modal {
     margin: 20px 0;
 }
 
-.quantity-selector-modal label {
+.quick-view-modal .quantity-selector-modal label {
     display: block;
     font-weight: 600;
     margin-bottom: 8px;
     color: var(--text-color);
 }
 
-.quantity-controls {
+.quick-view-modal .quantity-controls {
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
-.quantity-controls button {
+.quick-view-modal .quantity-controls button {
     width: 40px;
     height: 40px;
     background: var(--button-background);
@@ -186,12 +186,12 @@
     transition: 0.2s;
 }
 
-.quantity-controls button:hover {
+.quick-view-modal .quantity-controls button:hover {
     background: var(--briliant-color);
     color: #000;
 }
 
-.quantity-controls input {
+.quick-view-modal .quantity-controls input {
     width: 60px;
     height: 40px;
     text-align: center;
@@ -201,17 +201,17 @@
 }
 
 /* Frete */
-.shipping-calculator {
+.quick-view-modal .shipping-calculator {
     margin: 24px 0;
 }
 
-.shipping-form {
+.quick-view-modal .shipping-form {
     display: flex;
     gap: 12px;
     flex-wrap: wrap;
 }
 
-.shipping-form input {
+.quick-view-modal .shipping-form input {
     flex: 1;
     min-width: 200px;
     padding: 12px;
@@ -221,7 +221,7 @@
     color: var(--input-text-color);
 }
 
-.shipping-form button {
+.quick-view-modal .shipping-form button {
     padding: 12px 20px;
     background: var(--briliant-color);
     color: #000;
@@ -233,14 +233,14 @@
 }
 
 /* Botões de Ação */
-.action-area {
+.quick-view-modal .action-area {
     margin-top: auto;
     display: flex;
     flex-direction: column;
     gap: 16px;
 }
 
-.btn-add-to-cart-modal {
+.quick-view-modal .btn-add-to-cart-modal {
     background: var(--briliant-color);
     color: #000;
     border: none;
@@ -254,12 +254,12 @@
     letter-spacing: 0.5px;
 }
 
-.btn-add-to-cart-modal:hover {
+.quick-view-modal .btn-add-to-cart-modal:hover {
     background: #e6c03a;
     transform: translateY(-1px);
 }
 
-.link-full-details a {
+.quick-view-modal .link-full-details a {
     color: var(--menu-color);
     text-decoration: none;
     font-size: 0.95rem;
@@ -269,7 +269,7 @@
 }
 
 /* Botão Fechar */
-.close-button {
+.quick-view-modal .close-button {
     position: absolute;
     top: 16px;
     right: 16px;
@@ -287,52 +287,52 @@
     transition: 0.3s;
 }
 
-.close-button:hover {
+.quick-view-modal .close-button:hover {
     background: var(--briliant-color);
     color: #000;
 }
 
 /* RESPONSIVIDADE */
 @media (max-width: 992px) {
-    .modal-body {
+    .quick-view-modal .modal-body {
         flex-direction: column;
         padding: 24px;
     }
 
-    .modal-image-section,
-    .modal-details {
+    .quick-view-modal .modal-image-section,
+    .quick-view-modal .modal-details {
         max-width: 100%;
     }
 
-    .modal-image-container {
+    .quick-view-modal .modal-image-container {
         height: 400px;
     }
 
-    .modal-details h2 {
+    .quick-view-modal .modal-details h2 {
         font-size: 1.8rem;
     }
 }
 
 @media (max-width: 576px) {
-    .modal-content {
+    .quick-view-modal .modal-content {
         width: 98%;
         border-radius: 12px;
     }
 
-    .modal-body {
+    .quick-view-modal .modal-body {
         padding: 16px;
     }
 
-    .modal-image-container {
+    .quick-view-modal .modal-image-container {
         height: 300px;
     }
 
-    .quantity-controls button,
-    .quantity-controls input {
+    .quick-view-modal .quantity-controls button,
+    .quick-view-modal .quantity-controls input {
         height: 36px;
     }
 
-    .btn-add-to-cart-modal {
+    .quick-view-modal .btn-add-to-cart-modal {
         padding: 14px;
         font-size: 1rem;
     }

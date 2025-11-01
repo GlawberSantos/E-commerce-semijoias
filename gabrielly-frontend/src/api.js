@@ -99,6 +99,8 @@ export const shippingAPI = {
 
 export const ordersAPI = {
   create: (orderData) => api.post('/orders', orderData),
+  createPaymentIntent: (data) => api.post('/create-payment-intent', data),
+  createMercadoPagoPreference: (data) => api.post('/mercadopago/create-preference', data),
   getAll: () => api.get('/orders'),
   getById: (id) => api.get(`/orders/${id}`),
   confirm: (id) => api.post(`/orders/${id}/confirm`, {}),

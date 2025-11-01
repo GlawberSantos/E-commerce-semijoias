@@ -59,6 +59,7 @@ CREATE TABLE IF NOT EXISTS orders (
     shipping_method VARCHAR(50),
     shipping_address_id INTEGER REFERENCES addresses(id),
     notes TEXT,
+    payment_details JSONB, -- ← CAMPO ADICIONADO PARA DETALHES DO PAGAMENTO
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     paid_at TIMESTAMP,

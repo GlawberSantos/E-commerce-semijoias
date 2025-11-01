@@ -6,8 +6,19 @@ import { query, getClient, initializeDatabase } from './db.js';
 import { CustomError } from './utils/CustomError.js';
 import { calculateDiscount } from './utils/couponLogic.js';
 import { calculateShipping } from './utils/freteService.js';
+import mercadopago from 'mercadopago';
+import { createPaymentIntent } from './utils/payment.js';
 
-dotenv.config();
+// Configuração do Mercado Pago
+const mercadoPagoAccessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
+if (mercadoPagoAccessToken) {
+  mercadopago.configure({
+    access_token: mercadoPagoAccessToken,
+  });
+  console.log('✅ Configuração do Mercado Pago carregada.');
+} else {
+  console.warn('⚠️  Atenção: O token de acesso do Mercado Pago (MERCADOPAGO_ACCESS_TOKEN) não foi encontrado no .env. A funcionalidade de pagamento não estará disponível.');
+}
 
 const app = express();
 
@@ -171,7 +182,7 @@ app.put('/api/products/:id', async (req, res) => {
 
 // ==================== ENDPOINTS DE PEDIDOS ====================
 app.post("/api/orders", async (req, res) => {
-  const { items, customerInfo, shippingMethod, paymentMethod, totalAmount, couponCode, shippingCost = 0 } = req.body;
+  const { items, customerInfo, shippingMethod, paymentMethod, totalAmount, couponCode, shippingCost = 0, stripePaymentId } = req.body;
 
   if (!items || !Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: "Itens do pedido são obrigatórios" });
@@ -247,8 +258,8 @@ app.post("/api/orders", async (req, res) => {
 
     const orderNumber = `ORD-${Date.now()}`;
     const orderResult = await client.query(
-      'INSERT INTO orders (order_number, customer_id, total_amount, discount, shipping_cost, payment_method, shipping_method, shipping_address_id, notes, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id',
-      [orderNumber, customerId, finalTotal, discount, shippingCost, paymentMethod, shippingMethod, addressId, appliedCoupon ? `Cupom: ${appliedCoupon}` : null, 'pending']
+      'INSERT INTO orders (order_number, customer_id, total_amount, discount, shipping_cost, payment_method, shipping_method, shipping_address_id, notes, status, payment_details) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id',
+      [orderNumber, customerId, finalTotal, discount, shippingCost, paymentMethod, shippingMethod, addressId, appliedCoupon ? `Cupom: ${appliedCoupon}` : null, 'pending', { stripePaymentId }]
     );
     const orderId = orderResult.rows[0].id;
 
@@ -514,6 +525,96 @@ app.post("/api/frete/calcular", async (req, res) => {
   }
 });
 
+// ==================== ENDPOINT DE PAGAMENTO COM STRIPE ====================
+app.post("/api/create-payment-intent", async (req, res) => {
+  const { totalAmount } = req.body;
+
+  if (!totalAmount || totalAmount <= 0) {
+    return res.status(400).json({ error: "Valor total inválido." });
+  }
+
+  try {
+    const clientSecret = await createPaymentIntent(totalAmount);
+    res.send({ clientSecret });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ==================== ENDPOINT DE PAGAMENTO COM MERCADO PAGO ====================
+app.post("/api/mercadopago/create-preference", async (req, res) => {
+  if (!mercadoPagoAccessToken) {
+    return res.status(503).json({ error: "A funcionalidade de pagamento não está disponível no momento." });
+  }
+
+  try {
+    const { items, customerInfo, shippingCost, totalAmount, orderId } = req.body;
+
+    const preference = {
+      items: items.map(item => ({
+        title: item.name,
+        unit_price: Number(item.price),
+        quantity: Number(item.quantity),
+      })),
+      payer: {
+        name: customerInfo.firstName,
+        surname: customerInfo.lastName,
+        email: customerInfo.email,
+      },
+      back_urls: {
+        success: `${process.env.FRONTEND_URL}/success`,
+        failure: `${process.env.FRONTEND_URL}/failure`,
+        pending: `${process.env.FRONTEND_URL}/pending`,
+      },
+      auto_return: "approved",
+      shipments: {
+        cost: shippingCost,
+        mode: 'not_specified', 
+      },
+      notification_url: `${process.env.BACKEND_URL}/api/mercadopago/notification?orderId=${orderId}`,
+      external_reference: orderId,
+    };
+
+    const response = await mercadopago.preferences.create(preference);
+    res.json({ id: response.body.id, init_point: response.body.init_point });
+
+  } catch (error) {
+    console.error('Erro ao criar preferência de pagamento:', error);
+    res.status(500).json({ error: "Erro ao processar pagamento" });
+  }
+});
+
+app.post("/api/mercadopago/notification", async (req, res) => {
+  const { query } = req;
+  const topic = query.topic || query.type;
+  const orderId = query.orderId;
+
+  console.log('🔔 Notificação do Mercado Pago recebida:', { topic, orderId });
+
+  if (topic === 'payment') {
+    const paymentId = query.id || query['data.id'];
+    console.log('🔍 Buscando pagamento:', paymentId);
+
+    try {
+      const payment = await mercadopago.payment.findById(Number(paymentId));
+      const paymentStatus = payment.body.status;
+      console.log(`✨ Status do pagamento: ${paymentStatus}`);
+
+      if (paymentStatus === 'approved') {
+        console.log(`🚀 Atualizando pedido ${orderId} para PAGO`);
+        await query('UPDATE orders SET status = $1, paid_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = $2', ['paid', orderId]);
+      } else {
+        console.log(`⏳ Pedido ${orderId} com status: ${paymentStatus}`);
+      }
+    } catch (error) {
+      console.error('Erro ao processar notificação do Mercado Pago:', error);
+    }
+  }
+
+  res.status(200).send('OK');
+});
+
+
 // ==================== INICIALIZAÇÃO DO SERVIDOR ====================
 const PORT = process.env.PORT || 5000;
 
@@ -538,6 +639,9 @@ const startServer = () => {
     console.log(" GET  /api/stats/sales");
     console.log(" POST /api/frete/calcular");
     console.log(" POST /chat");
+    console.log(" POST /api/create-payment-intent");
+    console.log(" POST /api/mercadopago/create-preference");
+    console.log(" POST /api/mercadopago/notification");
   });
 };
 

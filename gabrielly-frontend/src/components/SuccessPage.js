@@ -3,8 +3,8 @@ import { useLocation, Link } from 'react-router-dom';
 
 function SuccessPage() {
     const location = useLocation();
-    // Tenta obter o número do pedido passado pela navegação
     const orderNumber = location.state?.orderNumber || 'não encontrado';
+    const orderId = location.state?.orderId || null;
 
     return (
         <div style={{ textAlign: 'center', padding: '100px', backgroundColor: '#000', color: '#fff', minHeight: '80vh' }}>
@@ -18,6 +18,11 @@ function SuccessPage() {
             <p style={{ marginBottom: '40px' }}>
                 Um email de confirmação foi enviado para o endereço fornecido.
             </p>
+            {orderId && (
+                <Link to={`/orders/${orderId}`} style={{ color: 'var(--briliant-color)', textDecoration: 'underline', marginRight: '20px' }}>
+                    Ver detalhes do pedido
+                </Link>
+            )}
             <Link to="/" style={{ color: 'var(--briliant-color)', textDecoration: 'underline' }}>
                 Voltar para a página inicial
             </Link>

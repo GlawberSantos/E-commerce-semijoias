@@ -112,7 +112,7 @@ function QuickViewModal({ product, onClose }) {
     const imagePath = `/products/${imageFolder}/${imageName}`;
 
     return (
-        <div className="modal-backdrop" onClick={handleBackdropClick}>
+        <div className="modal-backdrop quick-view-modal" onClick={handleBackdropClick}>
             <div className="modal-content" role="dialog" aria-modal="true" aria-labelledby="quick-view-title">
                 <button className="close-button" onClick={onClose} aria-label="Fechar visualização rápida">
                     &times;

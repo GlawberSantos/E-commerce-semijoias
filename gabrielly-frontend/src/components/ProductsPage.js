@@ -9,6 +9,7 @@ import { productsAPI } from '../api';
 import ProductFilters from './ProductFilters';
 import QuickViewModal from './QuickViewModal';
 import StarRating from './StarRating';
+import ShareMenu from './ShareMenu';
 
 const ProductsPage = () => {
   const { category } = useParams();
@@ -43,18 +44,11 @@ const ProductsPage = () => {
   };
 
   const toggleFavorite = (productId) => {
-    setFavorites(prev => 
-      prev.includes(productId) 
-        ? prev.filter(id => id !== productId) 
+    setFavorites(prev =>
+      prev.includes(productId)
+        ? prev.filter(id => id !== productId)
         : [...prev, productId]
     );
-  };
-
-  const handleShare = (product) => {
-    const url = `${window.location.origin}/products/${product.category}/${product.id}`;
-    navigator.clipboard.writeText(url).then(() => {
-      alert('Link do produto copiado para a área de transferência!');
-    });
   };
 
   const [filters, setFilters] = useState({
@@ -100,7 +94,8 @@ const ProductsPage = () => {
       setError(err.message);
     } finally {
       setLoading(false);
-    }  }, []);
+    }
+  }, []);
 
   useEffect(() => {
     fetchProducts(category);
@@ -165,11 +160,26 @@ const ProductsPage = () => {
                         className={isHovered ? 'product-image-zoom' : ''}
                       />
                       <div className="product-actions">
-                        <button className={`favorite ${isFavorited ? 'favorited' : ''}`} onClick={(e) => { e.stopPropagation(); toggleFavorite(product.id); }}>♥</button>
-                        <button className="share" onClick={(e) => { e.stopPropagation(); handleShare(product); }}>🔗</button>
+                        <button
+                          className={`favorite ${isFavorited ? 'favorited' : ''}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleFavorite(product.id);
+                          }}
+                          aria-label={isFavorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                        >
+                          ♥
+                        </button>
+                        <ShareMenu product={product} />
                       </div>
                       {isHovered && (
                         <div className="buy-actions">
+                          <button
+                            className="btn-quick-view"
+                            onClick={(e) => { e.stopPropagation(); handleOpenQuickView(product); }}
+                          >
+                            Visualização Rápida
+                          </button>
                           <button
                             className="btn-buy-now"
                             onClick={(e) => { e.stopPropagation(); addToCart(product, productQuantity); }}
@@ -190,12 +200,17 @@ const ProductsPage = () => {
                       <span className="price-installments">ou 10x de {formatCurrency(product.price / 10)}</span>
                     </div>
                     <div className="product-stock">
-                        <span>{product.stock} em estoque</span>
+                      <span>{product.stock} em estoque</span>
                     </div>
                     <div className="quantity-selector">
-                        <button onClick={(e) => {e.stopPropagation(); handleQuantityChange(product.id, productQuantity - 1)}}>-</button>
-                        <input type="number" value={productQuantity} onClick={(e) => e.stopPropagation()} onChange={(e) => {e.stopPropagation(); handleQuantityChange(product.id, parseInt(e.target.value, 10))}} />
-                        <button onClick={(e) => {e.stopPropagation(); handleQuantityChange(product.id, productQuantity + 1)}}>+</button>
+                      <button onClick={(e) => { e.stopPropagation(); handleQuantityChange(product.id, productQuantity - 1) }}>-</button>
+                      <input
+                        type="number"
+                        value={productQuantity}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) => { e.stopPropagation(); handleQuantityChange(product.id, parseInt(e.target.value, 10)) }}
+                      />
+                      <button onClick={(e) => { e.stopPropagation(); handleQuantityChange(product.id, productQuantity + 1) }}>+</button>
                     </div>
                   </div>
                 );
