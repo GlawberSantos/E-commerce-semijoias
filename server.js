@@ -6,16 +6,27 @@ import { query, getClient, initializeDatabase } from './db.js';
 import { CustomError } from './utils/CustomError.js';
 import { calculateDiscount } from './utils/couponLogic.js';
 import { calculateShipping } from './utils/freteService.js';
-import * as mercadopago from 'mercadopago';
+import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 import { createPaymentIntent } from './utils/payment.js';
 
-// Configuração do Mercado Pago
+// Configuração do Mercado Pago - NOVA SINTAXE
 const mercadoPagoAccessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
+let mercadoPagoClient = null;
+let preferenceClient = null;
+let paymentClient = null;
+
 if (mercadoPagoAccessToken) {
-  mercadopago.configure({
-    access_token: mercadoPagoAccessToken,
-  });
-  console.log('✅ Configuração do Mercado Pago carregada.');
+  try {
+    mercadoPagoClient = new MercadoPagoConfig({ 
+      accessToken: mercadoPagoAccessToken,
+      options: { timeout: 5000 }
+    });
+    preferenceClient = new Preference(mercadoPagoClient);
+    paymentClient = new Payment(mercadoPagoClient);
+    console.log('✅ Configuração do Mercado Pago carregada.');
+  } catch (error) {
+    console.error('❌ Erro ao configurar Mercado Pago:', error);
+  }
 } else {
   console.warn('⚠️  Atenção: O token de acesso do Mercado Pago (MERCADOPAGO_ACCESS_TOKEN) não foi encontrado no .env. A funcionalidade de pagamento não estará disponível.');
 }
@@ -543,14 +554,14 @@ app.post("/api/create-payment-intent", async (req, res) => {
 
 // ==================== ENDPOINT DE PAGAMENTO COM MERCADO PAGO ====================
 app.post("/api/mercadopago/create-preference", async (req, res) => {
-  if (!mercadoPagoAccessToken) {
+  if (!preferenceClient) {
     return res.status(503).json({ error: "A funcionalidade de pagamento não está disponível no momento." });
   }
 
   try {
     const { items, customerInfo, shippingCost, totalAmount, orderId } = req.body;
 
-    const preference = {
+    const preferenceData = {
       items: items.map(item => ({
         title: item.name,
         unit_price: Number(item.price),
@@ -558,51 +569,64 @@ app.post("/api/mercadopago/create-preference", async (req, res) => {
       })),
       payer: {
         name: customerInfo.firstName,
-        surname: customerInfo.lastName,
+        surname: customerInfo.lastName || '',
         email: customerInfo.email,
       },
       back_urls: {
-        success: `${process.env.FRONTEND_URL}/success`,
-        failure: `${process.env.FRONTEND_URL}/failure`,
-        pending: `${process.env.FRONTEND_URL}/pending`,
+        success: `${process.env.FRONTEND_URL || 'https://gabriellysemijoias.vercel.app'}/success`,
+        failure: `${process.env.FRONTEND_URL || 'https://gabriellysemijoias.vercel.app'}/failure`,
+        pending: `${process.env.FRONTEND_URL || 'https://gabriellysemijoias.vercel.app'}/pending`,
       },
       auto_return: "approved",
       shipments: {
-        cost: shippingCost,
-        mode: 'not_specified', 
+        cost: Number(shippingCost) || 0,
+        mode: 'not_specified',
       },
-      notification_url: `${process.env.BACKEND_URL}/api/mercadopago/notification?orderId=${orderId}`,
-      external_reference: orderId,
+      notification_url: `${process.env.BACKEND_URL || 'https://e-commerce-semijoias-production.up.railway.app'}/api/mercadopago/notification?orderId=${orderId}`,
+      external_reference: String(orderId),
     };
 
-    const response = await mercadopago.preferences.create(preference);
-    res.json({ id: response.body.id, init_point: response.body.init_point });
+    const response = await preferenceClient.create({ body: preferenceData });
+    res.json({ 
+      id: response.id, 
+      init_point: response.init_point 
+    });
 
   } catch (error) {
     console.error('Erro ao criar preferência de pagamento:', error);
-    res.status(500).json({ error: "Erro ao processar pagamento" });
+    res.status(500).json({ 
+      error: "Erro ao processar pagamento",
+      details: error.message 
+    });
   }
 });
 
 app.post("/api/mercadopago/notification", async (req, res) => {
-  const { query } = req;
-  const topic = query.topic || query.type;
-  const orderId = query.orderId;
+  const { query: queryParams } = req;
+  const topic = queryParams.topic || queryParams.type;
+  const orderId = queryParams.orderId;
 
   console.log('🔔 Notificação do Mercado Pago recebida:', { topic, orderId });
 
   if (topic === 'payment') {
-    const paymentId = query.id || query['data.id'];
+    const paymentId = queryParams.id || queryParams['data.id'];
     console.log('🔍 Buscando pagamento:', paymentId);
 
     try {
-      const payment = await mercadopago.payment.findById(Number(paymentId));
-      const paymentStatus = payment.body.status;
+      if (!paymentClient) {
+        throw new Error('Cliente de pagamento não configurado');
+      }
+
+      const payment = await paymentClient.get({ id: Number(paymentId) });
+      const paymentStatus = payment.status;
       console.log(`✨ Status do pagamento: ${paymentStatus}`);
 
       if (paymentStatus === 'approved') {
         console.log(`🚀 Atualizando pedido ${orderId} para PAGO`);
-        await query('UPDATE orders SET status = $1, paid_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = $2', ['paid', orderId]);
+        await query(
+          'UPDATE orders SET status = $1, paid_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = $2', 
+          ['paid', orderId]
+        );
       } else {
         console.log(`⏳ Pedido ${orderId} com status: ${paymentStatus}`);
       }
@@ -613,7 +637,6 @@ app.post("/api/mercadopago/notification", async (req, res) => {
 
   res.status(200).send('OK');
 });
-
 
 // ==================== INICIALIZAÇÃO DO SERVIDOR ====================
 const PORT = process.env.PORT || 5000;
