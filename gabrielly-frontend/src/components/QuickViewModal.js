@@ -4,16 +4,60 @@ import { useNavigate, Link, useParams } from 'react-router-dom';
 import { formatCurrency } from '../utils/format';
 import '../styles/QuickViewModal.css';
 import { useCart } from '../contexts/CartContext';
+import { shippingAPI } from '../api';
 
 function QuickViewModal({ product, onClose }) {
     const { addToCart } = useCart();
     const [quantity, setQuantity] = useState(1);
+    const [cep, setCep] = useState('');
+    const [shippingCosts, setShippingCosts] = useState(null);
+    const [loadingShipping, setLoadingShipping] = useState(false);
     const [zoomLevel, setZoomLevel] = useState(1);
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
     const imageRef = useRef(null);
     const navigate = useNavigate();
     const { category } = useParams();
     const [isHovered, setIsHovered] = useState(false);
+
+    const cleanCep = (value) => value.replace(/\D/g, '');
+
+    const handleCalculateShipping = async () => {
+        const cepLimpo = cleanCep(cep);
+        if (cepLimpo.length !== 8) {
+            alert('Por favor, digite um CEP válido com 8 dígitos.');
+            return;
+        }
+
+        setLoadingShipping(true);
+        try {
+            // Mock product for shipping calculation - adjust as needed
+            const productForShipping = {
+                id: product.id,
+                quantity: quantity,
+                weight: product.weight || 0.5, // Assume a default weight if not available
+                length: product.length || 20,
+                width: product.width || 15,
+                height: product.height || 10,
+            };
+
+            const payload = {
+                cepDestino: cepLimpo,
+                pesoTotal: productForShipping.weight * productForShipping.quantity,
+                comprimento: productForShipping.length,
+                largura: productForShipping.width,
+                altura: productForShipping.height,
+            };
+
+            const data = await shippingAPI.calculate(payload);
+            setShippingCosts(data);
+        } catch (error) {
+            console.error('Erro ao calcular frete:', error);
+            setShippingCosts(null);
+            alert('Não foi possível calcular o frete para o CEP informado.');
+        } finally {
+            setLoadingShipping(false);
+        }
+    };
 
     const installmentPrice = product.price / 10.0;
 
@@ -137,9 +181,23 @@ function QuickViewModal({ product, onClose }) {
                         <div class="shipping-calculator">
                             <label>Calcular frete e prazo:</label>
                             <div class="shipping-form">
-                                <input type="text" placeholder="Digite seu CEP" />
-                                <button>Calcular</button>
+                                <input type="text" placeholder="Digite seu CEP" value={cep} onChange={(e) => setCep(e.target.value)} />
+                                <button onClick={handleCalculateShipping} disabled={loadingShipping}>{
+                                    loadingShipping ? 'Calculando...' : 'Calcular'
+                                }</button>
                             </div>
+                            {loadingShipping && <p>Calculando frete...</p>}
+                            {shippingCosts && !loadingShipping && (
+                                <div className="shipping-results">
+                                    {Object.keys(shippingCosts).length > 0 ? (
+                                        Object.entries(shippingCosts).map(([method, cost]) => (
+                                            <p key={method}><strong>{method.toUpperCase()}:</strong> {formatCurrency(cost)}</p>
+                                        ))
+                                    ) : (
+                                        <p>Nenhuma opção de frete disponível para este CEP.</p>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         <div className="action-area">
@@ -150,7 +208,9 @@ function QuickViewModal({ product, onClose }) {
                             >
                                 Adicionar ao Carrinho
                             </button>
-
+                            <Link to={`/products/${product.id}`} className="link-full-details" onClick={onClose}>
+                                Ver detalhes completos
+                            </Link>
                         </div>
                     </div>
                 </div>

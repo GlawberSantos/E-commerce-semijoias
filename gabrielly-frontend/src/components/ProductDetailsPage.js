@@ -11,11 +11,14 @@ const ProductDetailsPage = () => {
 
   useEffect(() => {
     const fetchProduct = async () => {
+      console.log('Fetching product with ID:', id);
       try {
         setLoading(true);
         const data = await productsAPI.getById(id);
+        console.log('Product API response:', data);
         setProduct(data);
       } catch (err) {
+        console.error('Error fetching product:', err);
         setError(err.message);
       } finally {
         setLoading(false);
