@@ -1,6 +1,6 @@
 /* src/components/QuickViewModal.css */
 
-/* Fundo do Modal (Onde ocorre o Desfoque) */
+/* Fundo do Modal com Blur */
 .modal-backdrop {
     position: fixed;
     top: 0;
@@ -8,259 +8,332 @@
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.6);
-    /* Cor de fundo escura */
-
-    /* PROPRIEDADE CHAVE PARA O DESFOQUE */
-    backdrop-filter: blur(5px);
-    /* FIM PROPRIEDADE CHAVE */
-
+    backdrop-filter: blur(8px); /* Aumentado para melhor efeito */
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 2000;
-    /* Garante que ele fique acima de todo o layout */
+    padding: 20px;
+    box-sizing: border-box;
 }
 
-/* Conteúdo central do Modal */
+/* Conteúdo do Modal */
 .modal-content {
     background-color: var(--modal-background);
-    /* Fundo escuro do card */
     color: var(--text-color);
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    max-width: 1200px;
-    width: 90%;
-    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    max-width: 1100px;           /* Reduzido de 1400px → mais equilibrado */
+    width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
     position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 0;                  /* Removido padding aqui */
 }
 
-.close-button {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: none;
-    border: none;
-    color: var(--close-button-color);
-    font-size: 2rem;
-    cursor: pointer;
-    z-index: 2001;
-}
-
+/* Corpo do Modal (Imagem + Detalhes) */
 .modal-body {
     display: flex;
-    gap: 30px;
+    gap: 32px;
+    padding: 32px;               /* Padding interno */
+    flex-wrap: wrap;             /* Permite quebra em mobile */
 }
 
-/* Container da Imagem (Para o Zoom) */
+/* === SEÇÃO DA IMAGEM === */
+.modal-image-section {
+    flex: 1;
+    min-width: 300px;
+    max-width: 500px;            /* Limite máximo para imagem não crescer demais */
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
 .modal-image-container {
     width: 100%;
-    height: 450px;
-    /* Altura fixa para a visualização */
+    height: 480px;               /* Altura fixa para consistência */
     overflow: hidden;
-    /* ESSENCIAL: Esconde as partes da imagem com zoom */
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    background: #f8f8f8;
+    position: relative;
 }
 
 .zoomable-image {
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s ease;
-    /* Transição para o zoom suave */
+    object-fit: contain;         /* PROPORÇÃO CORRETA */
+    transition: transform 0.4s ease;
+    cursor: zoom-in;
     transform-origin: center center;
-    /* Ponto de origem padrão */
 }
 
-/* Detalhes e Preço */
+/* Zoom ao passar o mouse */
+.modal-image-container:hover .zoomable-image {
+    transform: scale(1.8);       /* Zoom suave e controlado */
+}
+
+/* Miniaturas */
+.thumbnail-images {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.thumbnail {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    opacity: 0.8;
+}
+
+.thumbnail:hover {
+    opacity: 1;
+    border-color: var(--briliant-color);
+    transform: scale(1.05);
+}
+
+.thumbnail.active {
+    border-color: var(--briliant-color);
+    opacity: 1;
+    box-shadow: 0 0 0 2px #fff;
+}
+
+/* === DETALHES DO PRODUTO === */
 .modal-details {
-    width: 50%;
+    flex: 1;
+    min-width: 320px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
+    padding-top: 8px;
 }
 
 .modal-details h2 {
-    font-size: 1.8rem;
+    font-size: 2rem;
+    font-weight: 700;
     color: var(--briliant-color);
-    margin-bottom: 20px;
+    margin: 0 0 16px 0;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
 }
 
 .price-info {
-    margin-bottom: 30px;
+    margin-bottom: 24px;
 }
 
 .price-total {
-    font-size: 1.5rem;
-    font-weight: bold;
+    font-size: 2rem;
+    font-weight: 800;
     color: var(--price-color);
-    margin-bottom: 5px;
 }
 
 .price-installments {
     font-size: 1rem;
     color: var(--secondary-text-color);
+    margin-top: 4px;
 }
 
+/* Detalhes estáticos */
 .product-details-static {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     color: var(--secondary-text-color);
-    margin-bottom: 20px;
+    line-height: 1.6;
+    margin: 20px 0;
     border-top: 1px solid var(--border-color);
-    padding-top: 20px;
+    padding-top: 16px;
 }
 
 .product-details-static p {
-    margin: 5px 0;
+    margin: 6px 0;
 }
 
+/* Quantidade */
 .quantity-selector-modal {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 20px;
+    margin: 20px 0;
 }
 
 .quantity-selector-modal label {
-    font-weight: bold;
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-color);
 }
 
 .quantity-controls {
     display: flex;
     align-items: center;
+    gap: 8px;
 }
 
 .quantity-controls button {
+    width: 40px;
+    height: 40px;
     background: var(--button-background);
     color: var(--button-text-color);
-    border: none;
-    padding: 5px 10px;
+    border: 1px solid var(--input-border-color);
+    font-size: 1.2rem;
     cursor: pointer;
+    border-radius: 6px;
+    transition: 0.2s;
+}
+
+.quantity-controls button:hover {
+    background: var(--briliant-color);
+    color: #000;
 }
 
 .quantity-controls input {
-    width: 40px;
+    width: 60px;
+    height: 40px;
     text-align: center;
-    background: var(--input-background);
-    color: var(--input-text-color);
     border: 1px solid var(--input-border-color);
-}
-
-.stock-info {
-    font-size: 0.9rem;
-    color: var(--stock-color);
-}
-
-.shipping-calculator {
-    margin-bottom: 20px;
-}
-
-.shipping-calculator label {
-    display: block;
+    border-radius: 6px;
     font-weight: bold;
-    margin-bottom: 10px;
+}
+
+/* Frete */
+.shipping-calculator {
+    margin: 24px 0;
 }
 
 .shipping-form {
     display: flex;
-    gap: 10px;
+    gap: 12px;
+    flex-wrap: wrap;
 }
 
 .shipping-form input {
     flex: 1;
-    padding: 10px;
-    background: var(--input-background);
+    min-width: 200px;
+    padding: 12px;
+    border-radius: 8px;
     border: 1px solid var(--input-border-color);
+    background: var(--input-background);
     color: var(--input-text-color);
-    border-radius: 4px;
 }
 
 .shipping-form button {
+    padding: 12px 20px;
     background: var(--briliant-color);
     color: #000;
     border: none;
-    padding: 10px 15px;
-    border-radius: 4px;
-    cursor: pointer;
+    border-radius: 8px;
     font-weight: bold;
+    cursor: pointer;
+    min-width: 140px;
 }
 
+/* Botões de Ação */
 .action-area {
+    margin-top: auto;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 16px;
 }
 
 .btn-add-to-cart-modal {
-    background-color: var(--briliant-color);
+    background: var(--briliant-color);
     color: #000;
     border: none;
-    padding: 15px;
-    font-weight: bold;
+    padding: 16px;
     font-size: 1.1rem;
-    border-radius: 8px;
+    font-weight: 700;
+    border-radius: 10px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .btn-add-to-cart-modal:hover {
-    background-color: #d4af37;
+    background: #e6c03a;
+    transform: translateY(-1px);
 }
 
 .link-full-details a {
     color: var(--menu-color);
     text-decoration: none;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+    text-align: center;
+    display: block;
+    margin-top: 8px;
 }
 
-/* Responsividade do Modal */
-@media (max-width: 768px) {
+/* Botão Fechar */
+.close-button {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2001;
+    transition: 0.3s;
+}
+
+.close-button:hover {
+    background: var(--briliant-color);
+    color: #000;
+}
+
+/* RESPONSIVIDADE */
+@media (max-width: 992px) {
     .modal-body {
         flex-direction: column;
+        padding: 24px;
     }
 
     .modal-image-section,
     .modal-details {
-        width: 100%;
-        height: auto;
+        max-width: 100%;
     }
 
     .modal-image-container {
-        height: 350px;
+        height: 400px;
     }
 
-    .modal-details {
-        margin-top: 20px;
+    .modal-details h2 {
+        font-size: 1.8rem;
     }
 }
 
-.modal-image-section {
-    width: 50%;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
+@media (max-width: 576px) {
+    .modal-content {
+        width: 98%;
+        border-radius: 12px;
+    }
 
-.thumbnail-images {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-}
+    .modal-body {
+        padding: 16px;
+    }
 
-.thumbnail {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
-    border-radius: 4px;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: border-color 0.3s;
-}
+    .modal-image-container {
+        height: 300px;
+    }
 
-.thumbnail:hover {
-    border-color: #ccc;
-}
+    .quantity-controls button,
+    .quantity-controls input {
+        height: 36px;
+    }
 
-.thumbnail.active {
-    border-color: var(--briliant-color);
+    .btn-add-to-cart-modal {
+        padding: 14px;
+        font-size: 1rem;
+    }
 }
