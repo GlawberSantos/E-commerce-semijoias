@@ -7,6 +7,7 @@ import Layout from './components/Layout';
 import HomePage from './components/HomePage';
 import ProductsPage from './components/ProductsPage';
 import ProductDetailsPage from './components/ProductDetailsPage';
+import CartPage from './components/CartPage';
 import CheckoutPage from './components/CheckoutPage';
 import SuccessPage from './components/SuccessPage';
 import AdminPage from './components/AdminPage';
@@ -25,6 +26,7 @@ function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/catalogo/:category?" element={<ProductsPage />} />
               <Route path="/catalogo/:id" element={<ProductDetailsPage />} />
+              <Route path="/carrinho" element={<CartPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/success" element={<SuccessPage />} />
               <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
