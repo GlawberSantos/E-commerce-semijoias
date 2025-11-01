@@ -23,8 +23,8 @@ function App() {
           <Layout>
             <Routes>
               <Route path="/" element={<HomePage />} />
-              <Route path="/products" element={<ProductsPage />} />
-              <Route path="/products/:id" element={<ProductDetailsPage />} />
+              <Route path="/catalogo/:category?" element={<ProductsPage />} />
+              <Route path="/catalogo/:id" element={<ProductDetailsPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/success" element={<SuccessPage />} />
               <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
