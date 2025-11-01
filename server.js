@@ -6,7 +6,7 @@ import { query, getClient, initializeDatabase } from './db.js';
 import { CustomError } from './utils/CustomError.js';
 import { calculateDiscount } from './utils/couponLogic.js';
 import { calculateShipping } from './utils/freteService.js';
-import mercadopago from 'mercadopago';
+import * as mercadopago from 'mercadopago';
 import { createPaymentIntent } from './utils/payment.js';
 
 // Configuração do Mercado Pago
