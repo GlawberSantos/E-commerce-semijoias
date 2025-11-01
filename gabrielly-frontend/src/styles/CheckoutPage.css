@@ -339,9 +339,13 @@
 .credit-card-fields {
     border: 1px dashed #ddd;
     border-radius: 6px;
-    padding: 15px;
-    margin-top: 10px;
+    padding: 20px; /* Increased padding */
+    margin-top: 15px; /* Slightly increased margin */
     background-color: #fefefe;
+}
+
+.credit-card-fields input {
+    margin-bottom: 10px; /* Add vertical spacing between inputs */
 }
 
 .credit-card-fields .field-group,
