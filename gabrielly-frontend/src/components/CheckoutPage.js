@@ -112,6 +112,8 @@ const fetchAddressByCep = async (cep8Digits, setFormData, cartItems, setShipping
     }
 };
 
+let cepDebounceTimeout;
+
 const handleBlurLogic = (e, setFormData, cartItems, setShippingCosts) => {
     const { name, value } = e.target;
     let formattedValue = value;
@@ -125,7 +127,13 @@ const handleBlurLogic = (e, setFormData, cartItems, setShippingCosts) => {
         case 'cep':
             const valueWithoutHyphen = cleanCep(value);
             formattedValue = formatCEP(valueWithoutHyphen);
-            fetchAddressByCep(valueWithoutHyphen, setFormData, cartItems, setShippingCosts);
+            
+            clearTimeout(cepDebounceTimeout);
+            cepDebounceTimeout = setTimeout(() => {
+                if (valueWithoutHyphen.length === 8) {
+                    fetchAddressByCep(valueWithoutHyphen, setFormData, cartItems, setShippingCosts);
+                }
+            }, 300); // Debounce por 300ms
             break;
         default: 
             return;
