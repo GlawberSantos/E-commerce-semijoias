@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { useCart } from '../contexts/CartContext';
 import { useNavigate } from 'react-router-dom';
@@ -6,12 +5,7 @@ import '../styles/CheckoutPage.css';
 import { formatCurrency } from '../utils/format';
 import { FaArrowRight, FaCreditCard, FaBarcode, FaBolt } from 'react-icons/fa';
 import CartSummary from '../components/CartSummary';
-import { shippingAPI, ordersAPI } from '../api';
-import { Elements } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
-import PaymentForm from './PaymentForm';
-
-const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
+import { mercadoEnviosAPI, ordersAPI } from '../api';
 
 const formatPhone = (value) => {
     const numbers = value.replace(/\D/g, '');
@@ -32,33 +26,89 @@ const formatCEP = (value) => {
 
 const cleanCep = (cep) => cep.replace(/\D/g, '');
 
-const fetchShippingFromBackend = async (cepDestinoLimpo, cartItems, setShippingCosts) => {
-    if (!cepDestinoLimpo || cepDestinoLimpo.length !== 8) return;
-    const totalWeight = cartItems.reduce((sum, item) => sum + ((item.weight || 0) * (item.quantity || 0)), 0) || 1.0;
-    const dimensions = { comprimento: 20.0, largura: 15.0, altura: 10.0 };
+const fetchShippingFromMercadoEnvios = async (cepDestinoLimpo, cartItems, setShippingCosts) => {
+    if (!cepDestinoLimpo || cepDestinoLimpo.length !== 8) {
+        console.log('CEP inválido:', cepDestinoLimpo);
+        return;
+    }
+    
+    const CEP_ORIGEM_PETROLINA = '56304000'; // CEP de Petrolina, PE
+    
+    // Calcula dimensões e peso total dos produtos
+    const totalWeight = cartItems.reduce((sum, item) => {
+        return sum + ((item.weight || 0.5) * (item.quantity || 1));
+    }, 0) || 0.5; // Peso mínimo de 0.5kg
+    
+    // Dimensões padrão do pacote (pode ser ajustado conforme necessário)
+    const dimensions = {
+        height: 10, // altura em cm
+        width: 15,  // largura em cm
+        length: 20  // comprimento em cm
+    };
+    
     try {
-        const payload = { cepDestino: cepDestinoLimpo, pesoTotal: totalWeight, ...dimensions };
-        const data = await shippingAPI.calculate(payload);
-        setShippingCosts(data);
+        const payload = {
+            cepOrigem: CEP_ORIGEM_PETROLINA,
+            cepDestino: cepDestinoLimpo,
+            comprimento: dimensions.length,
+            largura: dimensions.width,
+            altura: dimensions.height,
+            pesoTotal: totalWeight
+        };
+        
+        console.log('📦 Consultando Mercado Envios:', payload);
+        
+        const data = await mercadoEnviosAPI.calculate(payload);
+        console.log('✅ Opções de frete do Mercado Envios:', data);
+        
+        if (Array.isArray(data) && data.length > 0) {
+            setShippingCosts(data);
+        } else {
+            console.warn('⚠️ Nenhuma opção de frete retornada');
+            setShippingCosts([]);
+        }
     } catch (error) {
-        console.error('❌ Erro detalhado ao buscar frete:', error);
-        setShippingCosts(null);
+        console.error('❌ Erro ao buscar frete no Mercado Envios:', error);
+        console.error('❌ Mensagem:', error.message);
+        console.error('❌ Response:', error.response?.data);
+        setShippingCosts([]);
     }
 };
 
 const fetchAddressByCep = async (cep8Digits, setFormData, cartItems, setShippingCosts) => {
-    if (cep8Digits.length !== 8) return;
+    if (cep8Digits.length !== 8) {
+        console.log('CEP precisa ter 8 dígitos:', cep8Digits);
+        return;
+    }
+    
+    console.log('🔍 Buscando endereço para CEP:', cep8Digits);
+    
     try {
         const response = await fetch(`https://viacep.com.br/ws/${cep8Digits}/json/`);
         const data = await response.json();
+        
+        console.log('📍 Resposta ViaCEP:', data);
+        
         if (!data.erro) {
-            setFormData(prev => ({ ...prev, address: data.logradouro || '', neighborhood: data.bairro || '', city: data.localidade || '', state: data.uf || '', cep: formatCEP(cep8Digits) }));
-            fetchShippingFromBackend(cep8Digits, cartItems, setShippingCosts);
+            setFormData(prev => ({ 
+                ...prev, 
+                address: data.logradouro || '', 
+                neighborhood: data.bairro || '', 
+                city: data.localidade || '', 
+                state: data.uf || '', 
+                cep: formatCEP(cep8Digits) 
+            }));
+            
+            console.log('🚚 Consultando opções de envio...');
+            await fetchShippingFromMercadoEnvios(cep8Digits, cartItems, setShippingCosts);
         } else {
             alert('CEP não encontrado.');
+            setShippingCosts([]);
         }
     } catch (error) {
+        console.error('Erro ao buscar CEP:', error);
         alert('Erro ao buscar CEP.');
+        setShippingCosts([]);
     }
 };
 
@@ -66,14 +116,19 @@ const handleBlurLogic = (e, setFormData, cartItems, setShippingCosts) => {
     const { name, value } = e.target;
     let formattedValue = value;
     switch (name) {
-        case 'phone': formattedValue = formatPhone(value); break;
-        case 'cpfCnpj': formattedValue = formatCPFCNPJ(value); break;
+        case 'phone': 
+            formattedValue = formatPhone(value); 
+            break;
+        case 'cpfCnpj': 
+            formattedValue = formatCPFCNPJ(value); 
+            break;
         case 'cep':
             const valueWithoutHyphen = cleanCep(value);
             formattedValue = formatCEP(valueWithoutHyphen);
             fetchAddressByCep(valueWithoutHyphen, setFormData, cartItems, setShippingCosts);
             break;
-        default: return;
+        default: 
+            return;
     }
     if (formattedValue !== value) {
         setFormData(prev => ({ ...prev, [name]: formattedValue }));
@@ -90,35 +145,146 @@ const StepHeader = ({ stepNumber, title, isCompleted, setStep }) => (
 
 const ContactForm = ({ formData, handleChange, handleBlur }) => (
     <form className="contact-form">
-        <input type="email" placeholder="E-mail" name="email" value={formData.email} onChange={handleChange} required />
-        <input type="text" placeholder="Celular / WhatsApp" name="phone" value={formData.phone} onChange={handleChange} onBlur={handleBlur} required />
+        <input 
+            type="email" 
+            placeholder="E-mail" 
+            name="email" 
+            value={formData.email} 
+            onChange={handleChange} 
+            required 
+        />
+        <input 
+            type="text" 
+            placeholder="Celular / WhatsApp" 
+            name="phone" 
+            value={formData.phone} 
+            onChange={handleChange} 
+            onBlur={handleBlur} 
+            required 
+        />
         <div className="input-row name-group">
-            <input type="text" placeholder="Nome" name="firstName" value={formData.firstName} onChange={handleChange} required />
-            <input type="text" placeholder="Sobrenome" name="lastName" value={formData.lastName} onChange={handleChange} required />
+            <input 
+                type="text" 
+                placeholder="Nome" 
+                name="firstName" 
+                value={formData.firstName} 
+                onChange={handleChange} 
+                required 
+            />
+            <input 
+                type="text" 
+                placeholder="Sobrenome" 
+                name="lastName" 
+                value={formData.lastName} 
+                onChange={handleChange} 
+                required 
+            />
         </div>
-        <input type="text" placeholder="CPF ou CNPJ" name="cpfCnpj" value={formData.cpfCnpj} onChange={handleChange} onBlur={handleBlur} required />
+        <input 
+            type="text" 
+            placeholder="CPF ou CNPJ" 
+            name="cpfCnpj" 
+            value={formData.cpfCnpj} 
+            onChange={handleChange} 
+            onBlur={handleBlur} 
+            required 
+        />
     </form>
 );
 
 const AddressForm = ({ formData, handleChange, handleBlur }) => (
     <form className="address-form">
-        <input type="text" placeholder="CEP" name="cep" value={formData.cep} onChange={handleChange} onBlur={handleBlur} required />
-        <input type="text" placeholder="Endereço" name="address" value={formData.address} onChange={handleChange} required />
+        <input 
+            type="text" 
+            placeholder="CEP" 
+            name="cep" 
+            value={formData.cep} 
+            onChange={handleChange} 
+            onBlur={handleBlur} 
+            required 
+        />
+        <input 
+            type="text" 
+            placeholder="Endereço" 
+            name="address" 
+            value={formData.address} 
+            onChange={handleChange} 
+            required 
+        />
         <div className="input-row">
-            <input type="text" placeholder="Número" name="number" value={formData.number} onChange={handleChange} required />
-            <input type="text" placeholder="Complemento (Opcional)" name="complement" value={formData.complement} onChange={handleChange} />
+            <input 
+                type="text" 
+                placeholder="Número" 
+                name="number" 
+                value={formData.number} 
+                onChange={handleChange} 
+                required 
+            />
+            <input 
+                type="text" 
+                placeholder="Complemento (Opcional)" 
+                name="complement" 
+                value={formData.complement} 
+                onChange={handleChange} 
+            />
         </div>
-        <input type="text" placeholder="Bairro" name="neighborhood" value={formData.neighborhood} onChange={handleChange} required />
+        <input 
+            type="text" 
+            placeholder="Bairro" 
+            name="neighborhood" 
+            value={formData.neighborhood} 
+            onChange={handleChange} 
+            required 
+        />
         <div className="input-row name-group">
-            <input type="text" placeholder="Cidade" name="city" value={formData.city} onChange={handleChange} required />
-            <input type="text" placeholder="Estado (Ex: PE)" name="state" value={formData.state} onChange={handleChange} maxLength="2" required />
+            <input 
+                type="text" 
+                placeholder="Cidade" 
+                name="city" 
+                value={formData.city} 
+                onChange={handleChange} 
+                required 
+            />
+            <input 
+                type="text" 
+                placeholder="Estado (Ex: PE)" 
+                name="state" 
+                value={formData.state} 
+                onChange={handleChange} 
+                maxLength="2" 
+                required 
+            />
         </div>
     </form>
 );
 
-const ShippingOptions = ({ shippingCosts, selectedShipping, handleShippingChange }) => {
-    if (!shippingCosts) return <p>Informe o CEP para calcular o frete.</p>;
-    if (shippingCosts.error) return <p>{shippingCosts.error}</p>;
+const ShippingOptions = ({ shippingCosts, selectedShipping, handleShippingChange, cep }) => {
+    const cleanedCep = cleanCep(cep);
+    
+    if (!cleanedCep || cleanedCep.length < 8) {
+        return (
+            <div className="shipping-info">
+                <p>ℹ️ Informe o CEP no passo anterior para calcular o frete.</p>
+            </div>
+        );
+    }
+
+    if (shippingCosts === null) {
+        return (
+            <div className="shipping-info">
+                <p>⏳ Calculando opções de frete...</p>
+            </div>
+        );
+    }
+
+    if (shippingCosts.length === 0) {
+        return (
+            <div className="shipping-info">
+                <p>⚠️ Nenhuma opção de frete encontrada para o CEP informado.</p>
+                <p>Verifique se o CEP está correto ou entre em contato conosco.</p>
+            </div>
+        );
+    }
 
     return (
         <div className="shipping-options">
@@ -127,14 +293,20 @@ const ShippingOptions = ({ shippingCosts, selectedShipping, handleShippingChange
                     <input
                         type="radio"
                         name="shippingMethod"
-                        value={option.name}
-                        checked={selectedShipping === option.name}
+                        value={option.name || option.shipping_method_id}
+                        checked={selectedShipping === (option.name || option.shipping_method_id)}
                         onChange={() => handleShippingChange(option)}
                     />
                     <div className="option-details">
-                        <span>{option.name}</span>
-                        <span className="price">{formatCurrency(parseFloat(option.price))}</span>
-                        <span className="delivery-time">Entrega em até {option.delivery_time} dias úteis</span>
+                        <span className="shipping-name">
+                            {SHIPPING_NAME_MAP[option.name] || option.name || option.description || 'Mercado Envios'}
+                        </span>
+                        <span className="price">
+                            {formatCurrency(parseFloat(option.price || option.cost || 0))}
+                        </span>
+                        <span className="delivery-time">
+                            Entrega em até {option.delivery_time === 0 ? '0' : (option.delivery_time || option.estimated_delivery_time || 'N/A')} dias úteis
+                        </span>
                     </div>
                 </label>
             ))}
@@ -145,26 +317,63 @@ const ShippingOptions = ({ shippingCosts, selectedShipping, handleShippingChange
 const PaymentOptions = ({ formData, handleChange }) => (
     <div className="payment-options">
         <label className="payment-option">
-            <input type="radio" name="paymentMethod" value="stripe" checked={formData.paymentMethod === 'stripe'} onChange={handleChange} />
-            <div className="option-details"><FaCreditCard /> <span>Cartão de Crédito</span></div>
+            <input 
+                type="radio" 
+                name="paymentMethod" 
+                value="credit_card" 
+                checked={formData.paymentMethod === 'credit_card'} 
+                onChange={handleChange} 
+            />
+            <div className="option-details">
+                <FaCreditCard /> 
+                <span>Cartão de Crédito</span>
+            </div>
         </label>
 
         <label className="payment-option">
-            <input type="radio" name="paymentMethod" value="pix" checked={formData.paymentMethod === 'pix'} onChange={handleChange} />
-            <div className="option-details"><FaBolt /> <span>Pix</span></div>
+            <input 
+                type="radio" 
+                name="paymentMethod" 
+                value="pix" 
+                checked={formData.paymentMethod === 'pix'} 
+                onChange={handleChange} 
+            />
+            <div className="option-details">
+                <FaBolt /> 
+                <span>PIX (Aprovação Imediata)</span>
+            </div>
         </label>
 
         <label className="payment-option">
-            <input type="radio" name="paymentMethod" value="boleto" checked={formData.paymentMethod === 'boleto'} onChange={handleChange} />
-            <div className="option-details"><FaBarcode /> <span>Boleto Bancário</span></div>
-        </label>
-
-        <label className="payment-option">
-            <input type="radio" name="paymentMethod" value="mercadopago" checked={formData.paymentMethod === 'mercadopago'} onChange={handleChange} />
-            <div className="option-details"><img src="https://img.icons8.com/color/48/000000/mercado-pago.png" alt="Mercado Pago" style={{width: '24px', height: '24px', marginRight: '10px'}}/> <span>Mercado Pago</span></div>
+            <input 
+                type="radio" 
+                name="paymentMethod" 
+                value="boleto" 
+                checked={formData.paymentMethod === 'boleto'} 
+                onChange={handleChange} 
+            />
+            <div className="option-details">
+                <FaBarcode /> 
+                <span>Boleto Bancário</span>
+            </div>
         </label>
     </div>
 );
+
+const SHIPPING_NAME_MAP = {
+    'PAC': 'PAC (Correios)',
+    'SEDEX': 'SEDEX (Correios)',
+    '.Package': 'Melhor Envio - Pacote',
+    '.Com': 'Melhor Envio - Encomenda',
+    'éFácil': 'Melhor Envio - éFácil',
+    'Retirada na Loja': 'Retirada na Loja',
+    'PAC (Simulado)': 'PAC (Correios - Simulado)',
+    'SEDEX (Simulado)': 'SEDEX (Correios - Simulado)',
+    'PAC (Simulado - Erro API)': 'PAC (Correios - Simulado - Erro API)',
+    'SEDEX (Simulado - Erro API)': 'SEDEX (Correios - Simulado - Erro API)',
+    'PAC (Simulado - Erro Geral)': 'PAC (Correios - Simulado - Erro Geral)',
+    'SEDEX (Simulado - Erro Geral)': 'SEDEX (Correios - Simulado - Erro Geral)',
+};
 
 function CheckoutPage() {
     const { cartItems, totalItems, clearCart } = useCart();
@@ -172,35 +381,36 @@ function CheckoutPage() {
     const [step, setStep] = useState(1);
     const [shippingCost, setShippingCost] = useState(null);
     const [shippingCosts, setShippingCosts] = useState(null);
-    const [clientSecret, setClientSecret] = useState('');
+    const [shippingOption, setShippingOption] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
     const [formData, setFormData] = useState({
-        email: '', phone: '', firstName: '', lastName: '', cpfCnpj: '',
-        cep: '', address: '', number: '', complement: '', neighborhood: '', city: '', state: '',
+        email: '', 
+        phone: '', 
+        firstName: '', 
+        lastName: '', 
+        cpfCnpj: '',
+        cep: '', 
+        address: '', 
+        number: '', 
+        complement: '', 
+        neighborhood: '', 
+        city: '', 
+        state: '',
         shippingMethod: '',
-        paymentMethod: 'stripe',
+        paymentMethod: 'pix', // PIX como padrão
     });
 
-    const totalProducts = useMemo(() => cartItems.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 0), 0), [cartItems]);
-    const totalWithShipping = useMemo(() => totalProducts + (shippingCost || 0), [totalProducts, shippingCost]);
-
-    useEffect(() => {
-        if (totalWithShipping > 0 && formData.paymentMethod === 'stripe') {
-            setIsLoading(true);
-            ordersAPI.createPaymentIntent({ totalAmount: totalWithShipping })
-                .then(data => {
-                    setClientSecret(data.clientSecret);
-                    setIsLoading(false);
-                })
-                .catch(error => {
-                    console.error("Failed to create payment intent", error);
-                    setError("Não foi possível iniciar o pagamento. Tente novamente.");
-                    setIsLoading(false);
-                });
-        }
-    }, [totalWithShipping, formData.paymentMethod]);
+    const totalProducts = useMemo(() => 
+        cartItems.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 0), 0), 
+        [cartItems]
+    );
+    
+    const totalWithShipping = useMemo(() => 
+        totalProducts + (shippingCost || 0), 
+        [totalProducts, shippingCost]
+    );
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -210,156 +420,259 @@ function CheckoutPage() {
     const handleBlur = (e) => handleBlurLogic(e, setFormData, cartItems, setShippingCosts);
 
     const handleShippingChange = (option) => {
-        setFormData(prev => ({ ...prev, shippingMethod: option.name }));
-        setShippingCost(parseFloat(option.price));
+        const shippingMethodId = option.name || option.shipping_method_id;
+        const shippingPrice = parseFloat(option.price || option.cost || 0);
+        
+        setFormData(prev => ({ ...prev, shippingMethod: shippingMethodId }));
+        setShippingCost(shippingPrice);
+        setShippingOption(option);
+        
+        console.log('✅ Frete selecionado:', {
+            method: shippingMethodId,
+            price: shippingPrice,
+            option: option
+        });
     };
 
-    const validateForm = () => {
-        const requiredFields = ['email', 'phone', 'firstName', 'lastName', 'cpfCnpj', 'cep', 'address', 'number', 'neighborhood', 'city', 'state', 'shippingMethod', 'paymentMethod'];
-        for (const field of requiredFields) {
-            if (!formData[field]) {
-                setError(`O campo ${field} é obrigatório.`);
-                return false;
-            }
+    const validateStep = (stepNumber) => {
+        switch (stepNumber) {
+            case 1:
+                if (!formData.email || !formData.phone || !formData.firstName || !formData.lastName || !formData.cpfCnpj) {
+                    setError('Por favor, preencha todos os campos de contato.');
+                    return false;
+                }
+                break;
+            case 2:
+                if (!formData.cep || !formData.address || !formData.number || !formData.neighborhood || !formData.city || !formData.state) {
+                    setError('Por favor, preencha todos os campos de endereço.');
+                    return false;
+                }
+                break;
+            case 3:
+                if (!formData.shippingMethod) {
+                    setError('Por favor, selecione uma opção de frete.');
+                    return false;
+                }
+                break;
+            case 4:
+                if (!formData.paymentMethod) {
+                    setError('Por favor, selecione uma forma de pagamento.');
+                    return false;
+                }
+                break;
         }
         setError(null);
         return true;
     };
 
-    const finalizeOrder = async (paymentData = {}) => {
-        if (!validateForm()) return;
+    const finalizeOrder = async () => {
+        if (!validateStep(4)) return;
 
         setIsLoading(true);
         setError(null);
 
         const orderData = {
             items: cartItems.map(item => ({
-                productId: item.id,
+                id: item.id,
+                title: item.name,
                 quantity: item.quantity,
-                price: item.price,
-                name: item.name
+                unit_price: item.price,
+                currency_id: 'BRL'
             })),
-            customerInfo: {
-                firstName: formData.firstName,
-                lastName: formData.lastName,
+            payer: {
+                name: formData.firstName,
+                surname: formData.lastName,
                 email: formData.email,
-                phone: formData.phone,
-                cpfCnpj: formData.cpfCnpj,
+                phone: {
+                    number: formData.phone.replace(/\D/g, '')
+                },
+                identification: {
+                    type: formData.cpfCnpj.replace(/\D/g, '').length === 11 ? 'CPF' : 'CNPJ',
+                    number: formData.cpfCnpj.replace(/\D/g, '')
+                },
                 address: {
-                    cep: formData.cep,
-                    street: formData.address,
-                    number: formData.number,
-                    complement: formData.complement,
+                    zip_code: formData.cep.replace(/\D/g, ''),
+                    street_name: formData.address,
+                    street_number: formData.number,
                     neighborhood: formData.neighborhood,
                     city: formData.city,
-                    state: formData.state,
+                    federal_unit: formData.state
                 }
             },
-            shippingMethod: formData.shippingMethod,
-            shippingCost: shippingCost,
-            paymentMethod: formData.paymentMethod,
-            totalAmount: totalWithShipping,
-            ...paymentData
+            shipments: {
+                cost: shippingCost,
+                mode: 'custom',
+                receiver_address: {
+                    zip_code: formData.cep.replace(/\D/g, ''),
+                    street_name: formData.address,
+                    street_number: formData.number,
+                    floor: formData.complement || '',
+                    apartment: formData.complement || '',
+                    city_name: formData.city,
+                    state_name: formData.state,
+                    country_name: 'Brasil'
+                }
+            },
+            payment_methods: {
+                excluded_payment_types: [],
+                installments: 12
+            },
+            back_urls: {
+                success: `${window.location.origin}/success`,
+                failure: `${window.location.origin}/checkout`,
+                pending: `${window.location.origin}/pending`
+            },
+            auto_return: 'approved',
+            external_reference: `ORDER-${Date.now()}`,
+            notification_url: `${process.env.REACT_APP_API_URL}/webhooks/mercadopago`
         };
 
+        console.log('📦 Criando pedido no Mercado Pago:', orderData);
+
         try {
-            const order = await ordersAPI.create(orderData);
-            if (formData.paymentMethod === 'mercadopago') {
-                const preference = await ordersAPI.createMercadoPagoPreference({ ...orderData, orderId: order.orderId });
+            const preference = await ordersAPI.createMercadoPagoPreference(orderData);
+            
+            console.log('✅ Preference criada:', preference);
+            
+            if (preference.init_point) {
+                // Redireciona para o checkout do Mercado Pago
                 window.location.href = preference.init_point;
             } else {
-                clearCart();
-                navigate('/success', { state: { orderNumber: order.orderNumber, orderId: order.orderId } });
+                throw new Error('Link de pagamento não foi gerado');
             }
         } catch (error) {
-            console.error('Erro ao finalizar pedido:', error);
-            setError(error.message || 'Ocorreu um erro ao finalizar o pedido. Tente novamente.');
-        } finally {
+            console.error('❌ Erro ao criar preferência de pagamento:', error);
+            setError(error.message || 'Erro ao processar pagamento. Tente novamente.');
             setIsLoading(false);
         }
     };
 
-    const handleContinue = async () => {
+    const handleContinue = () => {
+        if (!validateStep(step)) return;
+        
         if (step < 4) {
             setStep(step + 1);
-            return;
-        }
-
-        if (step === 4) {
-            if (formData.paymentMethod === 'stripe') {
-                // The payment is handled by the PaymentForm component
-                return;
-            }
-            await finalizeOrder();
+        } else {
+            finalizeOrder();
         }
     };
-
-    const appearance = { theme: 'stripe' };
-    const options = { clientSecret, appearance };
 
     return (
         <div className="checkout-page-container">
             <div className="checkout-grid">
                 <div className="form-column">
-                    {error && <div className="error-message">{error}</div>}
-                    {isLoading && <div className="loading-spinner">Carregando...</div>}
+                    {error && <div className="error-message">⚠️ {error}</div>}
 
                     <div className={`checkout-step step-1 ${step >= 1 ? 'active' : ''}`}>
-                        <StepHeader stepNumber={1} title="CONTATO" isCompleted={step > 1} setStep={setStep} />
+                        <StepHeader 
+                            stepNumber={1} 
+                            title="CONTATO" 
+                            isCompleted={step > 1} 
+                            setStep={setStep} 
+                        />
                         {step === 1 && (
                             <div className="step-content">
-                                <ContactForm formData={formData} handleChange={handleChange} handleBlur={handleBlur} />
-                                <button className="continue-button" onClick={() => setStep(2)}>CONTINUAR <FaArrowRight /></button>
+                                <ContactForm 
+                                    formData={formData} 
+                                    handleChange={handleChange} 
+                                    handleBlur={handleBlur} 
+                                />
+                                <button 
+                                    className="continue-button" 
+                                    onClick={handleContinue}
+                                >
+                                    CONTINUAR <FaArrowRight />
+                                </button>
                             </div>
                         )}
                     </div>
 
                     <div className={`checkout-step step-2 ${step >= 2 ? 'active' : ''}`}>
-                        <StepHeader stepNumber={2} title="ENTREGA" isCompleted={step > 2} setStep={setStep} />
+                        <StepHeader 
+                            stepNumber={2} 
+                            title="ENTREGA" 
+                            isCompleted={step > 2} 
+                            setStep={setStep} 
+                        />
                         {step === 2 && (
                             <div className="step-content">
-                                <AddressForm formData={formData} handleChange={handleChange} handleBlur={handleBlur} />
-                                <button className="continue-button" onClick={() => setStep(3)}>CONTINUAR <FaArrowRight /></button>
+                                <AddressForm 
+                                    formData={formData} 
+                                    handleChange={handleChange} 
+                                    handleBlur={handleBlur} 
+                                />
+                                <button 
+                                    className="continue-button" 
+                                    onClick={handleContinue}
+                                >
+                                    CONTINUAR <FaArrowRight />
+                                </button>
                             </div>
                         )}
                     </div>
 
                     <div className={`checkout-step step-3 ${step >= 3 ? 'active' : ''}`}>
-                        <StepHeader stepNumber={3} title="FRETE" isCompleted={step > 3} setStep={setStep} />
+                        <StepHeader 
+                            stepNumber={3} 
+                            title="FRETE (Mercado Envios)" 
+                            isCompleted={step > 3} 
+                            setStep={setStep} 
+                        />
                         {step === 3 && (
                             <div className="step-content">
-                                <ShippingOptions shippingCosts={shippingCosts} selectedShipping={formData.shippingMethod} handleShippingChange={handleShippingChange} />
-                                <button className="continue-button" onClick={() => setStep(4)}>CONTINUAR PARA PAGAMENTO <FaArrowRight /></button>
+                                <ShippingOptions 
+                                    shippingCosts={shippingCosts} 
+                                    selectedShipping={formData.shippingMethod} 
+                                    handleShippingChange={handleShippingChange} 
+                                    cep={formData.cep} 
+                                />
+                                <button 
+                                    className="continue-button" 
+                                    onClick={handleContinue}
+                                    disabled={!formData.shippingMethod}
+                                >
+                                    CONTINUAR PARA PAGAMENTO <FaArrowRight />
+                                </button>
                             </div>
                         )}
                     </div>
 
                     <div className={`checkout-step step-4 ${step === 4 ? 'active' : ''}`}>
-                        <StepHeader stepNumber={4} title="PAGAMENTO" isCompleted={step > 4} setStep={setStep} />
-                        <div className="step-content">
-                            {step === 4 && (
-                                <>
-                                    <PaymentOptions formData={formData} handleChange={handleChange} />
-                                    {formData.paymentMethod === 'stripe' && clientSecret && (
-                                        <Elements options={options} stripe={stripePromise}>
-                                            <PaymentForm clientSecret={clientSecret} onSuccessfulPayment={finalizeOrder} />
-                                        </Elements>
+                        <StepHeader 
+                            stepNumber={4} 
+                            title="PAGAMENTO (Mercado Pago)" 
+                            isCompleted={step > 4} 
+                            setStep={setStep} 
+                        />
+                        {step === 4 && (
+                            <div className="step-content">
+                                <PaymentOptions 
+                                    formData={formData} 
+                                    handleChange={handleChange} 
+                                />
+                                <button 
+                                    className="continue-button finalize-button" 
+                                    onClick={handleContinue} 
+                                    disabled={isLoading}
+                                >
+                                    {isLoading ? (
+                                        <>⏳ PROCESSANDO...</>
+                                    ) : (
+                                        <>FINALIZAR PEDIDO <FaArrowRight /></>
                                     )}
-                                    {formData.paymentMethod !== 'stripe' && (
-                                        <button className="continue-button" onClick={handleContinue} disabled={isLoading}>
-                                            {isLoading ? 'FINALIZANDO...' : 'FINALIZAR PEDIDO'} <FaArrowRight />
-                                        </button>
-                                    )}
-                                </>
-                            )}
-                        </div>
+                                </button>
+                                <div className="payment-security-info">
+                                    <small>🔒 Pagamento seguro processado pelo Mercado Pago</small>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
                 <CartSummary
                     total={totalWithShipping}
                     subtotal={totalProducts}
                     shippingCost={shippingCost}
-                    installments={6}
+                    installments={12}
                     totalItems={totalItems}
                     cartItems={cartItems}
                 />

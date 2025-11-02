@@ -4,7 +4,7 @@ import { useNavigate, Link, useParams } from 'react-router-dom';
 import { formatCurrency } from '../utils/format';
 import '../styles/QuickViewModal.css';
 import { useCart } from '../contexts/CartContext';
-import { shippingAPI } from '../api';
+import { mercadoEnviosAPI } from '../api';
 
 function QuickViewModal({ product, onClose }) {
     const { addToCart } = useCart();
@@ -48,7 +48,7 @@ function QuickViewModal({ product, onClose }) {
                 altura: productForShipping.height,
             };
 
-            const data = await shippingAPI.calculate(payload);
+            const data = await mercadoEnviosAPI.calculate(payload);
             setShippingCosts(data);
         } catch (error) {
             console.error('Erro ao calcular frete:', error);

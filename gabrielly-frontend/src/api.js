@@ -93,13 +93,13 @@ export const productsAPI = {
   delete: (id) => api.delete(`/products/${id}`),
 };
 
-export const shippingAPI = {
-  calculate: (shippingData) => api.post('/frete/calcular', shippingData),
+export const mercadoEnviosAPI = {
+  calculate: (shippingData) => api.post('/mercado-envios/calcular', shippingData),
 };
 
 export const ordersAPI = {
   create: (orderData) => api.post('/orders', orderData),
-  createPaymentIntent: (data) => api.post('/create-payment-intent', data),
+
   createMercadoPagoPreference: (data) => api.post('/mercadopago/create-preference', data),
   getAll: () => api.get('/orders'),
   getById: (id) => api.get(`/orders/${id}`),

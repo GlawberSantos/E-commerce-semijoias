@@ -14,7 +14,11 @@ export async function calculateShipping({
     const token = await getAccessToken();
     if (!token) {
       console.warn('⚠️ Token não disponível. Retornando frete simulado.');
-      return { pac: 15.0, sedex: 25.0, pickup: 0.0, simulated: true };
+      return [
+        { name: 'PAC (Simulado)', price: 15.0, delivery_time: 7, simulated: true },
+        { name: 'SEDEX (Simulado)', price: 25.0, delivery_time: 3, simulated: true },
+        { name: 'Retirada na Loja', price: 0.0, delivery_time: 0, simulated: true }
+      ];
     }
 
     const cleanCepDestino = cepDestino.replace(/\D/g, '');
@@ -52,26 +56,42 @@ export async function calculateShipping({
     if (!response.ok) {
       const errorText = await response.text();
       console.error('❌ Erro API Melhor Envio:', response.status, errorText);
-      return { pac: 15.0, sedex: 25.0, pickup: 0.0, simulated: true };
+      return [
+        { name: 'PAC (Simulado - Erro API)', price: 15.0, delivery_time: 7, simulated: true },
+        { name: 'SEDEX (Simulado - Erro API)', price: 25.0, delivery_time: 3, simulated: true },
+        { name: 'Retirada na Loja', price: 0.0, delivery_time: 0, simulated: true }
+      ];
     }
 
     const data = await response.json();
-    const results = { pickup: 0.0 }; // Retirada grátis
+    const results = []; // Initialize as an array
 
     if (Array.isArray(data)) {
       data.forEach(service => {
         if (service.error) return;
-        const name = service.name.toLowerCase();
-        const price = parseFloat(service.price);
-        if (name.includes('pac')) results.pac = price;
-        if (name.includes('sedex')) results.sedex = price;
+        results.push({
+          name: service.name,
+          price: parseFloat(service.price),
+          delivery_time: service.delivery_time
+        });
       });
     }
 
-    return { pac: results.pac ?? 15.0, sedex: results.sedex ?? 25.0, pickup: 0.0 };
+    // Add pickup option
+    results.push({
+      name: 'Retirada na Loja',
+      price: 0.0,
+      delivery_time: 0 // Instant pickup
+    });
+
+    return results;
 
   } catch (err) {
     console.error('❌ Erro ao calcular frete:', err.message);
-    return { pac: 15.0, sedex: 25.0, pickup: 0.0, simulated: true, error: err.message };
+    return [
+      { name: 'PAC (Simulado - Erro Geral)', price: 15.0, delivery_time: 7, simulated: true, error: err.message },
+      { name: 'SEDEX (Simulado - Erro Geral)', price: 25.0, delivery_time: 3, simulated: true, error: err.message },
+      { name: 'Retirada na Loja', price: 0.0, delivery_time: 0, simulated: true, error: err.message }
+    ];
   }
 }
