@@ -2,7 +2,14 @@ import React, { useState } from 'react';
 import { formatCurrency } from '../utils/format';
 import { useNavigate } from 'react-router-dom';
 
-function CartSummary({ cartItems, totalItems, total, installments = 6 }) {
+function CartSummary({
+    cartItems,
+    totalItems,
+    subtotal,
+    shippingCost,
+    installments = 6,
+    total, 
+}) {
     const [isCouponVisible, setIsCouponVisible] = useState(false);
     const [couponCode, setCouponCode] = useState('');
     const [couponDiscount, setCouponDiscount] = useState(0);
@@ -13,11 +20,10 @@ function CartSummary({ cartItems, totalItems, total, installments = 6 }) {
     };
 
     const applyCoupon = () => {
-        // Lista de cupons válidos (você pode mover isso para o backend depois)
         const validCoupons = {
             'PRIMEIRAS50': 50.00,
-            'DESC10': total * 0.10, // 10% de desconto
-            'DESC20': total * 0.20, // 20% de desconto
+            'DESC10': subtotal * 0.10,
+            'DESC20': subtotal * 0.20,
         };
 
         const upperCoupon = couponCode.toUpperCase();
@@ -31,8 +37,8 @@ function CartSummary({ cartItems, totalItems, total, installments = 6 }) {
         }
     };
 
-    const totalWithDiscount = total - couponDiscount;
-    const currentInstallments = totalWithDiscount / installments;
+    const totalWithDiscountAndShipping = total;
+    const currentInstallments = totalWithDiscountAndShipping / installments;
 
     return (
         <div className="cart-summary-column">
@@ -71,7 +77,7 @@ function CartSummary({ cartItems, totalItems, total, installments = 6 }) {
             <div className="totals-box">
                 <div className="total-row">
                     <span>Subtotal</span>
-                    <span>{formatCurrency(total)}</span>
+                    <span>{formatCurrency(subtotal)}</span>
                 </div>
 
                 {/* CAMPO/BOTÃO DE CUPOM */}
@@ -117,7 +123,9 @@ function CartSummary({ cartItems, totalItems, total, installments = 6 }) {
 
                 <div className="total-row">
                     <span>Frete</span>
-                    <span>--</span>
+                    <span>
+                        {shippingCost > 0 ? formatCurrency(shippingCost) : 'Grátis'}
+                    </span>
                 </div>
                 <div className="total-row gift">
                     <span>Brindes (+1 item)</span>
@@ -126,7 +134,7 @@ function CartSummary({ cartItems, totalItems, total, installments = 6 }) {
 
                 <div className="total-final">
                     <span>Total</span>
-                    <span>{formatCurrency(totalWithDiscount)}</span>
+                    <span>{formatCurrency(totalWithDiscountAndShipping)}</span>
                 </div>
                 <p className="installments-text">
                     ou {installments}x de {formatCurrency(currentInstallments)} sem juros
