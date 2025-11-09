@@ -203,6 +203,7 @@
     line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    text-align: center;
 }
 
 .product-rating {
@@ -458,6 +459,11 @@
         flex-direction: column;
         gap: 15px;
         align-items: flex-start;
+    }
+
+    .breadcrumb {
+        text-align: center;
+        width: 100%; /* Ensure it takes full width to center properly */
     }
 
     .view-options {

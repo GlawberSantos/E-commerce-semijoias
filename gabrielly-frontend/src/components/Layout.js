@@ -26,8 +26,8 @@ function Layout({ children }) {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const location = useLocation();
   const { user, logout } = useAuth();
-  const { totalItems } = useCart(); // Obtém o total de itens do carrinho
-  const { theme, toggleTheme } = useTheme(); // Obtém o tema e a função de toggle
+  const { totalItems } = useCart();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -57,12 +57,14 @@ function Layout({ children }) {
 
   return (
     <div className="layout-container">
+      {/* Banner Superior */}
       <div className="sliding-banner">
         <div key={currentMessageIndex} className="banner-message">
           {messages[currentMessageIndex]}
         </div>
       </div>
 
+      {/* Header */}
       <header className="header" role="banner">
         <div className="header-content">
           <Link to="/" className="logo-link" aria-label="Ir para a página inicial">
@@ -169,10 +171,12 @@ function Layout({ children }) {
         </div>
       </header>
 
+      {/* Conteúdo Principal */}
       <main className="main-content" role="main">
         {children}
       </main>
 
+      {/* Footer */}
       <footer className="footer" role="contentinfo">
         <Newsletter />
         <div className="footer-content">
@@ -240,6 +244,7 @@ function Layout({ children }) {
         </div>
       </footer>
 
+      {/* Modais e Widgets */}
       {isAuthModalOpen && (
         <AuthModal
           isOpen={isAuthModalOpen}

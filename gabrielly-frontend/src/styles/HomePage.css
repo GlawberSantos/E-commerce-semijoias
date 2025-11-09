@@ -481,6 +481,14 @@
    =================================================== */
 
 @media (max-width: 768px) {
+  /* GARANTIR QUE O CONTEÚDO FLUA CORRETAMENTE */
+  .homepage-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    overflow-x: hidden;
+  }
+
   /* HERO SECTION - REDUZIDO DRASTICAMENTE */
   .hero-section {
     min-height: 380px !important; /* Reduzido de 450px para 380px */

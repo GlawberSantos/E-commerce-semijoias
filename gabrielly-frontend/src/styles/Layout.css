@@ -333,7 +333,7 @@
     height: 2.5rem;
     line-height: 2.5rem;
     overflow: hidden;
-    position: sticky;
+    position: fixed;
     top: 0;
     width: 100%;
     z-index: 1000;
@@ -513,43 +513,64 @@
 
 @media (max-width: 768px) {
     .header {
-        padding: 0.5rem 1rem; /* Reduced padding for mobile */
+        padding: 0.5rem 0.8rem; /* Reduced padding for mobile */
+        position: fixed; /* Change from sticky to fixed */
+        top: 0; /* Ensure it's at the very top */
+        z-index: 1001; /* Higher z-index to ensure it's on top */
     }
 
     .header-content {
-        display: grid;
-        grid-template-columns: auto auto;
+        display: flex;
+        flex-direction: row;
         justify-content: space-between;
-        gap: 10px; /* Reduced gap for mobile */
-    }
-
-    .logo-link img {
-        max-width: 100px; /* Reduced logo size for mobile */
+        align-items: center;
+        width: 100%; /* Ensure it takes full width */
+        box-sizing: border-box; /* Include padding in width calculation */
+        gap: 5px; /* Reduced gap for mobile */
     }
 
     .logo-link {
-        justify-self: center;
-    }
-
-    .navbar,
-    .header-right {
-        display: none;
+        max-width: 80px; /* Further reduced logo size for mobile */
     }
 
     .hamburger {
         display: block;
+        position: static; /* Allow it to flow naturally */
+        top: auto;
+        right: auto;
+    }
+
+    .navbar {
+        display: flex; /* Always flex for positioning */
+        flex-direction: column;
+        width: 70%; /* Sidebar width */
+        max-width: 300px; /* Max width for larger screens */
+        position: fixed;
+        top: 0;
+        left: -100%; /* Hidden by default */
+        height: 100vh; /* Full height */
+        background-color: var(--background-color);
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
+        z-index: 998;
+        transition: left 0.3s ease-in-out; /* Smooth slide-in */
     }
 
     .navbar.active {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        background-color: var(--background-color);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-        grid-column: 1 / -1;
+        left: 0; /* Slide in */
+    }
+
+    .navbar.active .nav-list {
+        padding-top: 60px; /* Account for fixed header height */
+    }
+
+    .header-right {
+        display: flex; /* Make visible on mobile */
+        align-items: center;
+        gap: 5px; /* Adjust gap for mobile */
+    }
+
+    .header-right .search-bar { /* Hide search bar on mobile */
+        display: none;
     }
 
     .nav-list {
@@ -601,8 +622,13 @@
         justify-content: center;
     }
 
-    .footer-bottom {
-        flex-direction: column;
-        justify-content: center;
+    .cart-icon-link {
+        font-size: 1.2rem;
+        padding: 0.3rem;
+    }
+
+    .theme-toggle-button {
+        padding: 0.3rem;
+        font-size: 1.2rem;
     }
 }

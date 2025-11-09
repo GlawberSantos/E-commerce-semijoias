@@ -77,6 +77,15 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ===================================================
+   CORREÇÕES DE LAYOUT - PREVENIR FOOTER NO TOPO
+   =================================================== */
+
+html {
+  scroll-behavior: smooth;
+  height: 100%;
+}
+
 body {
   background-color: var(--background-color);
   font-family: var(--font-family-briliant);
@@ -85,7 +94,143 @@ body {
   padding: 0;
   line-height: 1.6;
   transition: background-color 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
 }
+
+/* Root do React */
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Layout Container - CRÍTICO */
+.layout-container {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 100vh !important;
+  width: 100% !important;
+  position: relative;
+}
+
+/* Main Content - Garante que empurre o footer para baixo */
+.main-content {
+  flex: 1 0 auto;
+  width: 100%;
+  min-height: 400px;
+  position: relative;
+  z-index: 2;
+}
+
+/* Footer - Sempre no final */
+.footer {
+  flex-shrink: 0;
+  width: 100%;
+  margin-top: auto;
+  position: relative;
+  z-index: 1;
+}
+
+/* ===================================================
+   MODAL & POPUP FIXES
+   =================================================== */
+
+/* Todos os modais devem ser fixed */
+[class*="modal"]:not(.main-content),
+[class*="popup"],
+[class*="overlay"],
+.modal,
+.popup,
+.overlay {
+  position: fixed !important;
+  z-index: 9999 !important;
+}
+
+/* Modal Overlays */
+.modal-overlay,
+.popup-overlay,
+[class*="modal-overlay"],
+[class*="popup-overlay"] {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 9998 !important;
+}
+
+/* Chatbot Widget */
+.chatbot-widget,
+[class*="chatbot"] {
+  position: fixed !important;
+  bottom: 20px !important;
+  right: 20px !important;
+  z-index: 9997 !important;
+}
+
+/* ===================================================
+   RESPONSIVIDADE MOBILE
+   =================================================== */
+
+@media (max-width: 768px) {
+  body {
+    min-height: 100vh;
+  }
+
+  #root {
+    min-height: 100vh;
+  }
+
+  .layout-container {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 100vh !important;
+  }
+
+  /* Ordem explícita dos elementos */
+  .sliding-banner {
+    order: 1;
+    flex-shrink: 0;
+  }
+
+  .header {
+    flex-shrink: 0;
+  }
+
+  .main-content {
+    order: 3;
+    flex: 1 0 auto;
+    min-height: 300px !important;
+  }
+
+  .footer {
+    order: 4;
+    flex-shrink: 0;
+    margin-top: 0;
+  }
+
+  /* END DEBUG */
+
+  /* Prevenir position absolute que quebra layout */
+  .homepage-container,
+  .products-page-container {
+    position: relative !important;
+  }
+
+  .homepage-container > *:not(.hero-section),
+  .products-page-container > * {
+    position: relative !important;
+  }
+}
+
+/* ===================================================
+   TIPOGRAFIA
+   =================================================== */
 
 h1,
 h2,
@@ -102,10 +247,52 @@ h1 {
   margin-bottom: 20px;
 }
 
-
-
-
 h2 {
   font-size: 1.5rem;
   margin: 30px 0 15px;
 }
+
+/* ===================================================
+   UTILITIES
+   =================================================== */
+
+/* Prevenir scroll horizontal */
+.no-scroll-x {
+  overflow-x: hidden !important;
+}
+
+/* Container genérico */
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Wrapper de conteúdo */
+.content-wrapper {
+  width: 100%;
+  max-width: 100%;
+  position: relative;
+}
+
+/* ===================================================
+   DEBUG - REMOVER EM PRODUÇÃO
+   =================================================== */
+
+/* Descomente para debugar layout
+.layout-container {
+  outline: 3px solid red !important;
+}
+
+.main-content {
+  outline: 3px solid green !important;
+}
+
+.footer {
+  outline: 3px solid blue !important;
+}
+
+.header {
+  outline: 3px solid yellow !important;
+}
+*/
