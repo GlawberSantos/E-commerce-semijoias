@@ -6,6 +6,7 @@
     margin: 0 auto;
     padding: 40px 20px;
     transition: filter 0.3s ease-in-out;
+    background-color: var(--section-background, #fff);
 }
 
 .products-page-container.blurred {
@@ -459,6 +460,10 @@
 
     .product-image-container {
         height: 320px;
+    }
+
+    .product-card h3 {
+        text-align: center;
     }
 
     .product-actions {

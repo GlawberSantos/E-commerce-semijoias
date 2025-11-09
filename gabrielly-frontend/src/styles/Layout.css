@@ -512,10 +512,23 @@
    =============================== */
 
 @media (max-width: 768px) {
+    .header {
+        padding: 0.5rem 1rem; /* Reduced padding for mobile */
+    }
+
     .header-content {
         display: grid;
         grid-template-columns: auto auto;
         justify-content: space-between;
+        gap: 10px; /* Reduced gap for mobile */
+    }
+
+    .logo-link img {
+        max-width: 100px; /* Reduced logo size for mobile */
+    }
+
+    .logo-link {
+        justify-self: center;
     }
 
     .navbar,
@@ -559,14 +572,19 @@
     .catalog-toggle {
         padding: 1rem;
         display: block;
+        margin: 0 auto; /* Added for centering */
     }
 
     .submenu {
         position: static;
         box-shadow: none;
         border: none;
-        background-color: #111;
+        background-color: var(--section-background); /* Changed for readability */
         transform: none;
+    }
+
+    .submenu li a {
+        color: var(--secondary-text-color); /* Changed for readability */
     }
 
     .user-dropdown {
