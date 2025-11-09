@@ -1,26 +1,25 @@
-/* ChatbotWidget.js */
 import React, { useState } from 'react';
-import Chat from '../components/Chat';
+import Chat from './Chat';
 import '../styles/ChatbotWidget.css';
 
-function ChatbotWidget() {
+export default function ChatBotWidget() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="chatbot-widget-container">
+    <div className="chatbot-widget">
       {isOpen && (
-        <div className="chatbot-box" role="dialog" aria-label="Janela de chat">
+        <div className="chatbot-window">
+          <button className="chatbot-close-btn" onClick={() => setIsOpen(false)}>
+            ✕
+          </button>
           <Chat />
         </div>
       )}
-      <button
-        className="chatbot-toggle-button"
-        onClick={() => setIsOpen(!isOpen)}
-        aria-label={isOpen ? 'Fechar chat' : 'Abrir chat'}
-      >
-        {isOpen ? '❌' : '💬'}
-      </button>
+      {!isOpen && (
+        <button className="chatbot-toggle" onClick={() => setIsOpen(true)}>
+          💬
+        </button>
+      )}
     </div>
   );
 }
-export default ChatbotWidget;

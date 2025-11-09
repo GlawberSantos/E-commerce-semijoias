@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import fs from "fs";
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -8,6 +9,20 @@ import { CustomError } from './utils/CustomError.js';
 import { calculateDiscount } from './utils/couponLogic.js';
 import { calculateShipping } from './utils/freteService.js';
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
+
+// Carregar dados de treinamento da Gaby
+let gabyTrainingData = [];
+try {
+  const trainingData = fs.readFileSync('./gaby_training.json', 'utf-8');
+  // Transformar para o formato de histórico do Gemini
+  gabyTrainingData = JSON.parse(trainingData).map(item => ([
+    { role: 'user', parts: [{ text: item.user }] },
+    { role: 'model', parts: [{ text: item.bot }] }
+  ])).flat();
+  console.log('✅ Dados de treinamento da Gaby carregados.');
+} catch (error) {
+  console.warn('⚠️  Atenção: Não foi possível carregar o arquivo de treinamento gaby_training.json. O chatbot usará apenas o prompt do sistema.');
+}
 
 // Configuração do Mercado Pago
 const mercadoPagoAccessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
@@ -37,8 +52,9 @@ const app = express();
 app.use(cors({
   origin: [
     'http://localhost:3000',
+    'http://localhost:5000',
     'http://localhost:5001',
-    'http://192.168.15.45:5001',
+    'http://192.168.15.45:5000',
     'http://localhost:5173',
     'https://gabriellysemijoias.vercel.app'
   ],
@@ -493,7 +509,7 @@ app.get("/api/stats/sales", async (req, res) => {
 
 // ==================== CHATBOT ====================
 app.post("/chat", async (req, res) => {
-  const { message: userMessage, history } = req.body; // history é um array de {role: 'user'|'model', parts: [{text: ''}]}
+  const { message: userMessage, history: historyFromRequest } = req.body;
 
   if (!userMessage) {
     return res.status(400).json({ reply: "Envie uma mensagem válida!" });
@@ -501,6 +517,12 @@ app.post("/chat", async (req, res) => {
   if (!generativeModel) {
     return res.status(503).json({ reply: "Chatbot indisponível no momento." });
   }
+
+  // Garante que o histórico seja sempre um array de objetos no formato correto
+  const history = (Array.isArray(historyFromRequest) ? historyFromRequest : []).map(h => ({
+    role: h.role,
+    parts: h.parts.map(p => ({ text: p.text || '' }))
+  }));
 
   try {
     // 1. Pesquisar produtos relevantes no banco de dados
@@ -544,36 +566,35 @@ app.post("/chat", async (req, res) => {
     }
 
     // 2. Montar o prompt e o histórico para a IA
-    const systemPrompt = `
-Você é Gaby, uma assistente virtual da loja Gabrielly Semijoias.
-Sua principal função é ser prestativa, amigável e eficiente.
+    const systemInstruction = {
+      role: "system",
+      parts: [{
+        text: `Você é Gaby, a assistente virtual da loja Gabrielly Semijoias 💎.
+Seu objetivo é ajudar o cliente a encontrar produtos, esclarecer dúvidas sobre preços, frete, estoque e promoções — sempre de forma simpática, clara e natural.
 
-**REGRAS ABSOLUTAS:**
-1.  **NÃO se apresente repetidamente.** Apresente-se APENAS na PRIMEIRA mensagem da conversa. Depois disso, vá direto ao ponto.
-2.  **FORNEÇA links completos e clicáveis** para os produtos quando encontrá-los. Use o link fornecido no contexto. O formato do link é: ${process.env.FRONTEND_URL || 'https://gabriellysemijoias.vercel.app'}/products/ID_DO_PRODUTO.
-3.  Se a mensagem do usuário for um número de 8 dígitos, provavelmente é um CEP. Responda que, para calcular o frete, ela pode usar a calculadora no carrinho de compras do site.
-4.  Responda em português do Brasil.
-5.  Use o contexto de "Produtos Relevantes Encontrados" para responder sobre produtos.
-6.  Se o estoque for zero, informe que o produto está indisponível.
-7.  Se a pergunta não for sobre produtos, seja útil e mencione o nome da loja "Gabrielly Semijoias".
-8.  Não invente informações.
-`;
+REGRAS:
+1. Só se apresente uma vez por conversa.
+2. Use linguagem simples e acolhedora, como se estivesse falando com um cliente real.
+3. Sempre que mencionar um produto, inclua o link completo no formato: ${process.env.FRONTEND_URL || 'https://gabriellysemijoias.vercel.app'}/catalogo/ID_DO_PRODUTO
+4. Se o usuário enviar um CEP (8 dígitos), oriente a usar o simulador de frete do site.
+5. Responda sempre em português (Brasil).
+6. Se não houver produtos relevantes, responda educadamente e ofereça ajuda para buscar outro item.
+7. Jamais invente informações sobre preços ou tempo de existência da loja.
+8. Seja breve, natural e mantenha o tom feminino, simpático e profissional.`
+      }]
+    };
 
-    const fullHistory = [
-      // O histórico já inclui a saudação inicial do frontend
-      ...history,
-      { role: 'user', parts: [{ text: userMessage + (productContext || '') }] },
-    ];
+    const combinedHistory = [...gabyTrainingData, ...history];
 
     const chat = generativeModel.startChat({
-      history: fullHistory.slice(0, -1), // Envia todo o histórico, exceto a última mensagem do usuário
+      history: combinedHistory,
       generationConfig: {
         maxOutputTokens: 800,
       },
-      systemInstruction: systemPrompt,
+      systemInstruction: systemInstruction,
     });
 
-    const result = await chat.sendMessage(userMessage);
+    const result = await chat.sendMessage(userMessage + (productContext || ''));
     const response = await result.response;
     const text = response.text();
 

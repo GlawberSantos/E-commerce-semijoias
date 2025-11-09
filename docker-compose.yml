@@ -25,7 +25,7 @@ services:
     container_name: gabrielly_backend
     restart: always
     ports:
-      - "5001:5001"
+      - "5000:5000"
     environment:
       DB_HOST: postgres
       DB_PORT: 5432

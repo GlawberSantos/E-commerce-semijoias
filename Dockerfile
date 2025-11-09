@@ -12,7 +12,7 @@ RUN npm ci --only=production
 COPY . .
 
 # Expor a porta
-EXPOSE 5001
+EXPOSE 5000
 
 # Comando para iniciar
 CMD ["npm", "start"]

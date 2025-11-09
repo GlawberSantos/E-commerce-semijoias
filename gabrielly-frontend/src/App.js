@@ -14,6 +14,7 @@ import AdminPage from './components/AdminPage';
 import AccountPage from './components/AccountPage';
 import OrdersPage from './components/OrdersPage';
 import ProtectedRoute from './components/ProtectedRoute';
+import ChatbotWidget from './components/ChatbotWidget';
 import './styles/global.css';
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
               <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
               <Route path="/orders/:id" element={<ProtectedRoute><ProductDetailsPage /></ProtectedRoute>} />
             </Routes>
+            <ChatbotWidget />
           </Layout>
         </ThemeProvider>
       </CartProvider>
