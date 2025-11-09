@@ -101,6 +101,7 @@ export const ordersAPI = {
   create: (orderData) => api.post('/orders', orderData),
 
   createMercadoPagoPreference: (data) => api.post('/mercadopago/create-preference', data),
+  createMercadoPagoPayment: (data) => api.post('/mercadopago/create-payment', data),
   getAll: () => api.get('/orders'),
   getById: (id) => api.get(`/orders/${id}`),
   confirm: (id) => api.post(`/orders/${id}/confirm`, {}),
@@ -112,6 +113,10 @@ export const authAPI = {
   register: (userData) => api.post('/auth/register', userData),
   updateDetails: (details) => api.put('/auth/account/details', details),
   updatePassword: (passwords) => api.put('/auth/account/password', passwords),
+};
+
+export const newsletterAPI = {
+  subscribe: (data) => api.post('/newsletter/subscribe', data),
 };
 
 export { API_BASE_URL };

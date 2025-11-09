@@ -15,7 +15,7 @@ function Chat() {
   useEffect(() => {
     setMessages([
       {
-        text: 'Olá! 👋 Sou a assistente da Gabrielly Semijoias. Como posso ajudar você hoje?',
+        text: 'Olá! 👋 Sou a Gabi, sua assistente virtual. Posso ajudar com dúvidas sobre produtos, preços e estoque. Se preferir, é só pedir para falar com um atendente. 😉',
         sender: 'bot'
       }
     ]);

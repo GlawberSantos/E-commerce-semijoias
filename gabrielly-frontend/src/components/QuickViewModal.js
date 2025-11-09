@@ -189,9 +189,9 @@ function QuickViewModal({ product, onClose }) {
                             {loadingShipping && <p>Calculando frete...</p>}
                             {shippingCosts && !loadingShipping && (
                                 <div className="shipping-results">
-                                    {Object.keys(shippingCosts).length > 0 ? (
-                                        Object.entries(shippingCosts).map(([method, cost]) => (
-                                            <p key={method}><strong>{method.toUpperCase()}:</strong> {formatCurrency(cost)}</p>
+                                    {shippingCosts.length > 0 ? (
+                                        shippingCosts.map((option, index) => (
+                                            <p key={index}><strong>{option.name.toUpperCase()}:</strong> {formatCurrency(option.price)} - Entrega em até {option.delivery_time} dias úteis</p>
                                         ))
                                     ) : (
                                         <p>Nenhuma opção de frete disponível para este CEP.</p>

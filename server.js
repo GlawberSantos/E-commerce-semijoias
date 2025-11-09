@@ -1,7 +1,8 @@
 import express from "express";
 import cors from "cors";
-import OpenAI from "openai";
+
 import dotenv from "dotenv";
+dotenv.config();
 import { query, getClient, initializeDatabase } from './db.js';
 import { CustomError } from './utils/CustomError.js';
 import { calculateDiscount } from './utils/couponLogic.js';
@@ -16,7 +17,7 @@ let paymentClient = null;
 
 if (mercadoPagoAccessToken) {
   try {
-    mercadoPagoClient = new MercadoPagoConfig({ 
+    mercadoPagoClient = new MercadoPagoConfig({
       accessToken: mercadoPagoAccessToken,
       options: { timeout: 5000 }
     });
@@ -48,16 +49,27 @@ app.use(cors({
 
 app.use(express.json());
 
-// ==================== OPENAI CONFIG ====================
-const apiKey = process.env.OPENAI_API_KEY;
+// ==================== IA CONFIG ====================
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-if (!apiKey) {
-  console.warn("⚠️ A chave da API (OPENAI_API_KEY) não foi encontrada no arquivo .env.");
+const geminiApiKey = process.env.GEMINI_API_KEY;
+let genAI = null;
+let generativeModel = null;
+
+if (geminiApiKey) {
+  try {
+    genAI = new GoogleGenerativeAI(geminiApiKey);
+    // A biblioteca oficial gerencia automaticamente a versão da API
+    generativeModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    console.log('✅ Configuração do Gemini AI carregada.');
+  } catch (error) {
+    console.error('❌ Erro ao configurar Gemini AI:', error);
+  }
+} else {
+  console.warn('⚠️  Atenção: A chave da API do Gemini (GEMINI_API_KEY) não foi encontrada no .env. A funcionalidade de chatbot não estará disponível.');
 }
-const openai = apiKey ? new OpenAI({
-  apiKey: apiKey,
-  baseURL: "https://openrouter.ai/api/v1"
-}) : null;
+
+// Remover a função callGeminiAPI pois vamos usar a biblioteca oficial
 
 // ==================== HEALTH CHECK ====================
 app.get("/", (req, res) => {
@@ -481,29 +493,114 @@ app.get("/api/stats/sales", async (req, res) => {
 
 // ==================== CHATBOT ====================
 app.post("/chat", async (req, res) => {
-  const message = req.body.message;
-  if (!message) {
+  const userMessage = req.body.message;
+  if (!userMessage) {
     return res.status(400).json({ reply: "Envie uma mensagem válida!" });
   }
-  if (!openai) {
+  if (!generativeModel) {
     return res.status(503).json({ reply: "Chatbot indisponível no momento." });
   }
+
   try {
-    const response = await openai.chat.completions.create({
-      model: "mistralai/mistral-7b-instruct",
-      messages: [{ role: "user", content: message }],
-      headers: {
-        "HTTP-Referer": "https://gabrielly-semijoias.com"
+    // 1. Pesquisar produtos relevantes no banco de dados
+    const searchTerms = userMessage.split(/\s+/).filter(term => term.length > 2);
+    let productContext = '';
+
+    if (searchTerms.length > 0) {
+      console.log('🤖 Termos de busca extraídos:', searchTerms);
+
+      const conditions = [];
+      const values = [];
+      let paramIndex = 1;
+
+      searchTerms.forEach(term => {
+        conditions.push(`(name ILIKE $${paramIndex} OR description ILIKE $${paramIndex} OR category ILIKE $${paramIndex})`);
+        values.push(`%${term}%`);
+        paramIndex++;
+      });
+
+      const productQuery = `
+        SELECT id, name, price, description, stock 
+        FROM products 
+        WHERE active = true AND (${conditions.join(' OR ')}) 
+        LIMIT 5`;
+
+      console.log('🔍 Executando busca de produtos');
+      const productsResult = await query(productQuery, values);
+      console.log(`✅ Produtos encontrados: ${productsResult.rows.length}`);
+
+      if (productsResult.rows.length > 0) {
+        productContext = "\n\n--- Produtos Relevantes Encontrados ---\n";
+        productsResult.rows.forEach(p => {
+          const productUrl = `/products/${p.id}`;
+          productContext += `Nome: ${p.name}, Preço: R$${p.price}, Estoque: ${p.stock}, Descrição: ${p.description}, Link: ${productUrl}\n`;
+        });
+        productContext += "--- Fim dos Produtos ---\n";
       }
-    });
-    return res.json({ reply: response.choices[0].message.content });
-  } catch (err) {
-    console.error("Erro completo da OpenRouter:", err);
-    if (err.response) {
-      console.error("Status da resposta:", err.response.status);
-      console.error("Dados da resposta:", err.response.data);
+    } else {
+      console.log('🤷 Nenhum termo de busca válido encontrado na mensagem do usuário.');
     }
-    return res.status(500).json({ reply: "Erro ao gerar resposta com a OpenRouter." });
+
+    // 2. Montar o prompt para a IA
+    const fullPrompt = `
+Você é um assistente virtual da Gabrielly Semijoias, uma loja online de semijoias.
+Seu nome é Gabi. Seja sempre simpática, prestativa e profissional.
+Sua principal função é ajudar os clientes a encontrar produtos e tirar dúvidas sobre eles.
+- Use o contexto de produtos fornecido para responder às perguntas dos clientes sobre itens específicos, preços, descrições e estoque.
+- Se o cliente pedir o link de um produto, forneça o link que está no contexto. O link é relativo ao site, então apenas forneça o caminho (ex: /products/123).
+- Se um produto estiver sem estoque (stock: 0), informe que o produto está indisponível no momento.
+- Se nenhum produto for encontrado no contexto, diga que você não encontrou o item específico, mas pode ajudar a encontrar outros produtos.
+- Responda em português do Brasil.
+- Não invente informações sobre produtos que não estão no contexto.
+- Se a pergunta não for sobre produtos (ex: 'qual o horário de funcionamento?'), use seu conhecimento geral para responder de forma útil, mencionando o nome da loja.
+
+${productContext}
+
+Com base no contexto acima e em seu conhecimento geral, responda à seguinte pergunta do cliente:
+Cliente: "${userMessage}"
+`;
+
+    // 3. Chamar a API do Gemini
+    const result = await generativeModel.generateContent(fullPrompt);
+    const response = await result.response;
+    const text = response.text();
+    return res.json({ reply: text });
+
+  } catch (err) {
+    console.error("Erro completo do Gemini:", err);
+    return res.status(500).json({ reply: "Erro ao gerar resposta com o Gemini." });
+  }
+});
+
+// ==================== NEWSLETTER ====================
+app.post("/api/newsletter/subscribe", async (req, res) => {
+  const { email } = req.body;
+
+  if (!email || !/\S+@\S+\.\S+/.test(email)) {
+    return res.status(400).json({ error: "Por favor, forneça um e-mail válido." });
+  }
+
+  try {
+    const existingSubscriber = await query(
+      "SELECT email FROM newsletter_subscribers WHERE email = $1",
+      [email]
+    );
+
+    if (existingSubscriber.rows.length > 0) {
+      return res.status(409).json({ message: "Este e-mail já está cadastrado." });
+    }
+
+    await query(
+      "INSERT INTO newsletter_subscribers (email) VALUES ($1)",
+      [email]
+    );
+
+    console.log(`💌 Novo assinante da newsletter: ${email}`);
+    res.status(201).json({ message: "Inscrição realizada com sucesso! Obrigado por se juntar a nós." });
+
+  } catch (error) {
+    console.error("Erro ao inscrever na newsletter:", error);
+    res.status(500).json({ error: "Ocorreu um erro ao processar sua inscrição. Tente novamente mais tarde." });
   }
 });
 
@@ -516,11 +613,8 @@ app.post("/api/mercado-envios/calcular", async (req, res) => {
       return res.status(400).json({ error: "CEP de destino é obrigatório" });
     }
 
-    // CEP de origem: Petrolina, PE
     const CEP_ORIGEM = '56304000';
 
-    // Aqui você implementaria a integração com a API do Mercado Envios
-    // Por enquanto, vou retornar um exemplo de resposta
     const results = await calculateShipping({
       cepOrigem: CEP_ORIGEM,
       cepDestino,
@@ -565,16 +659,65 @@ app.post("/api/mercadopago/create-preference", async (req, res) => {
     };
 
     const response = await preferenceClient.create({ body: preferenceData });
-    res.json({ 
-      id: response.id, 
-      init_point: response.init_point 
+    res.json({
+      id: response.id,
+      init_point: response.init_point
     });
 
   } catch (error) {
     console.error('Erro ao criar preferência de pagamento:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: "Erro ao processar pagamento",
-      details: error.message 
+      details: error.message
+    });
+  }
+});
+
+app.post("/api/mercadopago/create-payment", async (req, res) => {
+  if (!paymentClient) {
+    return res.status(503).json({ error: "A funcionalidade de pagamento não está disponível no momento." });
+  }
+
+  try {
+    const { orderData, payment_method_id } = req.body;
+
+    const paymentData = {
+      transaction_amount: orderData.shipments.cost + orderData.items.reduce((acc, item) => acc + (item.unit_price * item.quantity), 0),
+      description: `Pedido #${orderData.external_reference}`,
+      payment_method_id: payment_method_id,
+      payer: {
+        email: orderData.payer.email,
+        first_name: orderData.payer.name,
+        last_name: orderData.payer.surname,
+        identification: {
+          type: orderData.payer.identification.type,
+          number: orderData.payer.identification.number,
+        },
+      },
+      external_reference: orderData.external_reference,
+      notification_url: `${process.env.BACKEND_URL || 'https://e-commerce-semijoias-production.up.railway.app'}/api/mercadopago/notification`,
+    };
+
+    const response = await paymentClient.create({ body: paymentData });
+
+    if (payment_method_id === 'pix') {
+      res.json({
+        payment_id: response.id,
+        qr_code_base64: response.point_of_interaction.transaction_data.qr_code_base64,
+        qr_code: response.point_of_interaction.transaction_data.qr_code,
+      });
+    } else if (payment_method_id === 'bolbradesco') {
+      res.json({
+        payment_id: response.id,
+        boleto_url: response.point_of_interaction.transaction_data.ticket_url,
+      });
+    }
+
+  } catch (error) {
+    console.error('Erro ao criar pagamento:', error);
+    res.status(500).json({
+      error: "Erro ao processar pagamento",
+      details: error.message
     });
   }
 });
@@ -603,8 +746,7 @@ app.post("/api/mercadopago/notification", async (req, res) => {
 
       if (paymentStatus === 'approved' && externalReference) {
         console.log(`🚀 Atualizando pedido ${externalReference} para PAGO`);
-        
-        // Buscar pedido pelo external_reference (order_number)
+
         const orderResult = await query(
           'SELECT id FROM orders WHERE order_number = $1',
           [externalReference]
@@ -655,6 +797,7 @@ const startServer = () => {
     console.log(" POST /chat");
     console.log(" POST /api/mercadopago/create-preference");
     console.log(" POST /api/mercadopago/notification");
+    console.log(" POST /api/newsletter/subscribe");
   });
 };
 

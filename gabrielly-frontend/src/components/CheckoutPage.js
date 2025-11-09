@@ -322,7 +322,9 @@ const ShippingOptions = ({ shippingCosts, selectedShipping, handleShippingChange
     );
 };
 
-const PaymentOptions = ({ formData, handleChange }) => (
+const PaymentOptions = (props) => {
+    const { formData, handleChange, pixData, boletoUrl } = props;
+    return (
     <div className="payment-options">
         <label className="payment-option">
             <input
@@ -356,8 +358,8 @@ const PaymentOptions = ({ formData, handleChange }) => (
             <input
                 type="radio"
                 name="paymentMethod"
-                value="boleto"
-                checked={formData.paymentMethod === 'boleto'}
+                value="bolbradesco"
+                checked={formData.paymentMethod === 'bolbradesco'}
                 onChange={handleChange}
             />
             <div className="option-details">
@@ -369,11 +371,12 @@ const PaymentOptions = ({ formData, handleChange }) => (
         {/* Renderiza o conteúdo específico do método de pagamento */}
         <div className="payment-details">
             {formData.paymentMethod === 'credit_card' && <CreditCardForm />}
-            {formData.paymentMethod === 'pix' && <PixPayment />}
-            {formData.paymentMethod === 'boleto' && <BoletoPayment />}
+            {formData.paymentMethod === 'pix' && <PixPayment pixData={pixData} />}
+            {formData.paymentMethod === 'bolbradesco' && <BoletoPayment boletoUrl={boletoUrl} />}
         </div>
     </div>
-);
+    );
+};
 
 const CreditCardForm = () => (
     <div className="credit-card-form">
@@ -387,21 +390,33 @@ const CreditCardForm = () => (
     </div>
 );
 
-const PixPayment = () => (
+const PixPayment = ({ pixData }) => (
     <div className="pix-payment">
-        <p>Pague com PIX e receba aprovação imediata:</p>
-        <div className="pix-qr-code">
-            {/* Simulação de QR Code */}
-            <img src="/path-to-qr-code.png" alt="QR Code PIX" style={{ width: '150px', height: '150px', margin: '0 auto', display: 'block' }} />
-        </div>
-        <button className="copy-pix-key-button">Copiar Chave PIX</button>
+        {pixData ? (
+            <>
+                <p>Pague com PIX para finalizar seu pedido:</p>
+                <div className="pix-qr-code">
+                    <img src={`data:image/jpeg;base64,${pixData.qr_code_base64}`} alt="QR Code PIX" style={{ width: '150px', height: '150px', margin: '0 auto', display: 'block' }} />
+                </div>
+                <input type="text" readOnly value={pixData.qr_code} />
+                <button className="copy-pix-key-button">Copiar Chave PIX</button>
+            </>
+        ) : (
+            <p>Clique em "Finalizar Pedido" para gerar o código PIX.</p>
+        )}
     </div>
 );
 
-const BoletoPayment = () => (
+const BoletoPayment = ({ boletoUrl }) => (
     <div className="boleto-payment">
-        <p>O boleto será gerado após a finalização do pedido.</p>
-        <button className="generate-boleto-button">Gerar Boleto</button>
+        {boletoUrl ? (
+            <>
+                <p>Seu boleto foi gerado com sucesso!</p>
+                <a href={boletoUrl} target="_blank" rel="noopener noreferrer" className="generate-boleto-button">Visualizar Boleto</a>
+            </>
+        ) : (
+            <p>O boleto será gerado após a finalização do pedido.</p>
+        )}
     </div>
 );
 
@@ -429,6 +444,8 @@ function CheckoutPage() {
     const [shippingOption, setShippingOption] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [pixData, setPixData] = useState(null);
+    const [boletoUrl, setBoletoUrl] = useState(null);
 
     const [formData, setFormData] = useState({
         email: '',
@@ -575,19 +592,25 @@ function CheckoutPage() {
         console.log('📦 Criando pedido no Mercado Pago:', orderData);
 
         try {
-            const preference = await ordersAPI.createMercadoPagoPreference(orderData);
-
-            console.log('✅ Preference criada:', preference);
-
-            if (preference.init_point) {
-                // Redireciona para o checkout do Mercado Pago
-                window.location.href = preference.init_point;
+            if (formData.paymentMethod === 'credit_card') {
+                const preference = await ordersAPI.createMercadoPagoPreference(orderData);
+                if (preference.init_point) {
+                    window.location.href = preference.init_point;
+                } else {
+                    throw new Error('Link de pagamento não foi gerado');
+                }
             } else {
-                throw new Error('Link de pagamento não foi gerado');
+                const paymentData = await ordersAPI.createMercadoPagoPayment({ orderData, payment_method_id: formData.paymentMethod });
+                if (formData.paymentMethod === 'pix') {
+                    setPixData(paymentData);
+                } else if (formData.paymentMethod === 'bolbradesco') {
+                    setBoletoUrl(paymentData.boleto_url);
+                }
             }
         } catch (error) {
             console.error('❌ Erro ao criar preferência de pagamento:', error);
             setError(error.message || 'Erro ao processar pagamento. Tente novamente.');
+        } finally {
             setIsLoading(false);
         }
     };
@@ -694,6 +717,8 @@ function CheckoutPage() {
                                 <PaymentOptions
                                     formData={formData}
                                     handleChange={handleChange}
+                                    pixData={pixData}
+                                    boletoUrl={boletoUrl}
                                 />
                                 <button
                                     className="continue-button finalize-button"

@@ -8,6 +8,8 @@ import SearchBar from './SearchBar';
 import AuthModal from './AuthModal';
 import { FaCcVisa, FaCcMastercard, FaCcAmex, FaCcDinersClub } from 'react-icons/fa';
 import { FaPix } from 'react-icons/fa6';
+import Newsletter from './Newsletter';
+import ChatbotWidget from './ChatbotWidget';
 import '../styles/Layout.css';
 import '../styles/PaymentMethods.css';
 
@@ -172,6 +174,7 @@ function Layout({ children }) {
       </main>
 
       <footer className="footer" role="contentinfo">
+        <Newsletter />
         <div className="footer-content">
           <div className="footer-section">
             <h3>Institucional</h3>
@@ -232,7 +235,7 @@ function Layout({ children }) {
             </div>
           </div>
           <p className="copyright">
-            Todos os direitos reservados &copy; 2023 - Aviso: Todos os preços e condições deste site são válidos apenas para compras na loja online e não se aplica à loja Física.
+            Todos os direitos reservados &copy; 2025 - Aviso: Todos os preços e condições deste site são válidos apenas para compras na loja online e não se aplica à loja Física.
           </p>
         </div>
       </footer>
@@ -243,6 +246,8 @@ function Layout({ children }) {
           onClose={() => setIsAuthModalOpen(false)}
         />
       )}
+
+      <ChatbotWidget />
     </div>
   );
 }

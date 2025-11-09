@@ -64,17 +64,16 @@ export async function calculateShipping({
     }
 
     const data = await response.json();
-    const results = []; // Initialize as an array
+    let results = []; // Initialize as an array
 
     if (Array.isArray(data)) {
-      data.forEach(service => {
-        if (service.error) return;
-        results.push({
+      results = data
+        .filter(service => !service.error && (service.name === 'PAC' || service.name === 'SEDEX'))
+        .map(service => ({
           name: service.name,
           price: parseFloat(service.price),
           delivery_time: service.delivery_time
-        });
-      });
+        }));
     }
 
     // Add pickup option

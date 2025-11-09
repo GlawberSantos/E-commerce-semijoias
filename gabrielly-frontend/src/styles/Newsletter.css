@@ -1,0 +1,79 @@
+.newsletter-container {
+    background-color: #f8f9fa; /* Cor de fundo suave */
+    padding: 40px 20px;
+    text-align: center;
+    border-top: 1px solid #e9ecef; /* Linha sutil no topo */
+}
+
+.newsletter-container h3 {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.newsletter-container p {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 25px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.newsletter-form {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: 500px;
+    margin: 0 auto;
+    gap: 10px; /* Espaço entre o input e o botão */
+}
+
+.newsletter-form input[type="email"] {
+    flex-grow: 1; /* Ocupa o espaço disponível */
+    padding: 12px 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.newsletter-form input[type="email"]:focus {
+    border-color: #86b7fe; /* Destaque ao focar */
+    outline: none;
+}
+
+.newsletter-form button {
+    padding: 12px 25px;
+    background-color: #212529; /* Cor do botão principal */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.newsletter-form button:hover {
+    background-color: #495057;
+}
+
+.newsletter-form button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+.success-message, .error-message {
+    margin-top: 15px;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.success-message {
+    color: #198754; /* Verde para sucesso */
+}
+
+.error-message {
+    color: #dc3545; /* Vermelho para erro */
+}
