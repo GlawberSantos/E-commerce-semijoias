@@ -6,7 +6,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import logo from '../assets/logoGS.webp';
 import SearchBar from './SearchBar';
 import AuthModal from './AuthModal';
-import { FaCcVisa, FaCcMastercard, FaCcAmex, FaCcDinersClub } from 'react-icons/fa';
+import { FaCcVisa, FaCcMastercard, FaCcAmex, FaCcDinersClub, FaSearch } from 'react-icons/fa';
 import { FaPix } from 'react-icons/fa6';
 import Newsletter from './Newsletter';
 import ChatbotWidget from './ChatbotWidget';
@@ -28,6 +28,10 @@ function Layout({ children }) {
   const { user, logout } = useAuth();
   const { totalItems } = useCart();
   const { theme, toggleTheme } = useTheme();
+
+  const toggleMobileSearchBar = () => {
+    setIsMobileSearchBarVisible(prev => !prev);
+  };
 
   useEffect(() => {
     const interval = setInterval(() => {

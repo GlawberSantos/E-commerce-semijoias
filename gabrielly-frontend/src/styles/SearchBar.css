@@ -111,10 +111,45 @@
     border-radius: 0 0 8px 8px;
 }
 
+/* Mobile Search Toggle Button */
+.mobile-search-toggle {
+    display: none; /* Hidden by default, shown on mobile */
+    background: none;
+    border: none;
+    color: var(--briliant-color);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 5px;
+}
+
 /* Responsividade */
 @media (max-width: 768px) {
     .search-container {
         max-width: 100%;
+        display: flex;
+        justify-content: flex-end; /* Align toggle to the right */
+        align-items: center;
+    }
+
+    .search-form {
+        display: none; /* Hidden by default on mobile */
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1001; /* Ensure it's above other content when open */
+    }
+
+    .search-container.mobile-open .search-form {
+        display: flex; /* Show when mobile-open class is present */
+    }
+
+    .mobile-search-toggle {
+        display: block; /* Show on mobile */
+    }
+
+    .search-container.mobile-open .mobile-search-toggle {
+        display: none; /* Hide when search form is open */
     }
 
     .search-input {

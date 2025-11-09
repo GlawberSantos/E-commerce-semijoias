@@ -520,57 +520,62 @@
     }
 
     .header-content {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
+        display: grid;
+        grid-template-columns: auto 1fr auto; /* Adjusted for flexible columns */
+        grid-template-areas: "hamburger logo header-right"; /* Define grid areas */
         align-items: center;
-        width: 100%; /* Ensure it takes full width */
-        box-sizing: border-box; /* Include padding in width calculation */
-        gap: 5px; /* Reduced gap for mobile */
+        width: 100%;
+        box-sizing: border-box;
+        gap: 15px; /* Increased gap for better spacing */
+        min-height: 50px;
     }
 
     .logo-link {
-        max-width: 80px; /* Further reduced logo size for mobile */
+        grid-area: logo; /* Assign to logo area */
+        justify-self: center;
+        max-width: 100px;
+        flex-shrink: 0;
     }
 
     .hamburger {
+        grid-area: hamburger; /* Assign to hamburger area */
+        justify-self: start;
         display: block;
-        position: static; /* Allow it to flow naturally */
+        position: static;
         top: auto;
         right: auto;
-    }
-
-    .navbar {
-        display: flex; /* Always flex for positioning */
-        flex-direction: column;
-        width: 70%; /* Sidebar width */
-        max-width: 300px; /* Max width for larger screens */
-        position: fixed;
-        top: 0;
-        left: -100%; /* Hidden by default */
-        height: 100vh; /* Full height */
-        background-color: var(--background-color);
-        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
-        z-index: 998;
-        transition: left 0.3s ease-in-out; /* Smooth slide-in */
-    }
-
-    .navbar.active {
-        left: 0; /* Slide in */
-    }
-
-    .navbar.active .nav-list {
-        padding-top: 60px; /* Account for fixed header height */
+        flex-shrink: 0;
+        font-size: 1.5rem; /* Adjusted font size for better fit */
     }
 
     .header-right {
-        display: flex; /* Make visible on mobile */
+        grid-area: header-right; /* Assign to header-right area */
+        justify-self: end;
+        display: flex;
         align-items: center;
-        gap: 5px; /* Adjust gap for mobile */
+        gap: 10px;
+        flex-shrink: 0;
     }
 
-    .header-right .search-bar { /* Hide search bar on mobile */
+    .header-right .search-bar {
         display: none;
+    }
+
+    .navbar {
+        display: none; /* Hidden by default on mobile */
+        flex-direction: column;
+        position: absolute;
+        top: 50px; /* Position below the fixed header */
+        left: 0;
+        width: 100%;
+        background-color: var(--background-color);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        z-index: 998; /* Below the header, but above content */
+        padding-bottom: 10px;
+    }
+
+    .navbar.active {
+        display: flex; /* Show when active */
     }
 
     .nav-list {
@@ -631,4 +636,57 @@
         padding: 0.3rem;
         font-size: 1.2rem;
     }
+}
+
+@media (max-width: 480px) {
+    .header {
+        padding: 0.5rem; /* Even less padding for very small screens */
+    }
+
+    .logo-link {
+        max-width: 60px; /* Further reduced logo size */
+    }
+
+    .hamburger {
+        font-size: 1.5rem; /* Smaller hamburger icon */
+    }
+
+    .login-button {
+        padding: 0.2rem; /* Reduced padding */
+        font-size: 0.7rem; /* Reduced font size */
+        gap: 2px; /* Reduced gap */
+    }
+
+    .login-button span {
+        display: none; /* Hide "Entrar" text */
+    }
+
+    .login-button i {
+        font-size: 1rem; /* Ensure icon is visible */
+    }
+
+    .cart-icon-link {
+        font-size: 1rem; /* Reduced cart icon size */
+        padding: 0.2rem; /* Reduced padding */
+    }
+
+    .cart-badge {
+        font-size: 0.6rem; /* Smaller badge */
+        padding: 0.1em 0.3em;
+        top: -3px;
+        right: -3px;
+    }
+
+    .theme-toggle-button {
+        padding: 0.2rem; /* Reduced padding */
+        font-size: 1rem; /* Reduced icon size */
+    }
+}
+
+/* Adicionado para compensar o header fixo */
+.main-content {
+    flex-grow: 1;
+    width: 100%;
+    padding: 20px;
+    padding-top: 70px; /* Adjust this value based on your fixed header's height */
 }

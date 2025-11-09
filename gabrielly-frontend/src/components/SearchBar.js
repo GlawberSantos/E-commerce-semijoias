@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { productsAPI } from '../api';
 import '../styles/SearchBar.css';
@@ -7,7 +7,22 @@ const SearchBar = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [suggestions, setSuggestions] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false); // New state for mobile search
     const navigate = useNavigate();
+    const searchRef = useRef(null); // Ref for detecting clicks outside
+
+    // Close mobile search when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (searchRef.current && !searchRef.current.contains(event.target)) {
+                setIsMobileSearchOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [searchRef]);
 
     const handleSearch = async (e) => {
         const value = e.target.value;
@@ -34,6 +49,7 @@ const SearchBar = () => {
         });
         setSearchTerm('');
         setSuggestions([]);
+        setIsMobileSearchOpen(false); // Close search bar after selection
     };
 
     const handleSubmit = (e) => {
@@ -44,11 +60,20 @@ const SearchBar = () => {
             });
             setSearchTerm('');
             setSuggestions([]);
+            setIsMobileSearchOpen(false); // Close search bar after submission
         }
     };
 
     return (
-        <div className="search-container">
+        <div className={`search-container ${isMobileSearchOpen ? 'mobile-open' : ''}`} ref={searchRef}>
+            <button 
+                className="mobile-search-toggle" 
+                onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
+                aria-label="Toggle search bar"
+            >
+                <i className="fas fa-search"></i>
+            </button>
+
             <form onSubmit={handleSubmit} className="search-form">
                 <input
                     type="search"
