@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
@@ -28,6 +28,7 @@ function Layout({ children }) {
   const { user, logout } = useAuth();
   const { totalItems } = useCart();
   const { theme, toggleTheme } = useTheme();
+  const navbarRef = useRef(null); // Ref for the navbar
 
   const toggleMobileSearchBar = () => {
     setIsMobileSearchBarVisible(prev => !prev);
@@ -40,6 +41,19 @@ function Layout({ children }) {
 
     return () => clearInterval(interval);
   }, []);
+
+  // Close navbar when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (navbarRef.current && !navbarRef.current.contains(event.target) && isNavbarActive) {
+        setIsNavbarActive(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isNavbarActive]);
 
   const getMenuItemClass = (path) => {
     if (path === '/') {
@@ -84,7 +98,7 @@ function Layout({ children }) {
             ☰
           </button>
 
-          <nav className={`navbar ${isNavbarActive ? 'active' : ''}`} role="navigation">
+          <nav className={`navbar ${isNavbarActive ? 'active' : ''}`} role="navigation" ref={navbarRef}>
             <ul className="nav-list">
               <li className={getMenuItemClass('/')}><Link to="/">INÍCIO</Link></li>
 

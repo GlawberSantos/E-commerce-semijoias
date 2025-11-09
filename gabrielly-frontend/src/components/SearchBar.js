@@ -10,6 +10,7 @@ const SearchBar = () => {
     const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false); // New state for mobile search
     const navigate = useNavigate();
     const searchRef = useRef(null); // Ref for detecting clicks outside
+    const searchInputRef = useRef(null); // Ref for the search input field
 
     // Close mobile search when clicking outside
     useEffect(() => {
@@ -23,6 +24,13 @@ const SearchBar = () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [searchRef]);
+
+    // Focus the search input when the mobile search bar opens
+    useEffect(() => {
+        if (isMobileSearchOpen && searchInputRef.current) {
+            searchInputRef.current.focus();
+        }
+    }, [isMobileSearchOpen]);
 
     const handleSearch = async (e) => {
         const value = e.target.value;
@@ -82,6 +90,7 @@ const SearchBar = () => {
                     onChange={handleSearch}
                     className="search-input"
                     aria-label="Buscar produtos"
+                    ref={searchInputRef}
                 />
                 <button type="submit" className="search-button" aria-label="Buscar">
                     <i className="fas fa-search"></i>
