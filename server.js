@@ -15,10 +15,12 @@ let gabyTrainingData = [];
 try {
   const trainingData = fs.readFileSync('./gaby_training.json', 'utf-8');
   // Transformar para o formato de histórico do Gemini
-  gabyTrainingData = JSON.parse(trainingData).map(item => ([
-    { role: 'user', parts: [{ text: item.user }] },
-    { role: 'model', parts: [{ text: item.bot }] }
-  ])).flat();
+  gabyTrainingData = JSON.parse(trainingData)
+    .filter(item => item.user && item.bot) // Garante que ambos user e bot existam
+    .map(item => ([
+      { role: 'user', parts: [{ text: item.user }] },
+      { role: 'model', parts: [{ text: item.bot }] }
+    ])).flat();
   console.log('✅ Dados de treinamento da Gaby carregados.');
 } catch (error) {
   console.warn('⚠️  Atenção: Não foi possível carregar o arquivo de treinamento gaby_training.json. O chatbot usará apenas o prompt do sistema.');
