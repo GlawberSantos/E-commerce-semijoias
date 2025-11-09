@@ -493,7 +493,8 @@ app.get("/api/stats/sales", async (req, res) => {
 
 // ==================== CHATBOT ====================
 app.post("/chat", async (req, res) => {
-  const userMessage = req.body.message;
+  const { message: userMessage, history } = req.body; // history é um array de {role: 'user'|'model', parts: [{text: ''}]}
+
   if (!userMessage) {
     return res.status(400).json({ reply: "Envie uma mensagem válida!" });
   }
@@ -530,10 +531,11 @@ app.post("/chat", async (req, res) => {
       console.log(`✅ Produtos encontrados: ${productsResult.rows.length}`);
 
       if (productsResult.rows.length > 0) {
+        const frontendUrl = process.env.FRONTEND_URL || 'https://gabriellysemijoias.vercel.app';
         productContext = "\n\n--- Produtos Relevantes Encontrados ---\n";
         productsResult.rows.forEach(p => {
-          const productUrl = `/products/${p.id}`;
-          productContext += `Nome: ${p.name}, Preço: R$${p.price}, Estoque: ${p.stock}, Descrição: ${p.description}, Link: ${productUrl}\n`;
+          const productUrl = `${frontendUrl}/catalogo/${p.id}`;
+          productContext += `ID: ${p.id}, Nome: ${p.name}, Preço: R$${p.price}, Estoque: ${p.stock}, Descrição: ${p.description}, Link: ${productUrl}\n`;
         });
         productContext += "--- Fim dos Produtos ---\n";
       }
@@ -541,29 +543,40 @@ app.post("/chat", async (req, res) => {
       console.log('🤷 Nenhum termo de busca válido encontrado na mensagem do usuário.');
     }
 
-    // 2. Montar o prompt para a IA
-    const fullPrompt = `
-Você é um assistente virtual da Gabrielly Semijoias, uma loja online de semijoias.
-Seu nome é Gabi. Seja sempre simpática, prestativa e profissional.
-Sua principal função é ajudar os clientes a encontrar produtos e tirar dúvidas sobre eles.
-- Use o contexto de produtos fornecido para responder às perguntas dos clientes sobre itens específicos, preços, descrições e estoque.
-- Se o cliente pedir o link de um produto, forneça o link que está no contexto. O link é relativo ao site, então apenas forneça o caminho (ex: /products/123).
-- Se um produto estiver sem estoque (stock: 0), informe que o produto está indisponível no momento.
-- Se nenhum produto for encontrado no contexto, diga que você não encontrou o item específico, mas pode ajudar a encontrar outros produtos.
-- Responda em português do Brasil.
-- Não invente informações sobre produtos que não estão no contexto.
-- Se a pergunta não for sobre produtos (ex: 'qual o horário de funcionamento?'), use seu conhecimento geral para responder de forma útil, mencionando o nome da loja.
+    // 2. Montar o prompt e o histórico para a IA
+    const systemPrompt = `
+Você é Gaby, uma assistente virtual da loja Gabrielly Semijoias.
+Sua principal função é ser prestativa, amigável e eficiente.
 
-${productContext}
-
-Com base no contexto acima e em seu conhecimento geral, responda à seguinte pergunta do cliente:
-Cliente: "${userMessage}"
+**REGRAS ABSOLUTAS:**
+1.  **NÃO se apresente repetidamente.** Apresente-se APENAS na PRIMEIRA mensagem da conversa. Depois disso, vá direto ao ponto.
+2.  **FORNEÇA links completos e clicáveis** para os produtos quando encontrá-los. Use o link fornecido no contexto. O formato do link é: ${process.env.FRONTEND_URL || 'https://gabriellysemijoias.vercel.app'}/products/ID_DO_PRODUTO.
+3.  Se a mensagem do usuário for um número de 8 dígitos, provavelmente é um CEP. Responda que, para calcular o frete, ela pode usar a calculadora no carrinho de compras do site.
+4.  Responda em português do Brasil.
+5.  Use o contexto de "Produtos Relevantes Encontrados" para responder sobre produtos.
+6.  Se o estoque for zero, informe que o produto está indisponível.
+7.  Se a pergunta não for sobre produtos, seja útil e mencione o nome da loja "Gabrielly Semijoias".
+8.  Não invente informações.
 `;
 
-    // 3. Chamar a API do Gemini
-    const result = await generativeModel.generateContent(fullPrompt);
+    const fullHistory = [
+      // O histórico já inclui a saudação inicial do frontend
+      ...history,
+      { role: 'user', parts: [{ text: userMessage + (productContext || '') }] },
+    ];
+
+    const chat = generativeModel.startChat({
+      history: fullHistory.slice(0, -1), // Envia todo o histórico, exceto a última mensagem do usuário
+      generationConfig: {
+        maxOutputTokens: 800,
+      },
+      systemInstruction: systemPrompt,
+    });
+
+    const result = await chat.sendMessage(userMessage);
     const response = await result.response;
     const text = response.text();
+
     return res.json({ reply: text });
 
   } catch (err) {

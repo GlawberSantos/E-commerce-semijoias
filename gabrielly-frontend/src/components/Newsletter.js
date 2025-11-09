@@ -34,7 +34,7 @@ const Newsletter = () => {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Digite seu melhor e-mail"
+                    placeholder="Digite seu e-mail"
                     required
                     disabled={isLoading}
                 />
