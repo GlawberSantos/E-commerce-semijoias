@@ -114,6 +114,7 @@ const ProductsPage = () => {
           setFilters={setFilters}
           availableFilters={availableFilters}
           handleFilterChange={handleFilterChange}
+          className="product-filters-mobile" // Added className
         />
 
         <div className="main-content">

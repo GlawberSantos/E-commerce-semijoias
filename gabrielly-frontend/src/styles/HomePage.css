@@ -19,12 +19,7 @@
   text-align: center;
   justify-content: center;
   transition: background-image 1s ease-in-out;
-  filter: sharpen(0.5px) contrast(1.02);
   filter: saturate(1.1) brightness(0.9) contrast(1.1);
-    /* --- Ajustes de constrastes na seção de imagem --- */
-    /*filter: sharpen(0.5px) contrast(1.02); /* Exemplo: tenta Sharpen e leve contraste. Ajuste os valores */
-    /* Outras opções (teste uma de cada vez): */
-    /* filter: blur(0.5px) brightness(0.8) contrast(1.2); */ 
 }
 
 .hero-overlay {
@@ -189,23 +184,18 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 20px;
-  /* Ajuste para caber 5 itens */
   max-width: 1200px;
   margin: 0 auto;
 }
 
 .category-card {
-  /* Dimensões finais para o visual uniforme de 5 colunas */
   width: 170px;
   height: 230px;
-
-  /* === REGRAS DE ESPAÇAMENTO UNIFORME === */
   background-color: var(--section-background);
   border-radius: 12px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   padding: 10px;
-  /* CRIA O ESPAÇAMENTO INTERNO */
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -254,91 +244,21 @@
   color: #fff;
 }
 
-/* Media Queries para Responsividade */
-@media (max-width: 768px) {
-  .hero-section {
-    min-height: 450px;
-    padding: 40px 10px;
-  }
-
-  .hero-overlay {
-    padding: 0 2%;
-  }
-
-  .hero-title {
-    font-size: 2.5rem;
-  }
-
-  .hero-subtitle {
-    font-size: 1rem;
-  }
-
-  .coupon-code {
-    font-size: 0.9rem;
-    padding: 6px 15px;
-  }
-
-  .explore-button {
-    padding: 12px 25px;
-    font-size: 0.9rem;
-  }
-
-  .nav-arrow {
-    font-size: 2rem;
-    padding: 8px 12px;
-    width: 40px;
-    height: 40px;
-  }
-
-  .find-your-jewelry-section {
-    padding: 40px 15px;
-  }
-
-  .find-your-jewelry-section h2 {
-    font-size: 2rem;
-  }
-
-  .find-your-jewelry-section p {
-    font-size: 0.9rem;
-  }
-
-  .featured-categories h2 {
-    font-size: 2rem;
-  }
-
-  .categories-grid {
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-  }
-
-  .category-card {
-    width: 90%;
-    max-width: 300px;
-  }
-}
-
 /* ===================================================
    --- SEÇÃO VÍDEOS DE DESTAQUE DO YOUTUBE ---
    =================================================== */
 
 .youtube-highlight-section {
   padding: 80px 20px;
-  /* Aumentar o padding vertical */
   background-color: var(--section-background);
-  /* Fundo mais claro e suave */
   text-align: center;
   overflow: hidden;
-  /* Garante que nada transborde */
 }
 
 .youtube-highlight-section h2 {
   font-size: 2.8rem;
-  /* Tamanho maior para o título */
   color: #333;
-  /* Cor mais escura para o texto */
   margin-bottom: 50px;
-  /* Mais espaço abaixo do título */
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -346,105 +266,44 @@
 
 .video-gallery {
   max-width: 960px;
-  /* Largura máxima do player, centralizada */
   margin: 0 auto;
-  /* Centraliza a galeria */
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  /* Sombra mais suave */
   border-radius: 12px;
-  /* Bordas arredondadas */
   overflow: hidden;
-  /* Importante para as bordas arredondadas do iframe */
   background-color: #000;
-  /* Fundo do container do vídeo, caso o iframe não ocupe 100% */
 }
 
 .video-gallery iframe {
   display: block;
-  /* Remove espaçamento extra abaixo do iframe */
   width: 100%;
-  /* Ocupa a largura total do container */
   height: 450px;
-  /* Altura fixa, ajuste se necessário */
   border: none;
-  /* Remove a borda padrão do iframe */
 }
 
 /* Botão "Ver mais vídeos" */
 .youtube-highlight-section .explore-button {
   margin-top: 50px;
-  /* Mais espaço acima do botão */
   padding: 15px 40px;
-  /* Aumentar o padding do botão */
   font-size: 1.1rem;
   font-weight: 600;
   border-radius: 50px;
-  /* Botão mais arredondado */
   background-color: var(--briliant-color);
-  /* Cor principal do seu tema */
   color: #fff;
   border: 2px solid var(--briliant-color);
   transition: all 0.3s ease;
   text-decoration: none;
-  /* Garante que não tenha sublinhado */
   display: inline-block;
-  /* Permite centralizar com text-align no pai */
 }
 
 .youtube-highlight-section .explore-button:hover {
   background-color: transparent;
   color: var(--briliant-color);
   transform: translateY(-3px);
-  /* Efeito sutil ao passar o mouse */
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
-
-/* --- RESPONSIVIDADE --- */
-@media (max-width: 768px) {
-  .youtube-highlight-section {
-    padding: 60px 15px;
-  }
-
-  .youtube-highlight-section h2 {
-    font-size: 2rem;
-    margin-bottom: 30px;
-  }
-
-  .video-gallery {
-    max-width: 100%;
-    /* Permite que o vídeo ocupe mais espaço em telas menores */
-    border-radius: 0;
-    /* Remove as bordas arredondadas em mobile se preferir */
-    box-shadow: none;
-    /* Remove a sombra em mobile para um visual mais limpo */
-  }
-
-  .video-gallery iframe {
-    height: 250px;
-    /* Ajusta a altura para telas menores */
-  }
-
-  .youtube-highlight-section .explore-button {
-    padding: 12px 30px;
-    font-size: 1rem;
-    margin-top: 40px;
-  }
-}
-
-@media (max-width: 480px) {
-  .youtube-highlight-section h2 {
-    font-size: 1.8rem;
-  }
-
-  .video-gallery iframe {
-    height: 200px;
-    /* Ajusta ainda mais para celulares muito pequenos */
-  }
-}
-
 /* ===================================================
-   SEÇÃO 3: WHATSAPP BANNER (Ajustado para apenas texto)
+   SEÇÃO 3: WHATSAPP BANNER
    =================================================== */
 
 .whatsapp-banner-section {
@@ -452,21 +311,17 @@
   color: var(--text-color);
   padding: 50px 20px;
   text-align: center;
-  /* Centraliza tudo */
 }
 
 .whatsapp-banner-content {
   max-width: 800px;
-  /* Reduz a largura máxima para parecer um bloco de texto */
   margin: 0 auto;
   display: block;
-  /* Volta para o comportamento de bloco */
   text-align: center;
 }
 
 .whatsapp-text {
   max-width: 100%;
-  /* Permite que o texto preencha o whatsapp-banner-content */
 }
 
 .whatsapp-text h2 {
@@ -476,7 +331,6 @@
   text-transform: none;
   letter-spacing: normal;
   text-align: center;
-  /* Centraliza o título */
 }
 
 .whatsapp-text p {
@@ -484,7 +338,6 @@
   font-size: 1.1rem;
   line-height: 1.6;
   text-align: center;
-  /* Centraliza o parágrafo */
 }
 
 .whatsapp-hours {
@@ -492,18 +345,8 @@
   margin-top: 15px;
   color: var(--secondary-text-color);
   text-align: center;
-  /* Centraliza o horário */
 }
 
-
-/* Media Queries para Responsividade (ajuste se necessário, mas o 'text-align: center' resolve a maioria dos casos) */
-@media (max-width: 768px) {
-  .whatsapp-text h2 {
-    font-size: 2rem;
-  }
-}
-
-/* VANTAGENS */
 /* VANTAGENS */
 .advantages-section {
   padding: 60px 0;
@@ -518,7 +361,6 @@
 .advantages-section h3 {
   font-size: 2rem;
   color: white;
-  /* CORRIGIDO: Cor branca para aparecer no fundo preto */
   margin-bottom: 40px;
   text-transform: uppercase;
 }
@@ -577,42 +419,8 @@
   color: #000000;
 }
 
-/* Media Queries para Responsividade */
-@media (max-width: 768px) {
-  .whatsapp-banner-content {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .whatsapp-text,
-  .whatsapp-image {
-    max-width: 100%;
-  }
-
-  .whatsapp-image {
-    order: -1;
-    /* Coloca a imagem acima do texto no mobile */
-    margin-bottom: 30px;
-  }
-
-  .whatsapp-text h2 {
-    font-size: 2rem;
-    text-align: center;
-  }
-
-  .advantages-grid {
-    justify-content: center;
-    gap: 30px 15px;
-  }
-
-  .advantage-item {
-    max-width: 45%;
-    /* Dois itens por linha */
-  }
-}
-
 /* ===================================================
-   NOVA SEÇÃO: BARRA DE SELOS DE CONFIANÇA
+   BARRA DE SELOS DE CONFIANÇA
    =================================================== */
 
 .trust-bar-section {
@@ -658,28 +466,236 @@
   margin-bottom: 3px;
 }
 
-/* Ajustes para a seção de Vantagens (se o fundo não for preto) */
 .advantages-section h3 {
   color: var(--briliant-color);
-  /* Garante que o título seja preto no fundo claro */
 }
 
 .advantage-item h4,
 .advantage-item p {
   color: #5b5959;
   font-size: 18px;
-  /* Garante que o texto das vantagens seja escuro */
 }
 
-/* Responsividade da Barra de Selos */
+/* ===================================================
+   MEDIA QUERIES PARA MOBILE - OTIMIZADO
+   =================================================== */
+
 @media (max-width: 768px) {
+  /* HERO SECTION - REDUZIDO DRASTICAMENTE */
+  .hero-section {
+    min-height: 380px !important; /* Reduzido de 450px para 380px */
+    padding: 20px 10px;
+  }
+
+  .hero-overlay {
+    padding: 0 5px;
+  }
+
+  .hero-title {
+    font-size: 1.8rem !important; /* Reduzido */
+    margin-bottom: 8px;
+  }
+
+  .hero-subtitle {
+    font-size: 0.85rem !important; /* Reduzido */
+    margin-bottom: 12px;
+    padding: 0 10px;
+  }
+
+  .coupon-code {
+    font-size: 0.75rem !important; /* Reduzido */
+    padding: 5px 12px;
+    margin-bottom: 15px;
+  }
+
+  .explore-button {
+    padding: 10px 20px !important; /* Reduzido */
+    font-size: 0.8rem !important;
+  }
+
+  .nav-arrow {
+    font-size: 1.5rem;
+    padding: 6px 10px;
+    width: 32px;
+    height: 32px;
+  }
+
+  .carousel-indicators {
+    bottom: 8px;
+  }
+
+  .carousel-indicators span {
+    width: 8px;
+    height: 8px;
+  }
+
+  /* BARRA DE CONFIANÇA - COMPACTADA */
+  .trust-bar-section {
+    padding: 15px 10px !important; /* Reduzido */
+  }
+
   .trust-bar-content {
-    flex-direction: column;
-    gap: 20px;
+    flex-direction: row !important; /* Mantém em linha */
+    gap: 10px;
     border-bottom: none;
+    padding-bottom: 10px;
   }
 
   .trust-item {
-    max-width: 90%;
+    max-width: 48%;
+    padding: 5px;
+    font-size: 0.75rem !important;
+  }
+
+  .trust-item i {
+    font-size: 1.5rem !important; /* Reduzido */
+    margin-bottom: 5px;
+  }
+
+  .trust-item p {
+    font-size: 0.7rem !important; /* Reduzido */
+    line-height: 1.2;
+  }
+
+  .trust-item strong {
+    font-size: 0.75rem !important;
+  }
+
+  /* WHATSAPP BANNER - COMPACTADO */
+  .whatsapp-banner-section {
+    padding: 25px 15px !important; /* Reduzido de 40px */
+  }
+
+  .whatsapp-text h2 {
+    font-size: 1.4rem !important; /* Reduzido */
+    margin-bottom: 12px;
+  }
+
+  .whatsapp-text p {
+    font-size: 0.85rem !important; /* Reduzido */
+    line-height: 1.4;
+  }
+
+  .whatsapp-hours {
+    font-size: 0.75rem !important;
+    margin-top: 10px;
+  }
+
+  /* VÍDEO DO YOUTUBE - COMPACTADO */
+  .youtube-highlight-section {
+    padding: 30px 15px !important; /* Reduzido de 60px */
+  }
+
+  .youtube-highlight-section h2 {
+    font-size: 1.5rem !important; /* Reduzido */
+    margin-bottom: 20px !important; /* Reduzido */
+  }
+
+  .video-gallery {
+    max-width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .video-gallery iframe {
+    height: 200px !important; /* Reduzido de 250px */
+  }
+
+  .youtube-highlight-section .explore-button {
+    padding: 10px 25px !important;
+    font-size: 0.85rem !important;
+    margin-top: 25px !important; /* Reduzido */
+  }
+
+  /* CATEGORIAS - COMPACTADAS */
+  .featured-categories {
+    padding: 30px 0 !important; /* Reduzido */
+  }
+
+  .featured-categories h2 {
+    font-size: 1.6rem !important;
+    margin-bottom: 20px !important;
+  }
+
+  .categories-grid {
+    flex-direction: row !important; /* Grid 2 colunas */
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .category-card {
+    width: 45% !important; /* 2 colunas */
+    max-width: 160px;
+    height: 180px !important; /* Reduzido */
+    padding: 8px;
+  }
+
+  .category-card img {
+    height: 120px !important; /* Reduzido */
+  }
+
+  .category-card h3 {
+    font-size: 0.95rem !important;
+    margin-top: 6px;
+  }
+
+  /* VANTAGENS - COMPACTADAS */
+  .advantages-section {
+    padding: 30px 0 !important; /* Reduzido */
+  }
+
+  .advantages-section h3 {
+    font-size: 1.5rem !important;
+    margin-bottom: 25px !important;
+  }
+
+  .advantages-grid {
+    justify-content: center;
+    gap: 20px 12px;
+  }
+
+  .advantage-item {
+    max-width: 45%;
+  }
+
+  .advantage-item i {
+    font-size: 1.8rem !important;
+  }
+
+  .advantage-item h4 {
+    font-size: 0.85rem !important;
+  }
+
+  .advantage-item p {
+    font-size: 0.75rem !important;
+  }
+
+  .consult-button {
+    margin-top: 30px !important;
+    padding: 10px 20px !important;
+    font-size: 0.85rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-section {
+    min-height: 350px !important;
+  }
+
+  .hero-title {
+    font-size: 1.6rem !important;
+  }
+
+  .youtube-highlight-section h2 {
+    font-size: 1.3rem !important;
+  }
+
+  .video-gallery iframe {
+    height: 180px !important;
+  }
+
+  .trust-item {
+    font-size: 0.7rem !important;
   }
 }
