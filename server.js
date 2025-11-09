@@ -520,11 +520,27 @@ app.post("/chat", async (req, res) => {
     return res.status(503).json({ reply: "Chatbot indisponível no momento." });
   }
 
-  // Garante que o histórico seja sempre um array de objetos no formato correto
-  const history = (Array.isArray(historyFromRequest) ? historyFromRequest : []).map(h => ({
-    role: h.role,
-    parts: h.parts.map(p => ({ text: p.text || '' }))
-  }));
+  // Garante que o histórico seja sempre um array de objetos no formato correto e válido
+  const history = (Array.isArray(historyFromRequest) ? historyFromRequest : [])
+    .map(h => {
+      // Garante que 'parts' seja um array e filtre partes inválidas
+      if (!h || !h.role || !Array.isArray(h.parts)) {
+        return null;
+      }
+      
+      const validParts = h.parts.filter(p => p && typeof p.text === 'string' && p.text.trim() !== '');
+
+      // Se não houver partes válidas, não inclua este item do histórico
+      if (validParts.length === 0) {
+        return null;
+      }
+
+      return {
+        role: h.role,
+        parts: validParts.map(p => ({ text: p.text })) // Mapeia para o formato correto
+      };
+    })
+    .filter(Boolean); // Remove os itens nulos do histórico
 
   try {
     // 1. Pesquisar produtos relevantes no banco de dados
@@ -558,7 +574,7 @@ app.post("/chat", async (req, res) => {
         const frontendUrl = process.env.FRONTEND_URL || 'https://gabriellysemijoias.vercel.app';
         productContext = "\n\n--- Produtos Relevantes Encontrados ---\n";
         productsResult.rows.forEach(p => {
-          const productUrl = `${frontendUrl}/catalogo/${p.id}`;
+          const productUrl = `${frontendUrl}/produto/${p.id}`;
           productContext += `ID: ${p.id}, Nome: ${p.name}, Preço: R$${p.price}, Estoque: ${p.stock}, Descrição: ${p.description}, Link: ${productUrl}\n`;
         });
         productContext += "--- Fim dos Produtos ---\n";
@@ -575,12 +591,12 @@ app.post("/chat", async (req, res) => {
 Seu objetivo é ajudar o cliente a encontrar produtos, esclarecer dúvidas sobre preços, frete, estoque e promoções — sempre de forma simpática, clara e natural.
 
 REGRAS:
-1. Só se apresente uma vez por conversa.
-2. Use linguagem simples e acolhedora, como se estivesse falando com um cliente real.
-3. Sempre que mencionar um produto, inclua o link completo no formato: ${process.env.FRONTEND_URL || 'https://gabriellysemijoias.vercel.app'}/catalogo/ID_DO_PRODUTO
+1. IMPORTANTE: Sempre que mencionar um produto, inclua o link completo no formato: ${process.env.FRONTEND_URL || 'https://gabriellysemijoias.vercel.app'}/catalogo/ID_DO_PRODUTO. Use o ID do produto fornecido no contexto.
+2. Só se apresente uma vez por conversa.
+3. Use linguagem simples e acolhedora, como se estivesse falando com um cliente real.
 4. Se o usuário enviar um CEP (8 dígitos), oriente a usar o simulador de frete do site.
 5. Responda sempre em português (Brasil).
-6. Se não houver produtos relevantes, responda educadamente e ofereça ajuda para buscar outro item.
+6. Se não encontrar o produto exato, mas encontrar itens similares (ex: um brinco de coração quando o cliente pediu um colar de coração), sugira esses itens como alternativa. Diga algo como "Não encontrei exatamente um colar de coração, mas tenho esses brincos de coração que talvez você goste!".
 7. Jamais invente informações sobre preços ou tempo de existência da loja.
 8. Seja breve, natural e mantenha o tom feminino, simpático e profissional.`
       }]

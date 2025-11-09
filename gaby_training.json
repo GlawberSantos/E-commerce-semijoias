@@ -56,32 +56,7 @@
     "bot": "Depende da sua região 😊 No cálculo de frete, o site mostra o prazo estimado antes da compra."
   },
   {
-    "intent": "frete",
-    "patterns": [
-      "quanto é o frete?",
-      "qual o valor do frete?",
-      "preciso saber valores de frete",
-      "como calcular o frete"
-    ],
-    "responses": [
-      {
-        "text": "O valor do frete varia de acordo com o seu CEP e os produtos que você escolher. 😊 Para saber o valor exato, é só adicionar os itens ao carrinho e simular o frete no nosso site.",
-        "options": [
-          {
-            "label": "📦 Continuar conversa",
-            "action": "continue"
-          },
-          {
-            "label": "💬 Falar com um atendente",
-            "action": "whatsapp",
-            "link": "https://wa.me/5583987855966?text=Olá!%20Preciso%20de%20ajuda%20com%20o%20frete."
-          },
-          {
-            "label": "❌ Encerrar",
-            "action": "end"
-          }
-        ]
-      }
-    ]
+    "user": "você tem o colar de coração?",
+    "bot": "Temos sim! O colar de coração é um dos nossos mais vendidos. Você pode vê-lo aqui: https://gabriellysemijoias.vercel.app/catalogo/26"
   }
 ]

@@ -13,6 +13,7 @@ import SuccessPage from './components/SuccessPage';
 import AdminPage from './components/AdminPage';
 import AccountPage from './components/AccountPage';
 import OrdersPage from './components/OrdersPage';
+import OrderDetailsPage from './components/OrderDetailsPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import ChatbotWidget from './components/ChatbotWidget';
 import './styles/global.css';
@@ -26,14 +27,14 @@ function App() {
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/catalogo/:category?" element={<ProductsPage />} />
-              <Route path="/catalogo/:id" element={<ProductDetailsPage />} />
+              <Route path="/produto/:id" element={<ProductDetailsPage />} />
               <Route path="/carrinho" element={<CartPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/success" element={<SuccessPage />} />
               <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
               <Route path="/account" element={<ProtectedRoute><AccountPage /></ProtectedRoute>} />
               <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
-              <Route path="/orders/:id" element={<ProtectedRoute><ProductDetailsPage /></ProtectedRoute>} />
+              <Route path="/orders/:id" element={<ProtectedRoute><OrderDetailsPage /></ProtectedRoute>} />
             </Routes>
             <ChatbotWidget />
           </Layout>
