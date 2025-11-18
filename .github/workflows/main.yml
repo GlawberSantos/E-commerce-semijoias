@@ -1,4 +1,3 @@
-# .github/workflows/main.yml
 # 🚀 CI/CD Pipeline para Azure
 
 name: CI/CD Pipeline - Gabrielly Azure
@@ -10,34 +9,20 @@ on:
     branches: [main]
 
 env:
-  NODE_VERSION: "20"
-  AZURE_RESOURCE_GROUP: "rg-gabrielly-semijoias-prod"
-  AZURE_REGION: "Brazil South"
-  ACR_NAME: "gabriellysemijoias"
-  BACKEND_APP_NAME: "app-gabrielly-backend-prod"
-  FRONTEND_APP_NAME: "app-gabrielly-frontend-prod"
-  BACKEND_IMAGE_NAME: "gabrielly-backend"
-  FRONTEND_IMAGE_NAME: "gabrielly-frontend"
+  NODE_VERSION: '20'
+  AZURE_RESOURCE_GROUP: 'rg-gabrielly-semijoias-prod'
+  AZURE_REGION: 'Brazil South'
+  ACR_NAME: 'gabriellysemijoias'
+  BACKEND_APP_NAME: 'app-gabrielly-backend-prod'
+  FRONTEND_APP_NAME: 'app-gabrielly-frontend-prod'
+  BACKEND_IMAGE_NAME: 'gabrielly-backend'
+  FRONTEND_IMAGE_NAME: 'gabrielly-frontend'
 
 jobs:
   # ==================== TESTES BACKEND ====================
   test-backend:
     name: 🧪 Testes Backend
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test_db
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
     steps:
       - name: 📥 Checkout código
         uses: actions/checkout@v4
@@ -46,7 +31,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
+          cache: 'npm'
           cache-dependency-path: gabrielly-backend/package-lock.json
 
       - name: 📦 Instalar dependências (Backend)
@@ -55,12 +40,8 @@ jobs:
 
       - name: 🧪 Executar testes
         working-directory: ./gabrielly-backend
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
-          JWT_SECRET: test_secret_key_for_ci
-          NODE_ENV: test
+        run: npm test
         continue-on-error: true
-        run: npm test -- --passWithNoTests 2>&1 || true
 
   # ==================== TESTES FRONTEND ====================
   test-frontend:
@@ -74,24 +55,22 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
+          cache: 'npm'
           cache-dependency-path: gabrielly-frontend/package-lock.json
 
-      - name: 📦 Instalar dependências (Frontend)
-        working-directory: ./gabrielly-frontend
-        run: npm ci
+      - name: 📦 Instalar dependências Frontend
+        run: cd gabrielly-frontend && npm ci
 
-      - name: 🧪 Executar testes
-        working-directory: ./gabrielly-frontend
+      - name: 🧪 Rodar testes Frontend
+        run: cd gabrielly-frontend && npm test -- --passWithNoTests
         continue-on-error: true
-        run: npm test -- --coverage --watchAll=false 2>&1 || true
 
-  # ==================== BUILD & PUSH IMAGES ====================
+  # ==================== BUILD & PUSH IMAGENS ====================
   build_and_push_images:
-    name: 🏗️ Build & Push Docker Images
+    name: 🔨 Build e Push Imagens
     runs-on: ubuntu-latest
     needs: [test-backend, test-frontend]
-    if: github.ref == 'refs/heads/main'
+    if: github.event_name == 'push'
     steps:
       - name: 📥 Checkout código
         uses: actions/checkout@v4
