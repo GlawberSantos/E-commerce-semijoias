@@ -1,0 +1,5 @@
+<step title="Incoming Request" date="2025-11-17T00:54:54.458" instance="59fae4" url="/logstream" method="GET" type="request" pid="768,1,5" Host="app-gabrielly-backend-prod.scm.azurewebsites.net" User-Agent="AZURECLI/2.79.0 (MSI)" Accept-Encoding="identity" Authorization="Bea..." x-ms-client-request-id="9ad5f64f-c34f-11f0-aff5-c03532a554b0" X-ARR-LOG-ID="9ad5f64f-c34f-11f0-aff5-c03532a554b0" CLIENT-IP="186.214.93.195:59105" X-SITE-DEPLOYMENT-ID="app-gabrielly-backend-prod" WAS-DEFAULT-HOSTNAME="app-gabrielly-backend-prod.scm.azurewebsites.net" X-Forwarded-Proto="https" X-AppService-Proto="https" X-Forwarded-TlsVersion="1.3" X-WAWS-Unencoded-URL="/logstream" X-Client-IP="186.214.93.195" X-Client-Port="59105" >
+  <step title="LogStreamHandlerMiddleware.Invoke" date="2025-11-17T00:54:54.502" /><!-- duration: 77ms -->
+  <step title="Error occurred" date="2025-11-17T01:03:54.584" type="error" text="LogStreamManager: ProcessRequest end" /><!-- duration: 4ms -->
+  <step title="Outgoing response" date="2025-11-17T01:03:54.600" type="response" statusCode="200" statusText="OK" /><!-- duration: 3ms -->
+</step><!-- duration: 540147ms -->

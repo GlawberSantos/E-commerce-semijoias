@@ -87,10 +87,11 @@ const api = {
 export const productsAPI = {
   getAll: (category = null) =>
     api.get(category ? `/products?category=${category}` : '/products'),
-  getById: (id) => api.get(`/products/${id}`),
+  search: (query) => api.get(`/products/search?q=${query}`),
   create: (formData) => api.postWithFormData('/products', formData),
   update: (id, data) => api.put(`/products/${id}`, data),
   delete: (id) => api.delete(`/products/${id}`),
+  search: (query) => api.get(`/products/search?q=${query}`),
 };
 
 export const mercadoEnviosAPI = {

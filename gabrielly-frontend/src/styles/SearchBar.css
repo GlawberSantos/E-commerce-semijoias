@@ -140,12 +140,17 @@
         z-index: 1001; /* Ensure it's above other content when open */
     }
 
+    .search-container.mobile-open {
+        z-index: 1002; /* Ensure search container is above header */
+    }
+
     .search-container.mobile-open .search-form {
         display: flex; /* Show when mobile-open class is present */
     }
 
     .mobile-search-toggle {
         display: block; /* Show on mobile */
+        z-index: 1002; /* Ensure toggle button is always on top */
     }
 
     .search-container.mobile-open .mobile-search-toggle {
@@ -155,6 +160,7 @@
     .search-input {
         font-size: 0.9rem;
         padding: 10px 15px;
+        pointer-events: auto; /* Ensure input is interactive */
     }
 
     .search-button {

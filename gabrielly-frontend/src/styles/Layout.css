@@ -515,7 +515,7 @@
     .header {
         padding: 0.5rem 0.8rem; /* Reduced padding for mobile */
         position: fixed; /* Change from sticky to fixed */
-        top: 0; /* Ensure it's at the very top */
+        top: 2.5rem; /* Ensure it's at the very top */
         z-index: 1001; /* Higher z-index to ensure it's on top */
     }
 
@@ -557,9 +557,7 @@
         flex-shrink: 0;
     }
 
-    .header-right .search-bar {
-        display: none;
-    }
+
 
     .navbar {
         display: none; /* Hidden by default on mobile */
@@ -688,5 +686,5 @@
     flex-grow: 1;
     width: 100%;
     padding: 20px;
-    padding-top: 70px; /* Adjust this value based on your fixed header's height */
+    padding-top: 90px; /* Adjust this value based on your fixed header's height */
 }
