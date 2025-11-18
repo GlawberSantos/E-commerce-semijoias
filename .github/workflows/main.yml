@@ -1,0 +1,156 @@
+# .github/workflows/main.yml
+# 🚀 CI/CD Pipeline para Azure
+
+name: CI/CD Pipeline - Gabrielly Azure
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: "18"
+  # Azure Resources
+  AZURE_RESOURCE_GROUP: "rg-gabrielly-semijoias-prod"
+  AZURE_REGION: "Brazil South"
+  ACR_NAME: "acrgabriellysemijoias"
+  # App Services
+  BACKEND_APP_NAME: "app-gabrielly-backend-prod"
+  FRONTEND_APP_NAME: "app-gabrielly-frontend-prod"
+  # Image Names
+  BACKEND_IMAGE_NAME: "gabrielly-backend"
+  FRONTEND_IMAGE_NAME: "gabrielly-frontend"
+
+jobs:
+  # ==================== TESTES BACKEND ====================
+  test-backend:
+    name: 🧪 Testes Backend
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: gabrielly-backend/package-lock.json
+      - name: 📦 Instalar dependências (Backend)
+        working-directory: ./gabrielly-backend
+        run: npm ci
+      - name: 🧪 Executar testes
+        working-directory: ./gabrielly-backend
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+          JWT_SECRET: test_secret_key_for_ci
+          NODE_ENV: test
+        run: npm test
+
+  # ==================== TESTES FRONTEND ====================
+  test-frontend:
+    name: 🧪 Testes Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: gabrielly-frontend/package-lock.json
+      - name: 📦 Instalar dependências (Frontend)
+        working-directory: ./gabrielly-frontend
+        run: npm ci
+      - name: 🧪 Executar testes
+        working-directory: ./gabrielly-frontend
+        run: npm test -- --coverage --watchAll=false
+
+  # ==================== BUILD & PUSH IMAGES ====================
+  build_and_push_images:
+    name: 🏗️ Build & Push Docker Images
+    runs-on: ubuntu-latest
+    needs: [test-backend, test-frontend]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+
+      - name: 🔐 Log in to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: 🔐 Log in to Azure Container Registry
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ env.ACR_NAME }}.azurecr.io
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: 🏗️ Build e Push Backend
+        run: |
+          docker build -t ${{ env.ACR_NAME }}.azurecr.io/${{ env.BACKEND_IMAGE_NAME }}:${{ github.sha }} -f ./gabrielly-backend/Dockerfile ./gabrielly-backend
+          docker push ${{ env.ACR_NAME }}.azurecr.io/${{ env.BACKEND_IMAGE_NAME }}:${{ github.sha }}
+        working-directory: .
+
+      - name: 🏗️ Build e Push Frontend
+        run: |
+          docker build -t ${{ env.ACR_NAME }}.azurecr.io/${{ env.FRONTEND_IMAGE_NAME }}:${{ github.sha }} -f ./gabrielly-frontend/Dockerfile ./gabrielly-frontend
+          docker push ${{ env.ACR_NAME }}.azurecr.io/${{ env.FRONTEND_IMAGE_NAME }}:${{ github.sha }}
+        working-directory: .
+
+  # ==================== DEPLOY PRODUCTION ====================
+  deploy_to_production:
+    name: 🚀 Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build_and_push_images]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+
+      - name: 🔐 Log in to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: 🚀 Deploy Backend to App Service
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.BACKEND_APP_NAME }}
+          resource-group-name: ${{ env.AZURE_RESOURCE_GROUP }}
+          images: "${{ env.ACR_NAME }}.azurecr.io/${{ env.BACKEND_IMAGE_NAME }}:${{ github.sha }}"
+          app-settings-json: '{
+            "DATABASE_URL": "${{ secrets.DATABASE_URL }}",
+            "REDIS_URL": "${{ secrets.REDIS_URL }}",
+            "REDIS_PASSWORD": "${{ secrets.REDIS_PASSWORD }}",
+            "JWT_SECRET": "${{ secrets.JWT_SECRET }}",
+            "WEBSITES_PORT": "8080"
+          }'
+
+      - name: 🚀 Deploy Frontend to App Service
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.FRONTEND_APP_NAME }}
+          resource-group-name: ${{ env.AZURE_RESOURCE_GROUP }}
+          images: "${{ env.ACR_NAME }}.azurecr.io/${{ env.FRONTEND_IMAGE_NAME }}:${{ github.sha }}"
+          app-settings-json: '{
+            "REACT_APP_API_URL": "https://app-gabrielly-backend-prod.azurewebsites.net",
+            "WEBSITES_PORT": "80"
+          }'
