@@ -97,11 +97,11 @@ jobs:
 
       - name: 🏗️ Build e Push Frontend
         env:
-          REACT_APP_API_URL: https://app-gabrielly-backend-prod.azurewebsites.net/api
+          VITE_API_URL: https://app-gabrielly-backend-prod.azurewebsites.net/api
         run: |
           docker build -t ${{ env.ACR_NAME }}.azurecr.io/${{ env.FRONTEND_IMAGE_NAME }}:${{ github.sha }} \
             -t ${{ env.ACR_NAME }}.azurecr.io/${{ env.FRONTEND_IMAGE_NAME }}:latest \
-            --build-arg REACT_APP_API_URL=${{ env.REACT_APP_API_URL }} \
+            --build-arg VITE_API_URL=${{ env.VITE_API_URL }} \
             -f ./gabrielly-frontend/Dockerfile ./gabrielly-frontend
           docker push ${{ env.ACR_NAME }}.azurecr.io/${{ env.FRONTEND_IMAGE_NAME }}:${{ github.sha }}
           docker push ${{ env.ACR_NAME }}.azurecr.io/${{ env.FRONTEND_IMAGE_NAME }}:latest
