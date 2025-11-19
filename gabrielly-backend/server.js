@@ -157,13 +157,15 @@ app.use(compression());
 const allowedOrigins = process.env.NODE_ENV === 'production'
   ? [
     'https://app-gabrielly-frontend-prod.azurewebsites.net',
-    'https://app-gabrielly-frontend-prod.azurewebsites.net'
+    'https://gabriellysemijoias.com',
+    'https://www.gabriellysemijoias.com'
   ]
   : [
     'http://localhost:3000',
     'http://localhost:5000',
-    'http://localhost:5001',
-    'http://localhost:5173'
+    'http://localhost:8000',
+    'http://localhost:8080',
+    'http://127.0.0.1:3000'
   ];
 
 app.use(cors({
