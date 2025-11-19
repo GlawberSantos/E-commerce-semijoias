@@ -9,8 +9,8 @@ RUN npm ci
 
 COPY . .
 
-ARG VITE_API_URL=https://app-gabrielly-backend-prod.azurewebsites.net/api
-ENV VITE_API_URL=$VITE_API_URL
+ARG REACT_APP_API_URL=https://app-gabrielly-backend-prod.azurewebsites.net/api
+ENV REACT_APP_API_URL=$REACT_APP_API_URL
 
 RUN npm run build
 
