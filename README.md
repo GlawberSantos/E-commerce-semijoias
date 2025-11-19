@@ -30,7 +30,7 @@ Gabrielly Semijoias é um e-commerce **production-ready** para venda de semijoia
 - 📊 **Dashboard Admin:** Estatísticas, gráficos, gestão completa
 - 🔍 **SEO Otimizado:** Meta tags dinâmicas, sitemap, Open Graph
 - 📧 **Email Marketing:** Newsletter com Nodemailer
-- ⚡ **Performance:** Cache com Redis, compressão GZIP, CDN ready
+- ⚡ **Performance:** Cache em memória, compressão GZIP, CDN ready
 - 🐳 **Docker:** Containerizado para fácil deploy
 
 ---

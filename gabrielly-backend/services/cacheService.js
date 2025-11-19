@@ -1,34 +1,29 @@
 // services/cacheService.js
-// ⚡ SISTEMA DE CACHE - Performance para Black Friday
+// ⚡ SISTEMA DE CACHE EM MEMÓRIA - Performance para Black Friday
 
-import redisClient, { redisConnected } from '../config/redis.js';
-
-// Cache em memória como fallback
+// Cache em memória
 const memoryCache = new Map();
 
 // ==================== FUNÇÕES PRINCIPAIS ====================
 
 /**
- * Busca valor no cache (Redis ou memória)
+ * Busca valor no cache
  * @param {string} key - Chave do cache
  * @returns {*} Valor armazenado ou undefined
  */
 export const get = async (key) => {
   try {
-    // Tenta Redis primeiro
-    if (redisClient && redisConnected) {
-      const value = await redisClient.get(key);
-      if (value !== null) {
-        console.log(`📦 Cache HIT (Redis): ${key}`);
-        return JSON.parse(value);
-      }
-    }
-    
-    // Fallback para memória
     const cached = memoryCache.get(key);
-    if (cached && cached.expires > Date.now()) {
-      console.log(`📦 Cache HIT (Memory): ${key}`);
-      return cached.value;
+    
+    if (cached) {
+      // Verifica se expirou
+      if (cached.expires > Date.now()) {
+        console.log(`📦 Cache HIT: ${key}`);
+        return cached.value;
+      } else {
+        // Remove se expirado
+        memoryCache.delete(key);
+      }
     }
     
     console.log(`💨 Cache MISS: ${key}`);
@@ -40,7 +35,7 @@ export const get = async (key) => {
 };
 
 /**
- * Armazena valor no cache (Redis ou memória)
+ * Armazena valor no cache
  * @param {string} key - Chave do cache
  * @param {*} value - Valor a ser armazenado
  * @param {number} ttl - Tempo de vida em segundos (opcional, padrão 300s)
@@ -48,20 +43,11 @@ export const get = async (key) => {
  */
 export const set = async (key, value, ttl = 300) => {
   try {
-    // Tenta Redis primeiro
-    if (redisClient && redisConnected) {
-      const stringValue = JSON.stringify(value);
-      await redisClient.setex(key, ttl, stringValue);
-      console.log(`💾 Cache SAVED (Redis): ${key} (TTL: ${ttl}s)`);
-    }
-    
-    // Também armazena em memória como fallback
     memoryCache.set(key, {
       value,
       expires: Date.now() + (ttl * 1000)
     });
-    console.log(`💾 Cache SAVED (Memory): ${key} (TTL: ${ttl}s)`);
-    
+    console.log(`💾 Cache SAVED: ${key} (TTL: ${ttl}s)`);
     return true;
   } catch (error) {
     console.error(`❌ Erro ao salvar cache ${key}:`, error.message);
@@ -76,80 +62,117 @@ export const set = async (key, value, ttl = 300) => {
  */
 export const del = async (key) => {
   try {
-    // Remove do Redis
-    if (redisClient && redisConnected) {
-      await redisClient.del(key);
+    const existed = memoryCache.has(key);
+    if (existed) {
+      memoryCache.delete(key);
+      console.log(`🗑️ Cache REMOVED: ${key}`);
+      return 1;
     }
-    
-    // Remove da memória
-    return memoryCache.delete(key) ? 1 : 0;
+    return 0;
   } catch (error) {
-    console.error(`❌ Erro ao deletar cache ${key}:`, error.message);
+    console.error(`❌ Erro ao remover cache ${key}:`, error.message);
     return 0;
   }
 };
 
 /**
- * Limpa todo o cache Redis
+ * Limpa todo o cache
+ * @returns {number} quantidade de chaves removidas
  */
 export const flush = async () => {
   try {
-    await redisClient.flushdb();
-    console.log('🗑️ Cache Redis completamente limpo');
+    const size = memoryCache.size;
+    memoryCache.clear();
+    console.log(`🧹 Cache FLUSHED: ${size} chaves removidas`);
+    return size;
   } catch (error) {
-    console.error('❌ Erro ao limpar cache Redis:', error);
+    console.error('❌ Erro ao limpar cache:', error.message);
+    return 0;
   }
 };
 
 /**
- * Remove items por padrão no cache Redis
+ * Remove items por padrão no cache
  * @param {string} pattern - Padrão de busca (ex: 'products:*')
  * @returns {number} Quantidade de items removidos
  */
 export const clearPattern = async (pattern) => {
   try {
-    const keys = await redisClient.keys(pattern);
-    if (keys.length > 0) {
-      const deletedCount = await redisClient.del(keys);
-      console.log(`🗑️ Cache Redis pattern cleared: ${pattern} (${deletedCount} items)`);
-      return deletedCount;
+    const regex = new RegExp('^' + pattern.replace('*', '.*') + '$');
+    let deletedCount = 0;
+    
+    for (const key of memoryCache.keys()) {
+      if (regex.test(key)) {
+        memoryCache.delete(key);
+        deletedCount++;
+      }
     }
-    return 0;
+    
+    if (deletedCount > 0) {
+      console.log(`🗑️ Cache pattern cleared: ${pattern} (${deletedCount} items)`);
+    }
+    
+    return deletedCount;
   } catch (error) {
-    console.error(`❌ Erro ao limpar pattern ${pattern} no Redis:`, error);
+    console.error(`❌ Erro ao limpar pattern ${pattern}:`, error.message);
     return 0;
   }
 };
 
 /**
- * Obtém informações do servidor Redis (não estatísticas de cache específicas)
- * @returns {Object} Informações do Redis
+ * Retorna informações/estatísticas do cache
+ * @returns {Object} Objeto com estatísticas
  */
 export const getStats = async () => {
   try {
-    const info = await redisClient.info('memory');
-    const keysCount = await redisClient.dbsize();
-    return {
-      redisMemory: info,
-      keysCount: keysCount,
-      // NodeCache stats like hits/misses are not directly available in Redis info
-      // You would need to implement custom counters for that if needed
+    // Contar items válidos (não expirados)
+    let validCount = 0;
+    let expiredCount = 0;
+    let totalSize = 0;
+    
+    for (const item of memoryCache.values()) {
+      if (item.expires > Date.now()) {
+        validCount++;
+        totalSize += JSON.stringify(item.value).length;
+      } else {
+        expiredCount++;
+      }
+    }
+    
+    const stats = {
+      type: 'memory',
+      keys: validCount,
+      expired: expiredCount,
+      memory_used_bytes: totalSize,
+      memory_used_mb: (totalSize / 1024 / 1024).toFixed(2),
+      total_entries: memoryCache.size,
+      timestamp: new Date()
     };
+    
+    console.log('📊 Cache Statistics:', stats);
+    return stats;
   } catch (error) {
-    console.error('❌ Erro ao obter estatísticas do Redis:', error);
-    return {};
+    console.error('❌ Erro ao obter stats do cache:', error.message);
+    return { type: 'memory', error: error.message };
   }
 };
 
 /**
- * Lista todas as chaves do cache Redis (use com cautela em produção)
- * @returns {Array} Array de chaves
+ * Retorna todas as chaves do cache
+ * @returns {Array<string>} Array de chaves
  */
 export const keys = async (pattern = '*') => {
   try {
-    return await redisClient.keys(pattern);
+    const allKeys = Array.from(memoryCache.keys());
+    
+    if (pattern === '*') {
+      return allKeys;
+    }
+    
+    const regex = new RegExp('^' + pattern.replace('*', '.*') + '$');
+    return allKeys.filter(key => regex.test(key));
   } catch (error) {
-    console.error('❌ Erro ao listar chaves do Redis:', error);
+    console.error('❌ Erro ao listar chaves do cache:', error.message);
     return [];
   }
 };
@@ -157,7 +180,7 @@ export const keys = async (pattern = '*') => {
 // ==================== MIDDLEWARE DE CACHE ====================
 
 /**
- * Middleware Express para cache automático de rotas GET usando Redis
+ * Middleware Express para cache automático de rotas GET
  * @param {number} duration - Duração do cache em segundos
  * @returns {Function} Middleware Express
  */
@@ -320,14 +343,14 @@ export const scheduleFlush = (intervalMinutes = 60) => {
 // ==================== MONITORAMENTO ====================
 
 /**
- * Retorna informações detalhadas do cache Redis
+ * Retorna informações detalhadas do cache
  */
 export const getCacheInfo = async () => {
   const stats = await getStats();
   const allKeys = await keys();
   
   return {
-    cache: 'Redis',
+    cache: 'memory',
     status: 'active',
     ...stats,
     totalKeys: allKeys.length,
@@ -382,4 +405,4 @@ export default {
 // Agendar limpeza automática a cada 1 hora
 scheduleFlush(60);
 
-console.log('✅ Cache Service iniciado com sucesso (usando Redis)');
+console.log('✅ Cache Service iniciado com sucesso (usando cache em memória)');

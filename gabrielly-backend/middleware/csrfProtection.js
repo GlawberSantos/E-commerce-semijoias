@@ -4,7 +4,7 @@
 import crypto from 'crypto';
 import logger from '../config/logger.js';
 
-// Armazenar tokens CSRF em memória (em produção usar Redis/Cache)
+// Armazenar tokens CSRF em memória
 // Formato: { sessionId: { token: string, createdAt: timestamp } }
 const csrfTokenStore = new Map();
 
