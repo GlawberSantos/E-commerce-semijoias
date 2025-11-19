@@ -155,7 +155,10 @@ app.use(compression());
 
 // ==================== CORS RESTRITO ====================
 const allowedOrigins = process.env.NODE_ENV === 'production'
-  ? ['https://gabriellysemijoias.vercel.app']
+  ? [
+    'https://app-gabrielly-frontend-prod.azurewebsites.net',
+    'https://app-gabrielly-frontend-prod.azurewebsites.net'
+  ]
   : [
     'http://localhost:3000',
     'http://localhost:5000',
@@ -645,7 +648,7 @@ app.post('/chat',
         const productsResult = await query(productQuery, values);
 
         if (productsResult.rows.length > 0) {
-          const frontendUrl = process.env.FRONTEND_URL || 'https://gabriellysemijoias.vercel.app';
+          const frontendUrl = process.env.FRONTEND_URL || 'https://app-gabrielly-frontend-prod.azurewebsites.net';
           productContext = '\n\n--- Produtos Relevantes Encontrados ---\n';
           productsResult.rows.forEach(p => {
             const productUrl = `${frontendUrl}/produto/${p.id}`;
@@ -662,7 +665,7 @@ app.post('/chat',
 Seu objetivo é ajudar o cliente a encontrar produtos, esclarecer dúvidas sobre preços, frete, estoque e promoções — sempre de forma simpática, clara e natural.
 
 REGRAS:
-1. IMPORTANTE: Sempre que mencionar um produto, inclua o link completo no formato: ${process.env.FRONTEND_URL || 'https://gabriellysemijoias.vercel.app'}/catalogo/ID_DO_PRODUTO. Use o ID do produto fornecido no contexto.
+1. IMPORTANTE: Sempre que mencionar um produto, inclua o link completo no formato: ${process.env.FRONTEND_URL || 'https://app-gabrielly-frontend-prod.azurewebsites.net'}/catalogo/ID_DO_PRODUTO. Use o ID do produto fornecido no contexto.
 2. Só se apresente uma vez por conversa.
 3. Use linguagem simples e acolhedora.
 4. Se o usuário enviar um CEP (8 dígitos), oriente a usar o simulador de frete do site.

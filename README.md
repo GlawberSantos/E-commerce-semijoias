@@ -293,21 +293,22 @@ npm test -- --watch
 
 ## 🚀 Deploy
 
-### Heroku
+### Microsoft Azure (Recomendado) ✅
 
 ```bash
-# Criar app
-heroku create gabrielly-semijoias
+# Login no Azure
+az login
 
-# Configurar variáveis
-heroku config:set JWT_SECRET=...
-heroku config:set DB_URL=...
+# Deploy com Azure CLI ou GitHub Actions
+# O projeto está configurado com CI/CD automático no GitHub Actions
+# Toda vez que fizer push no branch 'main', o deploy é automático
 
-# Deploy
-git push heroku main
+# URLs em Produção:
+# Frontend: https://app-gabrielly-frontend-prod.azurewebsites.net
+# Backend API: https://app-gabrielly-backend-prod.azurewebsites.net/api
 ```
 
-### Docker (Recomendado)
+### Docker (Local/Self-Hosted)
 
 ```bash
 # Build
@@ -321,18 +322,6 @@ docker-compose logs -f
 
 # Stop
 docker-compose down
-```
-
-### Vercel + Railway
-
-```bash
-# Frontend em Vercel
-cd gabrielly-frontend
-vercel
-
-# Backend em Railway
-cd gabrielly-backend
-railway up
 ```
 
 ---

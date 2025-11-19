@@ -7,7 +7,7 @@ dotenv.config();
 
 const { Pool } = pg;
 
-const isProduction = process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENVIRONMENT;
+const isProduction = process.env.NODE_ENV === 'production';
 
 const connectionOptions = process.env.DATABASE_URL
   ? {
