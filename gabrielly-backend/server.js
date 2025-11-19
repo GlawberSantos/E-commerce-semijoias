@@ -261,7 +261,7 @@ app.get('/api/products', cacheService.cacheMiddleware(600), async (req, res) => 
     const { category } = req.query;
 
     // Tenta buscar do cache
-    const cachedData = cacheService.cacheProducts.getAll(category || 'all');
+    const cachedData = await cacheService.cacheProducts.getAll(category || 'all');
     if (cachedData) {
       return res.json(cachedData);
     }
@@ -292,7 +292,7 @@ app.get('/api/products', cacheService.cacheMiddleware(600), async (req, res) => 
     });
 
     // Salva no cache
-    cacheService.cacheProducts.setAll(category || 'all', result.rows);
+    await cacheService.cacheProducts.setAll(category || 'all', result.rows);
 
     res.json(result.rows);
   } catch (error) {
@@ -310,7 +310,7 @@ app.get('/api/products/search',
       const searchTerm = req.query.q;
 
       // Verifica cache de busca
-      const cachedSearch = cacheService.cacheSearch.get(searchTerm);
+      const cachedSearch = await cacheService.cacheSearch.get(searchTerm);
       if (cachedSearch) {
         return res.json(cachedSearch);
       }
@@ -325,7 +325,7 @@ app.get('/api/products/search',
       );
 
       // Salva busca no cache
-      cacheService.cacheSearch.set(searchTerm, result.rows);
+      await cacheService.cacheSearch.set(searchTerm, result.rows);
 
       res.json(result.rows);
     } catch (error) {
@@ -342,7 +342,7 @@ app.get('/api/products/:id',
   async (req, res) => {
     try {
       // Verifica cache específico do produto
-      const cachedProduct = cacheService.cacheProducts.getOne(req.params.id);
+      const cachedProduct = await cacheService.cacheProducts.getOne(req.params.id);
       if (cachedProduct) {
         return res.json(cachedProduct);
       }
@@ -360,7 +360,7 @@ app.get('/api/products/:id',
       }
 
       // Salva no cache
-      cacheService.cacheProducts.setOne(req.params.id, result.rows[0]);
+      await cacheService.cacheProducts.setOne(req.params.id, result.rows[0]);
 
       res.json(result.rows[0]);
     } catch (error) {
@@ -397,7 +397,7 @@ app.post('/api/products',
       await client.query('COMMIT');
 
       // Invalida cache
-      cacheService.invalidateProduct(result.rows[0].id, category);
+      await cacheService.invalidateProduct(result.rows[0].id, category);
 
       res.status(201).json(result.rows[0]);
     } catch (error) {
@@ -446,7 +446,7 @@ app.put('/api/products/:id',
       await client.query('COMMIT');
 
       // Invalida cache
-      cacheService.invalidateProduct(req.params.id, category);
+      await cacheService.invalidateProduct(req.params.id, category);
 
       res.json(result.rows[0]);
     } catch (error) {
@@ -564,13 +564,13 @@ app.post('/api/orders',
         );
 
         // Invalida cache do produto
-        cacheService.invalidateStock(item.productId);
+        await cacheService.invalidateStock(item.productId);
       }
 
       await client.query('COMMIT');
 
       // Invalida cache de pedidos
-      cacheService.invalidateOrder(orderId);
+      await cacheService.invalidateOrder(orderId);
 
       logger.info(`✅ Pedido criado: ${orderNumber} (Total: R$${finalTotal.toFixed(2)})`);
       return res.status(201).json({
@@ -747,7 +747,7 @@ app.post('/api/mercado-envios/calcular',
       const { cepDestino, pesoTotal, comprimento, largura, altura } = req.body;
 
       // Verifica cache de frete
-      const cachedShipping = cacheService.cacheShipping.get(cepDestino);
+      const cachedShipping = await cacheService.cacheShipping.get(cepDestino);
       if (cachedShipping) {
         return res.json(cachedShipping);
       }
@@ -764,7 +764,7 @@ app.post('/api/mercado-envios/calcular',
       });
 
       // Salva no cache
-      cacheService.cacheShipping.set(cepDestino, results);
+      await cacheService.cacheShipping.set(cepDestino, results);
 
       return res.json(results);
 
