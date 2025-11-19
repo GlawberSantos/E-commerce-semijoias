@@ -1,32 +1,46 @@
 // services/cacheService.js
 // ⚡ SISTEMA DE CACHE - Performance para Black Friday
 
-import redisClient from '../config/redis.js'; // Importa o cliente Redis
+import redisClient, { redisConnected } from '../config/redis.js';
+
+// Cache em memória como fallback
+const memoryCache = new Map();
 
 // ==================== FUNÇÕES PRINCIPAIS ====================
 
 /**
- * Busca valor no cache Redis
+ * Busca valor no cache (Redis ou memória)
  * @param {string} key - Chave do cache
  * @returns {*} Valor armazenado ou undefined
  */
 export const get = async (key) => {
   try {
-    const value = await redisClient.get(key);
-    if (value !== null) {
-      console.log(`📦 Cache HIT: ${key}`);
-      return JSON.parse(value);
+    // Tenta Redis primeiro
+    if (redisClient && redisConnected) {
+      const value = await redisClient.get(key);
+      if (value !== null) {
+        console.log(`📦 Cache HIT (Redis): ${key}`);
+        return JSON.parse(value);
+      }
     }
+    
+    // Fallback para memória
+    const cached = memoryCache.get(key);
+    if (cached && cached.expires > Date.now()) {
+      console.log(`📦 Cache HIT (Memory): ${key}`);
+      return cached.value;
+    }
+    
     console.log(`💨 Cache MISS: ${key}`);
     return undefined;
   } catch (error) {
-    console.error(`❌ Erro ao buscar cache ${key} no Redis:`, error);
+    console.error(`❌ Erro ao buscar cache ${key}:`, error.message);
     return undefined;
   }
 };
 
 /**
- * Armazena valor no cache Redis
+ * Armazena valor no cache (Redis ou memória)
  * @param {string} key - Chave do cache
  * @param {*} value - Valor a ser armazenado
  * @param {number} ttl - Tempo de vida em segundos (opcional, padrão 300s)
@@ -34,28 +48,43 @@ export const get = async (key) => {
  */
 export const set = async (key, value, ttl = 300) => {
   try {
-    const stringValue = JSON.stringify(value);
-    const success = await redisClient.setex(key, ttl, stringValue); // SETEX para definir TTL
-    if (success) {
-      console.log(`💾 Cache SAVED: ${key} (TTL: ${ttl}s)`);
+    // Tenta Redis primeiro
+    if (redisClient && redisConnected) {
+      const stringValue = JSON.stringify(value);
+      await redisClient.setex(key, ttl, stringValue);
+      console.log(`💾 Cache SAVED (Redis): ${key} (TTL: ${ttl}s)`);
     }
-    return success === 'OK';
+    
+    // Também armazena em memória como fallback
+    memoryCache.set(key, {
+      value,
+      expires: Date.now() + (ttl * 1000)
+    });
+    console.log(`💾 Cache SAVED (Memory): ${key} (TTL: ${ttl}s)`);
+    
+    return true;
   } catch (error) {
-    console.error(`❌ Erro ao salvar cache ${key} no Redis:`, error);
+    console.error(`❌ Erro ao salvar cache ${key}:`, error.message);
     return false;
   }
 };
 
 /**
- * Remove valor do cache Redis
+ * Remove valor do cache
  * @param {string} key - Chave do cache
  * @returns {number} 1 se sucesso, 0 se não encontrou
  */
 export const del = async (key) => {
   try {
-    return await redisClient.del(key);
+    // Remove do Redis
+    if (redisClient && redisConnected) {
+      await redisClient.del(key);
+    }
+    
+    // Remove da memória
+    return memoryCache.delete(key) ? 1 : 0;
   } catch (error) {
-    console.error(`❌ Erro ao deletar cache ${key} no Redis:`, error);
+    console.error(`❌ Erro ao deletar cache ${key}:`, error.message);
     return 0;
   }
 };

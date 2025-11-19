@@ -283,6 +283,14 @@ app.get('/api/products', cacheService.cacheMiddleware(600), async (req, res) => 
 
     const result = await query(sql, params);
 
+    // DEBUG: Log para verificar o que o banco de dados está retornando
+    logger.info({
+      msg: 'Resultado da consulta de produtos',
+      category: category,
+      count: result.rows.length,
+      rows: result.rows,
+    });
+
     // Salva no cache
     cacheService.cacheProducts.setAll(category || 'all', result.rows);
 
