@@ -1,8 +1,11 @@
 // server.js - VERSÃO OTIMIZADA E SEGURA
 // 🚀 Pronto para Black Friday
 
+// IMPORTANTE: Importar instrument.js no TOPO do arquivo
+import './instrument.js';
+
+// Importar Sentry (já inicializado em instrument.js)
 import * as Sentry from '@sentry/node';
-import * as Tracing from '@sentry/tracing';
 
 import express from 'express';
 import cors from 'cors';
@@ -31,24 +34,8 @@ const logger = pino({
 // Replace console.log with pino logger
 global.console = logger;
 
-// ==================== SENTRY INITIALIZATION ====================
-if (process.env.SENTRY_DSN) {
-  Sentry.init({
-    dsn: process.env.SENTRY_DSN,
-    integrations: [
-      // enable HTTP calls tracing
-      new Sentry.Integrations.Http({ tracing: true }),
-      // enable Express.js middleware tracing
-      new Tracing.Integrations.Express({ app: express() }),
-    ],
-    // We recommend adjusting this value in production, or using tracesSampler
-    // for finer control
-    tracesSampleRate: 1.0,
-  });
-  logger.info('✅ Sentry configurado.');
-} else {
-  logger.warn('⚠️  SENTRY_DSN não encontrado. Sentry não será inicializado.');
-}
+// ==================== SENTRY CONFIGURATION ====================
+// Sentry is now initialized via instrument.js - no need for additional config here
 
 import { query, getClient, initializeDatabase } from './db.js';
 import { CustomError } from './utils/CustomError.js';
@@ -123,10 +110,15 @@ if (mercadoPagoAccessToken) {
 const app = express();
 
 // The request handler must be the first middleware on the app
-if (process.env.SENTRY_DSN) {
-  app.use(Sentry.Handlers.requestHandler());
-  // TracingHandler creates a trace for every incoming request
-  app.use(Sentry.Handlers.tracingHandler());
+// Sentry apenas será ativo se SENTRY_DSN estiver configurado (inicializado em instrument.js)
+try {
+  if (Sentry && Sentry.Handlers && Sentry.Handlers.requestHandler) {
+    app.use(Sentry.Handlers.requestHandler());
+    // TracingHandler creates a trace for every incoming request
+    app.use(Sentry.Handlers.tracingHandler());
+  }
+} catch (error) {
+  logger.warn('⚠️  Sentry middleware não disponível');
 }
 
 // Pino HTTP logger
@@ -783,8 +775,13 @@ app.post('/api/mercado-envios/calcular',
 
 // ==================== ERROR HANDLER GLOBAL ====================
 // The error handler must be before any other error middleware and after all controllers
-if (process.env.SENTRY_DSN) {
-  app.use(Sentry.Handlers.errorHandler());
+// Sentry error handler será ativo se SENTRY_DSN estiver configurado (inicializado em instrument.js)
+try {
+  if (Sentry && Sentry.Handlers && Sentry.Handlers.errorHandler) {
+    app.use(Sentry.Handlers.errorHandler());
+  }
+} catch (error) {
+  logger.warn('⚠️  Sentry error handler não disponível');
 }
 
 app.use((err, req, res, _next) => {
