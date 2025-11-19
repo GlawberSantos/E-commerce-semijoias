@@ -109,43 +109,10 @@ if (mercadoPagoAccessToken) {
 // ==================== EXPRESS APP ====================
 const app = express();
 
-// The request handler must be the first middleware on the app
-// Sentry apenas será ativo se SENTRY_DSN estiver configurado (inicializado em instrument.js)
-try {
-  if (Sentry && Sentry.Handlers && Sentry.Handlers.requestHandler) {
-    app.use(Sentry.Handlers.requestHandler());
-    // TracingHandler creates a trace for every incoming request
-    app.use(Sentry.Handlers.tracingHandler());
-  }
-} catch (error) {
-  logger.warn('⚠️  Sentry middleware não disponível');
-}
-
 // Pino HTTP logger
 app.use(pinoHttp({ logger }));
 
-// ==================== SEGURANÇA - HELMET ====================
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ['\'self\''],
-      styleSrc: ['\'self\'', '\'unsafe-inline\''],
-      scriptSrc: ['\'self\'', '\'unsafe-inline\'', 'https://www.mercadopago.com'],
-      imgSrc: ['\'self\'', 'data:', 'https:'],
-      connectSrc: ['\'self\'', 'https://api.mercadopago.com'],
-    },
-  },
-  hsts: {
-    maxAge: 31536000,
-    includeSubDomains: true,
-    preload: true
-  }
-}));
-
-// ==================== COMPRESSÃO GZIP ====================
-app.use(compression());
-
-// ==================== CORS RESTRITO ====================
+// ==================== CORS RESTRITO - DEVE ESTAR PRIMEIRO! ====================
 const allowedOrigins = process.env.NODE_ENV === 'production'
   ? [
     'https://app-gabrielly-frontend-prod.azurewebsites.net',
@@ -176,6 +143,39 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// The request handler must be the first middleware on the app (after CORS)
+// Sentry apenas será ativo se SENTRY_DSN estiver configurado (inicializado em instrument.js)
+try {
+  if (Sentry && Sentry.Handlers && Sentry.Handlers.requestHandler) {
+    app.use(Sentry.Handlers.requestHandler());
+    // TracingHandler creates a trace for every incoming request
+    app.use(Sentry.Handlers.tracingHandler());
+  }
+} catch (error) {
+  logger.warn('⚠️  Sentry middleware não disponível');
+}
+
+// ==================== SEGURANÇA - HELMET ====================
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ['\'self\''],
+      styleSrc: ['\'self\'', '\'unsafe-inline\''],
+      scriptSrc: ['\'self\'', '\'unsafe-inline\'', 'https://www.mercadopago.com'],
+      imgSrc: ['\'self\'', 'data:', 'https:'],
+      connectSrc: ['\'self\'', 'https://api.mercadopago.com', 'https://app-gabrielly-backend-prod.azurewebsites.net'],
+    },
+  },
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  }
+}));
+
+// ==================== COMPRESSÃO GZIP ====================
+app.use(compression());
 
 app.use(express.json({ limit: '10mb' })); // Limite de payload
 
