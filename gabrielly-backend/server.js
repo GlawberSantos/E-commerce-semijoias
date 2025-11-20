@@ -195,12 +195,6 @@ app.get('/api/products', cacheService.cacheMiddleware(600), async (req, res) => 
   try {
     const { category } = req.query;
 
-    // Tenta buscar do cache
-    const cachedData = await cacheService.cacheProducts.getAll(category || 'all');
-    if (cachedData) {
-      return res.json(cachedData);
-    }
-
     let sql = `
       SELECT id, name, price, price_discount, image, category, 
              material, color, style, occasion, stock, description
@@ -226,9 +220,6 @@ app.get('/api/products', cacheService.cacheMiddleware(600), async (req, res) => 
       rows: result.rows,
     });
 
-    // Salva no cache
-    await cacheService.cacheProducts.setAll(category || 'all', result.rows);
-
     res.json(result.rows);
   } catch (error) {
     logger.error('Erro ao buscar produtos:', error);
@@ -240,15 +231,10 @@ app.get('/api/products', cacheService.cacheMiddleware(600), async (req, res) => 
 app.get('/api/products/search',
   searchLimiter,
   productSearchValidation,
+  cacheService.cacheMiddleware(600),
   async (req, res) => {
     try {
       const searchTerm = req.query.q;
-
-      // Verifica cache de busca
-      const cachedSearch = await cacheService.cacheSearch.get(searchTerm);
-      if (cachedSearch) {
-        return res.json(cachedSearch);
-      }
 
       const result = await query(
         `SELECT id, name, price, price_discount, image, category, 
@@ -258,9 +244,6 @@ app.get('/api/products/search',
          LIMIT 50`,
         [`%${searchTerm}%`]
       );
-
-      // Salva busca no cache
-      await cacheService.cacheSearch.set(searchTerm, result.rows);
 
       res.json(result.rows);
     } catch (error) {
@@ -276,12 +259,6 @@ app.get('/api/products/:id',
   cacheService.cacheMiddleware(600),
   async (req, res) => {
     try {
-      // Verifica cache específico do produto
-      const cachedProduct = await cacheService.cacheProducts.getOne(req.params.id);
-      if (cachedProduct) {
-        return res.json(cachedProduct);
-      }
-
       const result = await query(
         `SELECT id, name, price, price_discount, image, category, 
                 material, color, style, occasion, stock, description
@@ -293,9 +270,6 @@ app.get('/api/products/:id',
       if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Produto não encontrado' });
       }
-
-      // Salva no cache
-      await cacheService.cacheProducts.setOne(req.params.id, result.rows[0]);
 
       res.json(result.rows[0]);
     } catch (error) {

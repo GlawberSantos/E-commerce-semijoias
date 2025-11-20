@@ -46,7 +46,7 @@ export const initializeDatabase = async () => {
     try {
       logger.info('Tentando conectar ao banco...');
       query(
-        'SELECT 1 FROM pg_catalog.pg_tables WHERE schemaname = \'public\' AND tablename = \'products\'
+        `SELECT 1 FROM pg_catalog.pg_tables WHERE schemaname = 'public' AND tablename = 'products'`
       ).then((tableCheck) => {
         logger.info('✅ Conexão bem-sucedida!');
 

@@ -20,7 +20,8 @@ export const get = async (key) => {
       if (cached.expires > Date.now()) {
         console.log(`📦 Cache HIT: ${key}`);
         return cached.value;
-      } else {
+      }
+      else {
         // Remove se expirado
         memoryCache.delete(key);
       }
@@ -29,7 +30,7 @@ export const get = async (key) => {
     console.log(`💨 Cache MISS: ${key}`);
     return undefined;
   } catch (error) {
-    console.error(`❌ Erro ao buscar cache ${key}:`, error.message);
+    console.error(`❌ Erro ao buscar cache ${key}:`, error);
     return undefined;
   }
 };
@@ -50,7 +51,7 @@ export const set = async (key, value, ttl = 300) => {
     console.log(`💾 Cache SAVED: ${key} (TTL: ${ttl}s)`);
     return true;
   } catch (error) {
-    console.error(`❌ Erro ao salvar cache ${key}:`, error.message);
+    console.error(`❌ Erro ao salvar cache ${key}:`, error);
     return false;
   }
 };
