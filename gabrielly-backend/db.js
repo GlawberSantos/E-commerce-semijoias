@@ -26,7 +26,7 @@ const connectionOptions = process.env.DATABASE_URL
 const pool = new Pool(connectionOptions);
 
 pool.on('connect', () => {
-  console.log('✅ Nova conexão estabelecida com PostgreSQL');
+  console.info('✅ Nova conexão estabelecida com PostgreSQL');
 });
 
 pool.on('error', (err) => {
@@ -39,27 +39,27 @@ export const query = (text, params) => pool.query(text, params);
 export const getClient = () => pool.connect();
 
 export const initializeDatabase = async () => {
-  console.log('🔍 Verificando se o banco de dados precisa ser inicializado...');
-  console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'CONFIGURADO' : 'NÃO CONFIGURADO');
+  console.info('🔍 Verificando se o banco de dados precisa ser inicializado...');
+  console.info('DATABASE_URL:', process.env.DATABASE_URL ? 'CONFIGURADO' : 'NÃO CONFIGURADO');
     
   return new Promise((resolve, reject) => {
     try {
-      console.log('Tentando conectar ao banco...');
+      console.info('Tentando conectar ao banco...');
       query(
         'SELECT 1 FROM pg_catalog.pg_tables WHERE schemaname = \'public\' AND tablename = \'products\''
       ).then((tableCheck) => {
-        console.log('✅ Conexão bem-sucedida!');
+        console.info('✅ Conexão bem-sucedida!');
 
         if (tableCheck.rowCount === 0) {
-          console.log('⏳ Tabela "products" não encontrada. Inicializando o banco de dados...');
+          console.info('⏳ Tabela "products" não encontrada. Inicializando o banco de dados...');
           const sqlFilePath = path.join(process.cwd(), 'init.sql');
           const initSql = fs.readFileSync(sqlFilePath, 'utf8');
           return pool.query(initSql).then(() => {
-            console.log('✅ Banco de dados inicializado com sucesso a partir de init.sql!');
+            console.info('✅ Banco de dados inicializado com sucesso a partir de init.sql!');
             resolve();
           });
         } else {
-          console.log('👍 Banco de dados já está inicializado.');
+          console.info('👍 Banco de dados já está inicializado.');
           resolve();
         }
       }).catch((error) => {
