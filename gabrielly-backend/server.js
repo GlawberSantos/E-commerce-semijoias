@@ -22,6 +22,8 @@ import compression from 'compression'; // NOVO: Compressão GZIP
 import dotenv from 'dotenv';
 dotenv.config();
 
+import { initializeDatabase, query, getClient } from './db.js';
+
 import pino from 'pino';
 import pinoHttp from 'pino-http';
 
@@ -54,17 +56,7 @@ import {
 
 import cacheService from './services/cacheService.js';
 
-const logger = pino({
-  level: process.env.LOG_LEVEL || 'info',
-  transport: {
-    target: 'pino-pretty', // Use pino-pretty for development for human-readable logs
-    options: {
-      colorize: true,
-      translateTime: 'SYS:standard',
-      ignore: 'pid,hostname',
-    },
-  },
-});
+import logger from './utils/logger.js';
 
 // ==================== EXPRESS APP ====================
 const app = express();
@@ -81,7 +73,8 @@ const allowedOrigins = process.env.NODE_ENV === 'production'
   ? [
     'https://app-gabrielly-frontend-prod.azurewebsites.net',
     'https://gabriellysemijoias.com',
-    'https://www.gabriellysemijoias.com'
+    'https://www.gabriellysemijoias.com',
+    'http://localhost:5000' // Permitir para testes locais
   ]
   : [
     'http://localhost:3000',
@@ -89,6 +82,7 @@ const allowedOrigins = process.env.NODE_ENV === 'production'
     'http://localhost:8000',
     'http://localhost:8080',
     'http://127.0.0.1:3000',
+    'http://192.168.15.45:5000', // Adicionado para acesso via IP na rede local
     'https://app-gabrielly-frontend-prod.azurewebsites.net' // Solução Temporária
   ];
 
