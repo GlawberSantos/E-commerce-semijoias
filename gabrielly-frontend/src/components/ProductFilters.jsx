@@ -4,7 +4,8 @@ const ProductFilters = ({
   filters,
   setFilters,
   availableFilters,
-  handleFilterChange
+  handleFilterChange,
+  className
 }) => {
 
   const handlePriceChange = (type, value) => {
@@ -22,7 +23,7 @@ const ProductFilters = ({
   };
 
   return (
-    <div className="filters-sidebar">
+    <div className={`filters-sidebar ${className || ''}`}>
       <div className="filter-section">
         <h3>Faixa de Preço</h3>
         <div className="price-inputs">
