@@ -22,7 +22,7 @@ import compression from 'compression'; // NOVO: Compressão GZIP
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { initializeDatabase, query, getClient } from './db.js';
+import * as db from './db.js';
 
 import pino from 'pino';
 import pinoHttp from 'pino-http';
