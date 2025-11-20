@@ -9,6 +9,16 @@ const { Pool } = pg;
 
 const isProduction = process.env.NODE_ENV === 'production';
 
+// Fallback logger que não depende de global.console estar substituído
+const safeLog = (level, msg) => {
+  const timestamp = new Date().toISOString();
+  const prefix = level === 'error' ? '[ERROR]' : '[INFO]';
+  // Use a função original de console antes de ser substituída
+  if (typeof global.console?.log === 'function') {
+    global.console[level === 'error' ? 'error' : 'log'](`${prefix} ${timestamp} ${msg}`);
+  }
+};
+
 const connectionOptions = process.env.DATABASE_URL
   ? {
     connectionString: process.env.DATABASE_URL,
@@ -26,11 +36,11 @@ const connectionOptions = process.env.DATABASE_URL
 const pool = new Pool(connectionOptions);
 
 pool.on('connect', () => {
-  console.info('✅ Nova conexão estabelecida com PostgreSQL');
+  safeLog('info', '✅ Nova conexão estabelecida com PostgreSQL');
 });
 
 pool.on('error', (err) => {
-  console.error('❌ Erro inesperado no pool do PostgreSQL:', err.message, err.code);
+  safeLog('error', `❌ Erro inesperado no pool do PostgreSQL: ${err.message} ${err.code}`);
   // Não fazer exit aqui - apenas logar
 });
 

@@ -109,6 +109,10 @@ if (mercadoPagoAccessToken) {
 // ==================== EXPRESS APP ====================
 const app = express();
 
+// Trust the first proxy hop (e.g., Azure App Service) - MUST be set early
+// This is crucial for rate limiting and getting the correct client IP
+app.set('trust proxy', true); // Use true instead of 1 for all proxies
+
 // Pino HTTP logger
 app.use(pinoHttp({ logger }));
 
@@ -825,23 +829,21 @@ const startServer = () => {
   });
 };
 
-// Tenta inicializar o banco, mas não falha se não conseguir (development mode)
+// Tenta inicializar o banco de dados em todos os ambientes
 logger.info('Iniciando sequência de inicialização do banco...');
 
-if (process.env.NODE_ENV === 'production') {
-  // Em produção, apenas inicia o servidor sem tentar conectar ao banco
-  logger.info('Modo PRODUÇÃO: Pulando inicialização do banco...');
-  startServer();
-} else {
-  // Em desenvolvimento, tenta inicializar o banco
-  initializeDatabase()
-    .then(() => {
-      logger.info('✅ Banco de dados inicializado com sucesso');
-      startServer();
-    })
-    .catch(err => {
-      logger.warn('⚠️  Aviso: Não foi possível conectar ao banco de dados:', err?.message);
-      logger.info('🚀 Iniciando servidor mesmo assim (modo desenvolvimento)...');
-      startServer();
-    });
-}
+initializeDatabase()
+  .then(() => {
+    logger.info('✅ Banco de dados pronto para conexões.');
+    startServer();
+  })
+  .catch(err => {
+    logger.error('❌ FALHA CRÍTICA: Não foi possível inicializar o banco de dados.', err);
+    if (process.env.NODE_ENV === 'production') {
+      logger.error('--- APLICAÇÃO SERÁ ENCERRADA ---');
+      process.exit(1); // Em produção, falha o container se não conseguir conectar/inicializar o DB
+    } else {
+      logger.warn('⚠️  Aviso: Não foi possível conectar ao banco de dados. O servidor iniciará mesmo assim.');
+      startServer(); // Em desenvolvimento, inicia mesmo sem DB
+    }
+  });
