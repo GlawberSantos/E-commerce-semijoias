@@ -2,6 +2,7 @@ import pg from 'pg';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
+import logger from './utils/logger.js'; // Importar o logger
 
 dotenv.config();
 
@@ -9,39 +10,28 @@ const { Pool } = pg;
 
 const isProduction = process.env.NODE_ENV === 'production';
 
-// Fallback logger que não depende de global.console estar substituído
-const safeLog = (level, msg) => {
-  const timestamp = new Date().toISOString();
-  const prefix = level === 'error' ? '[ERROR]' : '[INFO]';
-  // Use a função original de console antes de ser substituída
-  if (typeof global.console?.log === 'function') {
-    global.console[level === 'error' ? 'error' : 'log'](`${prefix} ${timestamp} ${msg}`);
-  }
-};
-
 const connectionOptions = process.env.DATABASE_URL
   ? {
-    connectionString: process.env.DATABASE_URL,
-    ssl: isProduction ? { rejectUnauthorized: false } : false,
-  }
+      connectionString: process.env.DATABASE_URL,
+      ssl: isProduction ? { rejectUnauthorized: false } : false,
+    }
   : {
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    ssl: false,
-  };
+      host: process.env.DB_HOST,
+      port: process.env.DB_PORT,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+      ssl: false,
+    };
 
 const pool = new Pool(connectionOptions);
 
 pool.on('connect', () => {
-  safeLog('info', '✅ Nova conexão estabelecida com PostgreSQL');
+  logger.info('✅ Nova conexão estabelecida com PostgreSQL');
 });
 
 pool.on('error', (err) => {
-  safeLog('error', `❌ Erro inesperado no pool do PostgreSQL: ${err.message} ${err.code}`);
-  // Não fazer exit aqui - apenas logar
+  logger.error({ err }, '❌ Erro inesperado no pool do PostgreSQL: %s', err.message);
 });
 
 export const query = (text, params) => pool.query(text, params);
@@ -49,37 +39,35 @@ export const query = (text, params) => pool.query(text, params);
 export const getClient = () => pool.connect();
 
 export const initializeDatabase = async () => {
-  console.info('🔍 Verificando se o banco de dados precisa ser inicializado...');
-  console.info('DATABASE_URL:', process.env.DATABASE_URL ? 'CONFIGURADO' : 'NÃO CONFIGURADO');
-    
+  logger.info('🔍 Verificando se o banco de dados precisa ser inicializado...');
+  logger.info(`DATABASE_URL: ${process.env.DATABASE_URL ? 'CONFIGURADO' : 'NÃO CONFIGURADO'}`);
+
   return new Promise((resolve, reject) => {
     try {
-      console.info('Tentando conectar ao banco...');
+      logger.info('Tentando conectar ao banco...');
       query(
-        'SELECT 1 FROM pg_catalog.pg_tables WHERE schemaname = \'public\' AND tablename = \'products\''
+        'SELECT 1 FROM pg_catalog.pg_tables WHERE schemaname = \'public\' AND tablename = \'products\'
       ).then((tableCheck) => {
-        console.info('✅ Conexão bem-sucedida!');
+        logger.info('✅ Conexão bem-sucedida!');
 
         if (tableCheck.rowCount === 0) {
-          console.info('⏳ Tabela "products" não encontrada. Inicializando o banco de dados...');
+          logger.info('⏳ Tabela "products" não encontrada. Inicializando o banco de dados...');
           const sqlFilePath = path.join(process.cwd(), 'init.sql');
           const initSql = fs.readFileSync(sqlFilePath, 'utf8');
           return pool.query(initSql).then(() => {
-            console.info('✅ Banco de dados inicializado com sucesso a partir de init.sql!');
+            logger.info('✅ Banco de dados inicializado com sucesso a partir de init.sql!');
             resolve();
           });
         } else {
-          console.info('👍 Banco de dados já está inicializado.');
+          logger.info('👍 Banco de dados já está inicializado.');
           resolve();
         }
       }).catch((error) => {
-        console.error('❌ Falha ao conectar:', error.message);
-        console.error('Código do erro:', error.code);
-        console.error('Stack:', error.stack);
+        logger.error({ error }, '❌ Falha ao conectar ao banco de dados: %s', error.message);
         reject(error);
       });
     } catch (error) {
-      console.error('❌ Falha catastrófica ao inicializar o banco de dados:', error.message);
+      logger.error({ error }, '❌ Falha catastrófica ao inicializar o banco de dados: %s', error.message);
       reject(error);
     }
   });

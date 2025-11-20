@@ -4,9 +4,9 @@
 
 import * as Sentry from "@sentry/node";
 import { nodeProfilingIntegration } from "@sentry/profiling-node";
-
-// Garantir que dotenv está carregado ANTES de ler as variáveis
 import dotenv from 'dotenv';
+import logger from './utils/logger.js'; // Importar o logger centralizado
+
 dotenv.config();
 
 const SENTRY_DSN = process.env.SENTRY_DSN;
@@ -18,22 +18,16 @@ if (SENTRY_DSN && SENTRY_DSN.trim() !== '') {
       integrations: [
         nodeProfilingIntegration(),
       ],
-      // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
-      // We recommend adjusting this value in production
       tracesSampleRate: 1.0,
-      // Setting this option to true will send default PII data to Sentry.
-      // For example, automatic IP address collection on events
       sendDefaultPii: true,
-      // Performance Monitoring
-      profilesSampleRate: 1.0, // Profiling sample rate is relative to tracesSampleRate
+      profilesSampleRate: 1.0,
     });
-    console.log('✅ Sentry inicializado com sucesso');
+    logger.info('✅ Sentry inicializado com sucesso');
   } catch (error) {
-    console.warn('⚠️  Erro ao inicializar Sentry:', error.message);
+    logger.warn({ err: error }, '⚠️  Erro ao inicializar Sentry: %s', error.message);
   }
 } else {
-  console.warn('⚠️  SENTRY_DSN não configurado. Sentry desativado.');
+  logger.warn('⚠️  SENTRY_DSN não configurado. Sentry desativado.');
 }
 
-// Exportar Sentry para uso em outras partes da aplicação
 export { Sentry };

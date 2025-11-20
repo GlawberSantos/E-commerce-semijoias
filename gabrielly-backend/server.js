@@ -31,87 +31,12 @@ const logger = pino({
   },
 });
 
-// Replace console.log with pino logger
-global.console = logger;
-
-// ==================== SENTRY CONFIGURATION ====================
-// Sentry is now initialized via instrument.js - no need for additional config here
-
-import { query, getClient, initializeDatabase } from './db.js';
-import { CustomError } from './utils/CustomError.js';
-import { calculateDiscount } from './utils/couponLogic.js';
-import { calculateShipping } from './utils/freteService.js';
-import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
-
-// ==================== IMPORTS DOS NOVOS MIDDLEWARES ====================
-import {
-  generalLimiter,
-  authLimiter,
-  registerLimiter,
-  checkoutLimiter,
-  chatbotLimiter,
-  searchLimiter,
-  shippingLimiter,
-  adminLimiter,
-  speedLimiter
-} from './middleware/rateLimiter.js';
-
-import {
-  productValidation,
-  productIdValidation,
-  productSearchValidation,
-  chatValidation,
-  newsletterValidation,
-  shippingValidation,
-  sanitizeSQL,
-  stripHTML
-} from './middleware/validation.js';
-
-import cacheService from './services/cacheService.js';
-
-// ==================== CARREGAR DADOS DE TREINAMENTO ====================
-let gabyTrainingData = [];
-try {
-  const trainingData = fs.readFileSync('./gaby_training.json', 'utf-8');
-  gabyTrainingData = JSON.parse(trainingData)
-    .filter(item => item.user && item.bot)
-    .map(item => ([
-      { role: 'user', parts: [{ text: item.user }] },
-      { role: 'model', parts: [{ text: item.bot }] }
-    ])).flat();
-  logger.info('✅ Dados de treinamento da Gaby carregados.');
-} catch (_error) {
-  logger.warn('⚠️  Arquivo gaby_training.json não encontrado.');
-}
-
-// ==================== MERCADO PAGO ====================
-const mercadoPagoAccessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
-let mercadoPagoClient = null;
-let _preferenceClient = null;
-let _paymentClient = null;
-
-if (mercadoPagoAccessToken) {
-  try {
-    mercadoPagoClient = new MercadoPagoConfig({
-      accessToken: mercadoPagoAccessToken,
-      options: { timeout: 5000 }
-    });
-    _preferenceClient = new Preference(mercadoPagoClient);
-    _paymentClient = new Payment(mercadoPagoClient);
-    logger.info('✅ Mercado Pago configurado.');
-  } catch (error) {
-    logger.error('❌ Erro ao configurar Mercado Pago:', error);
-  }
-} else {
-  logger.warn('⚠️  MERCADOPAGO_ACCESS_TOKEN não encontrado.');
-}
-
 // ==================== EXPRESS APP ====================
 const app = express();
 
 // Trust the first proxy hop (e.g., Azure App Service) - MUST be set early
 // This is crucial for rate limiting and getting the correct client IP
-app.set('trust proxy', true); // Use true instead of 1 for all proxies
+app.set('trust proxy', 1); // Use 1 to trust the first hop
 
 // Pino HTTP logger
 app.use(pinoHttp({ logger }));
@@ -139,7 +64,7 @@ app.use(cors({
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.warn(`⚠️ Origem bloqueada: ${origin}`);
+      logger.warn(`⚠️ Origem bloqueada: ${origin}`);
       callback(new Error('Origem não permitida pelo CORS'));
     }
   },
