@@ -25,6 +25,35 @@ dotenv.config();
 import pino from 'pino';
 import pinoHttp from 'pino-http';
 
+import {
+  registerValidation,
+  loginValidation,
+  productValidation,
+  productIdValidation,
+  productSearchValidation,
+  orderValidation,
+  orderIdValidation,
+  chatValidation,
+  newsletterValidation,
+  shippingValidation,
+  // sanitizeSQL,
+  stripHTML,
+} from './middleware/validation.js';
+
+import {
+  generalLimiter,
+  authLimiter,
+  registerLimiter,
+  checkoutLimiter,
+  chatbotLimiter,
+  searchLimiter,
+  shippingLimiter,
+  adminLimiter,
+  speedLimiter,
+} from './middleware/rateLimiter.js';
+
+import cacheService from './services/cacheService.js';
+
 const logger = pino({
   level: process.env.LOG_LEVEL || 'info',
   transport: {
@@ -59,8 +88,13 @@ const allowedOrigins = process.env.NODE_ENV === 'production'
     'http://localhost:5000',
     'http://localhost:8000',
     'http://localhost:8080',
-    'http://127.0.0.1:3000'
+    'http://127.0.0.1:3000',
+    'https://app-gabrielly-frontend-prod.azurewebsites.net' // Solução Temporária
   ];
+
+// Adicionado para depuração
+logger.info(`NODE_ENV: ${process.env.NODE_ENV}`);
+logger.info(`Allowed Origins: ${allowedOrigins.join(', ')}`);
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -115,7 +149,7 @@ app.use(compression());
 app.use(express.json({ limit: '10mb' })); // Limite de payload
 
 // ==================== SANITIZAÇÃO GLOBAL ====================
-app.use(sanitizeSQL);
+// app.use(sanitizeSQL);
 app.use(stripHTML);
 
 // ==================== RATE LIMITING GLOBAL ====================
