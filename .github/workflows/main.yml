@@ -38,6 +38,12 @@ jobs:
         working-directory: ./gabrielly-backend
         run: npm ci
 
+      - name: 🧪 Testar conexão com o banco de dados
+        working-directory: ./gabrielly-backend
+        run: node test-db-connection.js
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL_TEST }}
+
       - name: 🧪 Executar testes
         working-directory: ./gabrielly-backend
         run: npm test
