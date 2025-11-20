@@ -97,17 +97,7 @@ logger.info(`NODE_ENV: ${process.env.NODE_ENV}`);
 logger.info(`Allowed Origins: ${allowedOrigins.join(', ')}`);
 
 app.use(cors({
-  origin: (origin, callback) => {
-    // Permite requisições sem origin (mobile apps, Postman, etc)
-    if (!origin) return callback(null, true);
-
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      logger.warn(`⚠️ Origem bloqueada: ${origin}`);
-      callback(new Error('Origem não permitida pelo CORS'));
-    }
-  },
+  origin: allowedOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -786,11 +776,6 @@ initializeDatabase()
   })
   .catch(err => {
     logger.error('❌ FALHA CRÍTICA: Não foi possível inicializar o banco de dados.', err);
-    if (process.env.NODE_ENV === 'production') {
-      logger.error('--- APLICAÇÃO SERÁ ENCERRADA ---');
-      process.exit(1); // Em produção, falha o container se não conseguir conectar/inicializar o DB
-    } else {
-      logger.warn('⚠️  Aviso: Não foi possível conectar ao banco de dados. O servidor iniciará mesmo assim.');
-      startServer(); // Em desenvolvimento, inicia mesmo sem DB
-    }
+    logger.warn('⚠️  Aviso: Não foi possível conectar ao banco de dados. O servidor iniciará mesmo assim.');
+    startServer(); // Em desenvolvimento, inicia mesmo sem DB
   });
