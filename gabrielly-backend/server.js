@@ -97,10 +97,28 @@ logger.info(`NODE_ENV: ${process.env.NODE_ENV}`);
 logger.info(`Allowed Origins: ${allowedOrigins.join(', ')}`);
 
 app.use(cors({
-  origin: allowedOrigins,
+  origin: function (origin, callback) {
+    // Log a origem para depuração
+    logger.info(`CORS check: Request from origin [${origin}]`);
+
+    // Permitir requisições sem 'origin' (ex: Postman, curl) em ambiente de não produção
+    if (!origin && process.env.NODE_ENV !== 'production') {
+      logger.info('CORS check: Allowing request with no origin (non-production)');
+      return callback(null, true);
+    }
+
+    if (allowedOrigins.includes(origin)) {
+      logger.info(`CORS check: Origin [${origin}] is allowed.`);
+      callback(null, true);
+    } else {
+      logger.error(`CORS check: Origin [${origin}] is NOT allowed.`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'], // Adicionado X-CSRF-Token se usado
+  optionsSuccessStatus: 200 // Para navegadores legados
 }));
 
 // The request handler must be the first middleware on the app (after CORS)
