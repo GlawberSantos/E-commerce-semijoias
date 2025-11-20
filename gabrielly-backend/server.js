@@ -794,6 +794,11 @@ initializeDatabase()
   })
   .catch(err => {
     logger.error('❌ FALHA CRÍTICA: Não foi possível inicializar o banco de dados.', err);
-    logger.warn('⚠️  Aviso: Não foi possível conectar ao banco de dados. O servidor iniciará mesmo assim.');
-    startServer(); // Em desenvolvimento, inicia mesmo sem DB
+    if (process.env.NODE_ENV !== 'production') {
+      logger.warn('⚠️  Aviso: O servidor iniciará mesmo sem conexão com o banco de dados (apenas em ambiente de não-produção).');
+      startServer();
+    } else {
+      logger.error('❌ O servidor NÃO iniciará em produção sem uma conexão com o banco de dados.');
+      process.exit(1); // Exit with failure code
+    }
   });
