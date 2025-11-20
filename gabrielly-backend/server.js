@@ -4,6 +4,12 @@
 // IMPORTANTE: Importar instrument.js no TOPO do arquivo
 import './instrument.js';
 
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 // Importar Sentry (já inicializado em instrument.js)
 import * as Sentry from '@sentry/node';
 
@@ -127,6 +133,14 @@ app.use((req, res, next) => {
 
   next();
 });
+
+// ==================== SERVIR ARQUIVOS ESTÁTICOS ====================
+// Servir arquivos estáticos da build do frontend
+app.use(express.static(path.join(__dirname, '../gabrielly-frontend/build')));
+
+// Servir as imagens dos produtos
+app.use('/products', express.static(path.join(__dirname, '../gabrielly-frontend/public/products')));
+
 
 // ==================== GEMINI AI ====================
 import { GoogleGenerativeAI } from '@google/generative-ai';
